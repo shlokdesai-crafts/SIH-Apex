@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function StatsRow() {
   return (
     <section className="stats-row" id="stats-row">
