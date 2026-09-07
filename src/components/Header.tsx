@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-export default function Header() {
-  const [activeNav, setActiveNav] = useState('home');
+interface HeaderProps {
+  activeNav: string;
+  onNavigate: (navId: string) => void;
+}
+
+export default function Header({ activeNav, onNavigate }: HeaderProps) {
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, navId: string) => {
     e.preventDefault();
-    setActiveNav(navId);
+    onNavigate(navId);
   };
 
   return (
@@ -69,7 +73,7 @@ export default function Header() {
 
       <div className="nav-right">
         <button className="lang-btn" id="lang-toggle">
-          <span>मराठी</span>
+          <span>English</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
             <path d="M7 10l5 5 5-5z" />
           </svg>
