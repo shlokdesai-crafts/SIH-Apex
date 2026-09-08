@@ -1,6 +1,20 @@
 import React from 'react';
 
 interface HeaderProps {
+  activeTab?: string;
+  setActiveTab?: (tab: string) => void;
+}
+
+export default function Header({ activeTab, setActiveTab }: HeaderProps) {
+  const [localActiveNav, setLocalActiveNav] = useState('home');
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, navId: string) => {
+    e.preventDefault();
+    if (setActiveTab) {
+      setActiveTab(navId);
+    } else {
+      setLocalActiveNav(navId);
+    }
   activeNav: string;
   onNavigate: (navId: string) => void;
 }
@@ -11,6 +25,8 @@ export default function Header({ activeNav, onNavigate }: HeaderProps) {
     e.preventDefault();
     onNavigate(navId);
   };
+
+  const currentNav = activeTab !== undefined ? activeTab : localActiveNav;
 
   return (
     <header className="navbar" id="main-navbar">
@@ -29,33 +45,33 @@ export default function Header({ activeNav, onNavigate }: HeaderProps) {
       </div>
 
       <nav className="nav-links" id="main-nav">
-        <a href="#" className={`nav-link ${activeNav === 'home' ? 'active' : ''}`} onClick={(e) => handleNavClick(e, 'home')}>
+        <a href="#" className={`nav-link ${currentNav === 'home' ? 'active' : ''}`} onClick={(e) => handleNavClick(e, 'home')}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
           </svg>
           Home
         </a>
-        <a href="#" className={`nav-link ${activeNav === 'scan' ? 'active' : ''}`} onClick={(e) => handleNavClick(e, 'scan')}>
+        <a href="#" className={`nav-link ${currentNav === 'scan' ? 'active' : ''}`} onClick={(e) => handleNavClick(e, 'scan')}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="12" cy="12" r="3" />
             <path d="M3 9V5a2 2 0 0 1 2-2h4M3 15v4a2 2 0 0 0 2 2h4M21 9V5a2 2 0 0 0-2-2h-4M21 15v4a2 2 0 0 1-2 2h-4" />
           </svg>
           Scan Crop
         </a>
-        <a href="#" className={`nav-link ${activeNav === 'risk' ? 'active' : ''}`} onClick={(e) => handleNavClick(e, 'risk')}>
+        <a href="#" className={`nav-link ${currentNav === 'risk' ? 'active' : ''}`} onClick={(e) => handleNavClick(e, 'risk')}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
           </svg>
           Risk Forecast
         </a>
-        <a href="#" className={`nav-link ${activeNav === 'farm' ? 'active' : ''}`} onClick={(e) => handleNavClick(e, 'farm')}>
+        <a href="#" className={`nav-link ${currentNav === 'farm' ? 'active' : ''}`} onClick={(e) => handleNavClick(e, 'farm')}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
             <polyline points="9 22 9 12 15 12 15 22" />
           </svg>
           My Farm
         </a>
-        <a href="#" className={`nav-link ${activeNav === 'advisory' ? 'active' : ''}`} onClick={(e) => handleNavClick(e, 'advisory')}>
+        <a href="#" className={`nav-link ${currentNav === 'advisory' ? 'active' : ''}`} onClick={(e) => handleNavClick(e, 'advisory')}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
             <polyline points="14 2 14 8 20 8" />
@@ -65,7 +81,7 @@ export default function Header({ activeNav, onNavigate }: HeaderProps) {
           </svg>
           Advisory
         </a>
-        <a href="#" className={`nav-link ${activeNav === 'more' ? 'active' : ''}`} onClick={(e) => handleNavClick(e, 'more')}>
+        <a href="#" className={`nav-link ${currentNav === 'more' ? 'active' : ''}`} onClick={(e) => handleNavClick(e, 'more')}>
           <span className="more-dots">•••</span>
           More
         </a>

@@ -1,0 +1,574 @@
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import './ScanCrop.css';
+
+// ── Crop data ──────────────────────────────────────────────────────────────────
+const CROPS = [
+  { name: 'Rice',      img: '/images/crop_rice.jpg'      },
+  { name: 'Wheat',     img: '/images/crop_wheat.jpg'     },
+  { name: 'Maize',     img: '/images/crop_maize.jpg'     },
+  { name: 'Cotton',    img: '/images/crop_cotton.jpg'    },
+  { name: 'Soybean',   img: '/images/crop_soybean.jpg'   },
+  { name: 'Sugarcane', img: '/images/crop_sugarcane.jpg' },
+  { name: 'Tomato',    img: '/images/crop_tomato.jpg'    },
+  { name: 'Chickpea',  img: '/images/crop_chickpea.jpg'  },
+];
+
+// ── Simulated AI diagnoses ─────────────────────────────────────────────────────
+const DIAGNOSES = [
+  {
+    disease: 'Leaf Blight',
+    severity: 'Moderate',
+    severityColor: '#f57c00',
+    confidence: 87,
+    description: 'Fungal infection causing brown lesions on leaf edges. Likely caused by excess moisture.',
+    recommendations: [
+      'Apply Mancozeb fungicide (2g/L) every 7 days',
+      'Improve drainage around the field',
+      'Remove and destroy infected leaves',
+      'Avoid overhead irrigation',
+    ],
+    icon: '🍂',
+  },
+  {
+    disease: 'Healthy Plant',
+    severity: 'None',
+    severityColor: '#2e7d32',
+    confidence: 93,
+    description: 'Your crop appears healthy! No signs of disease or pest damage detected.',
+    recommendations: [
+      'Continue regular watering schedule',
+      'Apply balanced NPK fertilizer next week',
+      'Monitor for early pest signs weekly',
+    ],
+    icon: '✅',
+  },
+  {
+    disease: 'Aphid Infestation',
+    severity: 'Mild',
+    severityColor: '#1976d2',
+    confidence: 79,
+    description: 'Small aphid colonies detected on leaf undersides. Early stage – easy to treat.',
+    recommendations: [
+      'Spray Neem oil solution (5ml/L) in evenings',
+      'Introduce ladybird beetles as bio-control',
+      'Inspect neighboring plants for spread',
+      'Re-scan after 5 days to track progress',
+    ],
+    icon: '🐛',
+  },
+  {
+    disease: 'Powdery Mildew',
+    severity: 'Severe',
+    severityColor: '#c62828',
+    confidence: 91,
+    description: 'Severe white powdery coating on leaf surfaces. Immediate treatment required.',
+    recommendations: [
+      'Apply sulfur-based fungicide immediately',
+      'Increase plant spacing for better air circulation',
+      'Avoid wetting the foliage during irrigation',
+      'Consider consulting a local agronomist',
+    ],
+    icon: '⚠️',
+  },
+];
+
+type Step = 'idle' | 'preview' | 'scanning' | 'result';
+
+export default function ScanCrop() {
+  const [step, setStep] = useState<Step>('idle');
+  const [dragging, setDragging] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);  // real File for backend
+  const [diagnosis, setDiagnosis] = useState(DIAGNOSES[0]);
+  const [scanProgress, setScanProgress] = useState(0);
+  const [selectedCrop, setSelectedCrop] = useState<string | null>(null);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [backendError, setBackendError] = useState<string | null>(null); // backend validation error
+  const [showCamera, setShowCamera] = useState(false);
+
+  const fileInputRef   = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const videoRef       = useRef<HTMLVideoElement>(null);
+  const streamRef      = useRef<MediaStream | null>(null);
+  const dropRef        = useRef<HTMLDivElement>(null);
+
+  // ── Drag handlers ────────────────────────────────────────────────────────────
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) processFile(file);
+  }, []);
+
+  // ── File processing ──────────────────────────────────────────────────────────
+  const processFile = (file: File) => {
+    setUploadedFile(file);  // store real File for backend upload
+    setBackendError(null);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPreviewUrl(e.target?.result as string);
+      setStep('preview');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
+    e.target.value = '';
+  };
+
+  // ── Camera ───────────────────────────────────────────────────────────────────
+  const openCamera = async () => {
+    setCameraError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      streamRef.current = stream;
+      setShowCamera(true);
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+        }
+      }, 100);
+    } catch {
+      setCameraError('Camera access denied. Please use "Choose from Gallery" instead.');
+    }
+  };
+
+  const capturePhoto = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    const canvas = document.createElement('canvas');
+    canvas.width  = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d')?.drawImage(video, 0, 0);
+    const dataUrl = canvas.toDataURL('image/jpeg');
+    // Convert canvas data to a real File so the backend can receive it
+    canvas.toBlob((blob) => {
+      if (blob) setUploadedFile(new File([blob], 'camera_capture.jpg', { type: 'image/jpeg' }));
+    }, 'image/jpeg', 0.92);
+    stopCamera();
+    setPreviewUrl(dataUrl);
+    setBackendError(null);
+    setStep('preview');
+  };
+
+  const stopCamera = () => {
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current = null;
+    setShowCamera(false);
+  };
+
+  useEffect(() => () => { streamRef.current?.getTracks().forEach(t => t.stop()); }, []);
+
+  // ── AI Scan – calls FastAPI /api/scan for validation, then runs mock analysis ─
+  const startScan = async () => {
+    setBackendError(null);
+    setStep('scanning');
+    setScanProgress(0);
+
+    if (!uploadedFile) {
+      // If user selected an example crop without uploading a real file
+      setStep('preview');
+      setBackendError("Please upload a real image from your device to use the AI scan.");
+      return;
+    }
+
+    try {
+      const form = new FormData();
+      form.append('file', uploadedFile);
+
+      const res  = await fetch('/api/scan', { method: 'POST', body: form });
+      
+      if (!res.ok) {
+        throw new Error(`Server returned ${res.status}`);
+      }
+
+      const json = await res.json();
+
+      if (json.status === 'invalid') {
+        // Surface the primary error from the backend
+        setBackendError(json.message);
+        setStep('preview');
+        setScanProgress(0);
+        return;
+      }
+      
+      // json.status === 'valid' → display validation success (no fake predictions)
+      setDiagnosis({
+        disease: 'Validation Passed',
+        severity: 'None',
+        severityColor: '#2e7d32',
+        confidence: 100,
+        description: json.message || 'Image passed quality checks.',
+        recommendations: json.image_quality ? [
+          `Resolution: ${json.image_quality.resolution}`,
+          `Brightness Score: ${json.image_quality.brightness_score}/255`,
+          `Sharpness Score: ${json.image_quality.blur_score}`,
+          `File Size: ${json.image_quality.file_size_mb} MB`,
+        ] : ['No image quality data available.'],
+        icon: '✅',
+      });
+      
+      // Advance progress bar to results
+      let prog = 0;
+      const iv = setInterval(() => {
+        prog += Math.random() * 12 + 4;
+        if (prog >= 100) { 
+          prog = 100; 
+          clearInterval(iv); 
+          setTimeout(() => setStep('result'), 400); 
+        }
+        setScanProgress(Math.min(prog, 100));
+      }, 180);
+
+    } catch (err) {
+      console.error('[CropGuard] Backend error:', err);
+      setBackendError("Cannot connect to the Python backend. Make sure FastAPI is running on port 8000.");
+      setStep('preview');
+      setScanProgress(0);
+    }
+  };
+
+  const reset = () => {
+    setStep('idle');
+    setPreviewUrl(null);
+    setScanProgress(0);
+    setSelectedCrop(null);
+    setUploadedFile(null);
+    setBackendError(null);
+  };
+
+  const handleCropClick = (crop: typeof CROPS[0]) => {
+    setSelectedCrop(crop.name);
+    setPreviewUrl(crop.img);
+    setStep('preview');
+  };
+
+  // ── Scan steps label ─────────────────────────────────────────────────────────
+  const scanSteps = [
+    { label: 'Loading image',       from: 0,  to: 20 },
+    { label: 'Detecting crop type', from: 20, to: 45 },
+    { label: 'Analysing symptoms',  from: 45, to: 75 },
+    { label: 'Generating report',   from: 75, to: 100 },
+  ];
+  const currentScanStep = scanSteps.find(s => scanProgress >= s.from && scanProgress < s.to) || scanSteps[3];
+
+  return (
+    <div className="sc-page">
+      {/* ── Camera Modal ── */}
+      {showCamera && (
+        <div className="camera-modal-overlay">
+          <div className="camera-modal">
+            <div className="camera-modal-header">
+              <span>📸 Camera</span>
+              <button className="camera-close-btn" onClick={stopCamera}>✕</button>
+            </div>
+            <video ref={videoRef} className="camera-video" autoPlay playsInline muted />
+            <div className="camera-controls">
+              <button className="capture-btn" onClick={capturePhoto}>
+                <span className="capture-ring" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="sc-inner">
+        <div className="sc-layout">
+          {/* ════════════════ LEFT COLUMN ════════════════ */}
+          <div className="sc-left">
+
+            {/* ── Page Header ── */}
+            <div className="sc-header">
+              <h1 className="sc-title">Scan Your Crop <span>🌿</span></h1>
+              <p className="sc-subtitle">Take a photo or upload an image of your crop leaf, stem, fruit or field for <strong>AI diagnosis.</strong></p>
+            </div>
+
+            {/* ── Upload / Preview / Scan / Result card ── */}
+            <div className="sc-main-card">
+
+              {/* IDLE – upload zone */}
+              {step === 'idle' && (
+                <div
+                  ref={dropRef}
+                  className={`sc-dropzone ${dragging ? 'sc-dropzone--drag' : ''}`}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <div className="sc-cam-icon">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                      <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                    <span className="sc-cam-plus">+</span>
+                  </div>
+                  <h3 className="sc-drop-title">Click to upload a photo</h3>
+                  <p className="sc-drop-sub">or drag and drop an image here</p>
+                  <p className="sc-drop-hint">Supports: JPG, PNG (Max 10 MB)</p>
+                  <input ref={fileInputRef} type="file" accept="image/*" className="sc-hidden-input" onChange={handleFileChange} />
+                </div>
+              )}
+
+              {/* PREVIEW – image loaded */}
+              {(step === 'preview') && previewUrl && (
+                <div className="sc-preview-zone">
+                  <img src={previewUrl} alt="Crop preview" className="sc-preview-img" />
+                  <div className="sc-preview-overlay">
+                    <div className="sc-preview-badge">
+                      {selectedCrop ? `🌾 ${selectedCrop}` : '📁 Image loaded'}
+                    </div>
+                    <button className="sc-change-btn" onClick={reset}>Change</button>
+                  </div>
+                </div>
+              )}
+
+              {/* SCANNING – progress animation */}
+              {step === 'scanning' && previewUrl && (
+                <div className="sc-scanning-zone">
+                  <div className="sc-scan-img-wrap">
+                    <img src={previewUrl} alt="Scanning" className="sc-scan-img" />
+                    <div className="sc-scan-beam" style={{ top: `${scanProgress}%` }} />
+                    <div className="sc-scan-overlay" />
+                  </div>
+                  <div className="sc-scan-info">
+                    <div className="sc-scan-label">{currentScanStep.label}…</div>
+                    <div className="sc-scan-bar-track">
+                      <div className="sc-scan-bar-fill" style={{ width: `${scanProgress}%` }} />
+                    </div>
+                    <div className="sc-scan-pct">{Math.round(scanProgress)}%</div>
+                  </div>
+                </div>
+              )}
+
+              {/* RESULT */}
+              {step === 'result' && (
+                <div className="sc-result-zone">
+                  <div className="sc-result-header">
+                    <div className="sc-result-img-wrap">
+                      {previewUrl && <img src={previewUrl} alt="Scanned" className="sc-result-thumb" />}
+                    </div>
+                    <div className="sc-result-meta">
+                      <div className="sc-result-disease">
+                        <span className="sc-result-icon">{diagnosis.icon}</span>
+                        {diagnosis.disease}
+                      </div>
+                      <div className="sc-result-severity" style={{ color: diagnosis.severityColor }}>
+                        Severity: <strong>{diagnosis.severity}</strong>
+                      </div>
+                      <div className="sc-confidence-bar-wrap">
+                        <span className="sc-confidence-label">AI Confidence</span>
+                        <div className="sc-confidence-track">
+                          <div className="sc-confidence-fill" style={{ width: `${diagnosis.confidence}%`, background: diagnosis.severityColor }} />
+                        </div>
+                        <span className="sc-confidence-val">{diagnosis.confidence}%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="sc-result-desc">{diagnosis.description}</p>
+
+                  <div className="sc-recommendations">
+                    <div className="sc-rec-title">📋 Recommendations</div>
+                    <ul className="sc-rec-list">
+                      {diagnosis.recommendations.map((r, i) => (
+                        <li key={i} className="sc-rec-item">
+                          <span className="sc-rec-dot" />
+                          {r}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="sc-result-actions">
+                    <button className="sc-action-btn sc-action-primary" onClick={reset}>
+                      🔄 Scan Another
+                    </button>
+                    <button className="sc-action-btn sc-action-secondary">
+                      📥 Download Report
+                    </button>
+                    <button className="sc-action-btn sc-action-secondary">
+                      💬 Ask AI Assistant
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* OR divider + buttons (idle & preview) */}
+              {(step === 'idle' || step === 'preview') && (
+                <div className="sc-bottom-actions">
+                  {step === 'idle' && <div className="sc-or-divider"><span>OR</span></div>}
+
+                  <div className="sc-action-btns-row">
+                    <button className="sc-upload-btn sc-btn-camera" onClick={openCamera}>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                      </svg>
+                      <div>
+                        <span className="sc-btn-main">Use Camera</span>
+                        <span className="sc-btn-sub">Take a new photo</span>
+                      </div>
+                    </button>
+
+                    <button className="sc-upload-btn sc-btn-gallery" onClick={() => fileInputRef.current?.click()}>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                      </svg>
+                      <div>
+                        <span className="sc-btn-main">Choose from Gallery</span>
+                        <span className="sc-btn-sub">Select existing image</span>
+                      </div>
+                    </button>
+                  </div>
+
+                  {cameraError && <div className="sc-camera-error">{cameraError}</div>}
+
+                  {/* Backend validation / quality error */}
+                  {backendError && (
+                    <div className="sc-backend-error">
+                      <span className="sc-backend-error-icon">⚠️</span>
+                      <span>{backendError}</span>
+                    </div>
+                  )}
+
+                  {step === 'preview' && (
+                    <button className="sc-analyse-btn" onClick={startScan}>
+                      🔬 Analyse with AI
+
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* ── Popular Crops ── */}
+            <div className="sc-crops-card">
+              <div className="sc-crops-header">
+                <div className="sc-crops-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="#4caf50">
+                    <path d="M17 8C8 10 5.9 16.17 3.82 19.82c.59.12 1.19.18 1.82.18 4.97 0 9-4.03 9-9A5 5 0 0 1 17 8z"/>
+                    <path d="M12 3a9 9 0 0 0-9 9c0 1.1.2 2.16.55 3.13C5.79 11.56 9.36 8.14 17 8A9 9 0 0 0 12 3z"/>
+                  </svg>
+                  Popular Crops
+                </div>
+                <span className="sc-view-all">View All Crops →</span>
+              </div>
+
+              <div className="sc-crops-scroll">
+                {CROPS.map((crop) => (
+                  <button
+                    key={crop.name}
+                    className={`sc-crop-item ${selectedCrop === crop.name ? 'sc-crop-item--active' : ''}`}
+                    onClick={() => handleCropClick(crop)}
+                    title={`Scan ${crop.name}`}
+                  >
+                    <img src={crop.img} alt={crop.name} className="sc-crop-img" />
+                    <span className="sc-crop-name">{crop.name}</span>
+                  </button>
+                ))}
+                <button className="sc-crop-item sc-crop-more">
+                  <div className="sc-more-circle">•••</div>
+                  <span className="sc-crop-name">More<br/>Crops</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* ════════════════ RIGHT COLUMN ════════════════ */}
+          <div className="sc-right">
+
+            {/* Banner */}
+            <div className="sc-banner">
+              <div className="sc-banner-icon">🌱</div>
+              <div>
+                <div className="sc-banner-title">Healthy Plants &nbsp; Stronger Farmers</div>
+                <div className="sc-banner-sub">"AI for a Better Tomorrow"</div>
+              </div>
+              <div className="sc-banner-sun">☀️</div>
+            </div>
+
+            {/* Tips */}
+            <div className="sc-tips-card">
+              <div className="sc-tips-head">
+                <span className="sc-tips-bulb">💡</span>
+                <span className="sc-tips-title">Tips for a Better Result</span>
+              </div>
+              {[
+                { icon: '🌿', text: 'Take a clear and well-lit photo' },
+                { icon: '🔍', text: 'Focus on the affected part (leaf, stem, fruit)' },
+                { icon: '☀️', text: 'Avoid blurry or dark images' },
+                { icon: '🪴', text: 'You can also upload a full plant or field image' },
+              ].map((tip, i) => (
+                <div key={i} className="sc-tip-row">
+                  <span className="sc-tip-icon">{tip.icon}</span>
+                  <span className="sc-tip-text">{tip.text}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Example Images */}
+            <div className="sc-examples-card">
+              <div className="sc-examples-title">Example Images</div>
+              <div className="sc-examples-grid">
+                {[
+                  { img: '/images/crop_healthy_leaf.jpg',  label: 'Healthy Leaf',    color: '#2e7d32' },
+                  { img: '/images/crop_leaf_spots.jpg',    label: 'Leaf with Spots', color: '#f57c00' },
+                  { img: '/images/crop_infected_leaf.jpg', label: 'Infected Leaf',   color: '#c62828' },
+                  { img: '/images/crop_pest_leaf.jpg',     label: 'Pest on Leaf',    color: '#1565c0' },
+                ].map((ex, i) => (
+                  <button
+                    key={i}
+                    className="sc-example-item"
+                    onClick={() => { setPreviewUrl(ex.img); setStep('preview'); }}
+                    title={`Use as ${ex.label} example`}
+                  >
+                    <img src={ex.img} alt={ex.label} className="sc-example-img" />
+                    <span className="sc-example-label" style={{ color: ex.color }}>{ex.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Help */}
+            <div className="sc-help-card">
+              <div className="sc-help-head">
+                <span className="sc-help-icon">🎧</span>
+                <div>
+                  <div className="sc-help-title">Need Help?</div>
+                  <div className="sc-help-desc">Watch this short video to learn how to scan your crop.</div>
+                </div>
+              </div>
+              <button className="sc-video-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                Watch Video (1 min)
+              </button>
+              <div className="sc-assistant-row">
+                <span className="sc-assistant-icon">💬</span>
+                <div>
+                  <div className="sc-assistant-title">Talk to AI Assistant</div>
+                  <div className="sc-assistant-desc">Ask anything about your crop in your language</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
