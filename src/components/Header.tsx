@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 interface HeaderProps {
   activeTab?: string;
@@ -15,6 +15,15 @@ export default function Header({ activeTab, setActiveTab }: HeaderProps) {
     } else {
       setLocalActiveNav(navId);
     }
+  activeNav: string;
+  onNavigate: (navId: string) => void;
+}
+
+export default function Header({ activeNav, onNavigate }: HeaderProps) {
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, navId: string) => {
+    e.preventDefault();
+    onNavigate(navId);
   };
 
   const currentNav = activeTab !== undefined ? activeTab : localActiveNav;
@@ -80,7 +89,7 @@ export default function Header({ activeTab, setActiveTab }: HeaderProps) {
 
       <div className="nav-right">
         <button className="lang-btn" id="lang-toggle">
-          <span>मराठी</span>
+          <span>English</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
             <path d="M7 10l5 5 5-5z" />
           </svg>
