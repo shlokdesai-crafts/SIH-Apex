@@ -17,6 +17,14 @@ class ImageQuality(BaseModel):
     is_sharp_enough: bool
 
 
+class CropAnalysis(BaseModel):
+    is_relevant: bool
+    confidence: float                     # 0.0 to 1.0 model confidence
+    detected_category: str                # e.g. "Plant/Crop", "Person", "Animal", "Vehicle", "Building/Scenery", "Irrelevant Object"
+    label: str                            # Top predicted label (e.g. "ear of corn", "sports car")
+    rejection_reason: Optional[str] = None
+
+
 class ScanResponse(BaseModel):
     """
     Structured response for the /api/scan endpoint.
@@ -26,10 +34,9 @@ class ScanResponse(BaseModel):
     message: str                         # Human-readable primary message
     validation: ValidationResult
     image_quality: Optional[ImageQuality] = None
-
-    # ── Future ML modules (Phase 2+) ──────────────────────────────────────────
-    crop_analysis: Optional[Any] = None      # Crop type identification
+    crop_analysis: Optional[CropAnalysis] = None
     disease_detection: Optional[Any] = None  # Disease name + confidence score
     severity: Optional[Any] = None           # Severity level (Mild/Moderate/Severe)
     risk_score: Optional[Any] = None         # 0-100 risk index
     advisory: Optional[Any] = None           # Treatment recommendations
+

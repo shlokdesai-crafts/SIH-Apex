@@ -1,9 +1,9 @@
-# CropGuard Phase 1 – Python 3.14 compatible packages
+# CropGuard Phase 1 & Phase 2 packages
 fastapi
 uvicorn[standard]
 python-multipart
 Pillow
+torch
+torchvision
+numpy
 
-# Phase 2+: add these when Python 3.14 wheels are available
-# opencv-python-headless
-# numpy
