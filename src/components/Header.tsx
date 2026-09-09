@@ -1,32 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface HeaderProps {
   activeTab?: string;
   setActiveTab?: (tab: string) => void;
+  activeNav?: string;
+  onNavigate?: (navId: string) => void;
 }
 
-export default function Header({ activeTab, setActiveTab }: HeaderProps) {
+export default function Header({ activeTab, setActiveTab, activeNav, onNavigate }: HeaderProps) {
   const [localActiveNav, setLocalActiveNav] = useState('home');
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, navId: string) => {
     e.preventDefault();
     if (setActiveTab) {
       setActiveTab(navId);
+    } else if (onNavigate) {
+      onNavigate(navId);
     } else {
       setLocalActiveNav(navId);
     }
-  activeNav: string;
-  onNavigate: (navId: string) => void;
-}
-
-export default function Header({ activeNav, onNavigate }: HeaderProps) {
-
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, navId: string) => {
-    e.preventDefault();
-    onNavigate(navId);
   };
 
-  const currentNav = activeTab !== undefined ? activeTab : localActiveNav;
+  const currentNav = activeTab !== undefined ? activeTab : (activeNav !== undefined ? activeNav : localActiveNav);
 
   return (
     <header className="navbar" id="main-navbar">

@@ -1,0 +1,58 @@
+.gov-dashboard-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f4f7f4; /* Light green-grey background */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.gov-dashboard-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.gov-dashboard-content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.gov-dashboard-grid-row-1 {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 20px;
+}
+
+.gov-dashboard-grid-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1.5fr;
+  gap: 20px;
+}
+
+/* Reusable card styles for Gov dashboard */
+.gov-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+}
+
+.gov-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 12px;
+}
+
+.gov-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d3748;
+}
