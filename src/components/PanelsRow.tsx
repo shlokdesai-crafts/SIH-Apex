@@ -1,16 +1,23 @@
 import { useState } from 'react';
+import { useTranslation } from '../i18n/useTranslation';
+import type { Language } from '../i18n/translations';
 
 export default function PanelsRow() {
   const [activeMapTab, setActiveMapTab] = useState('fields');
   const [micActive, setMicActive] = useState(false);
-  const [activeLang, setActiveLang] = useState('marathi');
+  const { t, language, setLanguage } = useTranslation();
 
   const handleScanClick = () => {
-    alert('Scan Crop feature – AI diagnosis coming soon!');
+    alert(t('panels.scanAlert'));
   };
 
   const handleZoomIn = () => console.log('Zoom in');
   const handleZoomOut = () => console.log('Zoom out');
+
+  // Wire voice language buttons to the global language context
+  const handleVoiceLangClick = (lang: Language) => {
+    setLanguage(lang);
+  };
 
   return (
     <section className="panels-row" id="panels-row">
@@ -24,8 +31,8 @@ export default function PanelsRow() {
             </svg>
           </div>
           <div className="scan-header-text">
-            <h2 className="panel-title">Scan Crop</h2>
-            <p className="panel-subtitle">Take or upload a photo<br />for AI diagnosis</p>
+            <h2 className="panel-title">{t('panels.scanCrop')}</h2>
+            <p className="panel-subtitle">{t('panels.scanSubtitle')}</p>
           </div>
         </div>
         <div className="scan-images-row">
@@ -34,24 +41,24 @@ export default function PanelsRow() {
           <div className="scan-img-wrap"><img src="images/crop_leaf3.jpg" alt="Crop leaf disease 3" className="scan-thumb" /></div>
         </div>
         <button className="scan-btn" id="scan-crop-btn" onClick={handleScanClick}>
-          Scan Crop →
+          {t('panels.scanBtn')}
         </button>
       </div>
 
       {/* Field Map & Risk Zones Panel */}
       <div className="panel map-panel" id="map-panel">
         <div className="map-panel-header">
-          <h2 className="panel-title">Field Map &amp; Risk Zones</h2>
-          <a href="#" className="view-full-map" id="view-full-map-btn">View Full Map →</a>
+          <h2 className="panel-title">{t('panels.fieldMap')}</h2>
+          <a href="#" className="view-full-map" id="view-full-map-btn">{t('panels.viewFullMap')}</a>
         </div>
         <div className="map-tabs">
-          <button className={`map-tab ${activeMapTab === 'fields' ? 'active' : ''}`} onClick={() => setActiveMapTab('fields')}>My Fields</button>
-          <button className={`map-tab ${activeMapTab === 'satellite' ? 'active' : ''}`} onClick={() => setActiveMapTab('satellite')}>Satellite View</button>
+          <button className={`map-tab ${activeMapTab === 'fields' ? 'active' : ''}`} onClick={() => setActiveMapTab('fields')}>{t('panels.myFields')}</button>
+          <button className={`map-tab ${activeMapTab === 'satellite' ? 'active' : ''}`} onClick={() => setActiveMapTab('satellite')}>{t('panels.satelliteView')}</button>
         </div>
         <div className="map-container" id="map-container">
           <img src="images/field_map.jpg" alt="Field map with risk zones" className="map-img" id="map-img" />
           <div className="map-label high-risk-label" id="field1-label">
-            <span>Field 1</span><br /><span>High Risk</span>
+            <span>{t('panels.field1')}</span><br /><span>{t('panels.highRisk')}</span>
           </div>
           <div className="map-controls" id="map-controls">
             <button className="map-ctrl-btn" aria-label="Zoom in" onClick={handleZoomIn}>+</button>
@@ -63,8 +70,8 @@ export default function PanelsRow() {
             </button>
           </div>
           <div className="map-info-bar" id="map-info-bar">
-            <strong>Field 1 - Cotton</strong>
-            <span>3.5 acres | Sowing: 12 Oct 2025</span>
+            <strong>{t('panels.field1Cotton')}</strong>
+            <span>{t('panels.fieldInfo')}</span>
           </div>
         </div>
       </div>
@@ -78,8 +85,8 @@ export default function PanelsRow() {
             </svg>
           </div>
           <div className="voice-header-text">
-            <h2 className="panel-title">AI Voice Assistant</h2>
-            <p className="panel-subtitle">Ask anything about your crop<br />in your language</p>
+            <h2 className="panel-title">{t('panels.aiVoice')}</h2>
+            <p className="panel-subtitle">{t('panels.voiceSubtitle')}</p>
           </div>
         </div>
 
@@ -112,16 +119,16 @@ export default function PanelsRow() {
         </div>
 
         <div className="voice-query-text" id="voice-query">
-          "माझ्या पिकाम्ध्ये कोणता आजार असू शकतो?"
+          {t('panels.voiceQuery')}
         </div>
 
         <div className="voice-lang-btns" id="voice-lang-btns">
-          <button className={`lang-select-btn ${activeLang === 'marathi' ? 'active' : ''}`} onClick={() => setActiveLang('marathi')}>मराठी</button>
-          <button className={`lang-select-btn ${activeLang === 'hindi' ? 'active' : ''}`} onClick={() => setActiveLang('hindi')}>हिंदी</button>
-          <button className={`lang-select-btn ${activeLang === 'english' ? 'active' : ''}`} onClick={() => setActiveLang('english')}>English</button>
+          <button className={`lang-select-btn ${language === 'mr' ? 'active' : ''}`} onClick={() => handleVoiceLangClick('mr')}>{t('lang.marathi')}</button>
+          <button className={`lang-select-btn ${language === 'hi' ? 'active' : ''}`} onClick={() => handleVoiceLangClick('hi')}>{t('lang.hindi')}</button>
+          <button className={`lang-select-btn ${language === 'en' ? 'active' : ''}`} onClick={() => handleVoiceLangClick('en')}>{t('lang.english')}</button>
         </div>
 
-        <div className="voice-tap-hint" id="voice-tap-hint">Tap to speak</div>
+        <div className="voice-tap-hint" id="voice-tap-hint">{t('panels.tapToSpeak')}</div>
       </div>
     </section>
   );
