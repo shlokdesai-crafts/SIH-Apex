@@ -39,6 +39,7 @@ function App() {
       )}
       {activeTab === 'farm' && <MyFarm />}
       {activeTab === 'scan' && <ScanCrop />}
+      {activeTab === 'farm' && <MyFarm />}
       {activeTab === 'risk' && <RiskForecast />}
       {activeTab === 'advisory' && (
         <div style={{ padding: '40px', textAlign: 'center' }}>
@@ -57,3 +58,4 @@ function App() {
 }
 
 export default App;
+
