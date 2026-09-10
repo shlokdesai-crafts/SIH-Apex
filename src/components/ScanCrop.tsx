@@ -290,37 +290,22 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
         prevention: diseaseDet?.prevention || [],
         expertVerificationRequired: isNeedsVerification,
         icon: isDiseased ? '🍂' : (isNeedsVerification ? '⚠️' : '✅'),
-      } as any);
-        disease: cropName,
-        severity: 'Verified',
-        severityColor: '#2e7d32',
-        confidence: actualConfidence,
-        description: json.message || 'Image passed quality and relevance checks.',
-        recommendations: json.image_quality ? [
-          `Resolution: ${json.image_quality.resolution}`,
-          `Brightness Score: ${json.image_quality.brightness_score}/255`,
-          `Sharpness Score: ${json.image_quality.blur_score}`,
-          `File Size: ${json.image_quality.file_size_mb} MB`,
-        ] : ['No image quality data available.'],
-        icon: '🌿',
-      });
-
       const newRecord: ScanRecord = {
         id: Date.now().toString(),
         date: Date.now(),
-        crop: crop_id?.crop_name || 'Unknown',
-        disease: cropName,
-        severity: 'Verified',
-        confidence: actualConfidence,
+        crop: cropName,
+        disease: diseaseName,
+        severity: severityText,
+        confidence: diseaseConfidence || cropConfidence,
         previewUrl: previewUrl
       };
 
       if (onScanComplete) {
         onScanComplete({
-          score: actualConfidence,
+          score: diseaseConfidence || cropConfidence,
           crop: newRecord.crop,
-          disease: 'None detected',
-          severity: 'Low',
+          disease: diseaseName,
+          severity: severityText,
         });
       }
       
