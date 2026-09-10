@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './auth/AuthContext';
 import { LanguageProvider } from './i18n/LanguageContext';

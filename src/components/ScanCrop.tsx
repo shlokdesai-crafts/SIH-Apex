@@ -74,7 +74,21 @@ const DIAGNOSES = [
 
 type Step = 'idle' | 'preview' | 'scanning' | 'result';
 
-export default function ScanCrop() {
+export interface ScanRecord {
+  id: string;
+  date: number;
+  crop: string;
+  disease: string;
+  severity: string;
+  confidence: number;
+  previewUrl: string | null;
+}
+
+interface ScanCropProps {
+  onScanComplete?: (data: { score: number, crop: string, disease: string, severity: string }) => void;
+}
+
+export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
   const [step, setStep] = useState<Step>('idle');
   const [dragging, setDragging] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -83,8 +97,33 @@ export default function ScanCrop() {
   const [scanProgress, setScanProgress] = useState(0);
   const [selectedCrop, setSelectedCrop] = useState<string | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
-  const [backendError, setBackendError] = useState<string | null>(null); // backend validation error
+  const [backendError, setBackendError] = useState<string | null>(null);
   const [showCamera, setShowCamera] = useState(false);
+  const [scanHistory, setScanHistory] = useState<ScanRecord[]>([]);
+
+  // Load history on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('cropguard_history');
+    if (saved) {
+      try {
+        setScanHistory(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to parse scan history', e);
+      }
+    }
+  }, []);
+
+  const saveToHistory = (record: ScanRecord) => {
+    const newHistory = [record, ...scanHistory];
+    setScanHistory(newHistory);
+    localStorage.setItem('cropguard_history', JSON.stringify(newHistory));
+  };
+
+  const deleteFromHistory = (id: string) => {
+    const newHistory = scanHistory.filter(r => r.id !== id);
+    setScanHistory(newHistory);
+    localStorage.setItem('cropguard_history', JSON.stringify(newHistory));
+  };
 
   const fileInputRef   = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -226,6 +265,25 @@ export default function ScanCrop() {
         ] : ['No image quality data available.'],
         icon: '🌿',
       });
+
+      const newRecord: ScanRecord = {
+        id: Date.now().toString(),
+        date: Date.now(),
+        crop: crop_id?.crop_name || 'Unknown',
+        disease: cropName,
+        severity: 'Verified',
+        confidence: actualConfidence,
+        previewUrl: previewUrl
+      };
+
+      if (onScanComplete) {
+        onScanComplete({
+          score: actualConfidence,
+          crop: newRecord.crop,
+          disease: 'None detected',
+          severity: 'Low',
+        });
+      }
       
       // Advance progress bar to results
       let prog = 0;
@@ -234,6 +292,7 @@ export default function ScanCrop() {
         if (prog >= 100) { 
           prog = 100; 
           clearInterval(iv); 
+          saveToHistory(newRecord);
           setTimeout(() => setStep('result'), 400); 
         }
         setScanProgress(Math.min(prog, 100));
@@ -494,6 +553,45 @@ export default function ScanCrop() {
                 </button>
               </div>
             </div>
+
+            {/* ── Past Crops History ── */}
+            {scanHistory.length > 0 && (
+              <div className="sc-history-card">
+                <div className="sc-crops-header" style={{ marginTop: '24px' }}>
+                  <div className="sc-crops-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#4caf50">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                    </svg>
+                    Past Scans
+                  </div>
+                </div>
+                <div className="sc-history-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+                  {scanHistory.map(record => (
+                    <div key={record.id} style={{ display: 'flex', alignItems: 'center', background: '#f8f9fa', padding: '12px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
+                      {record.previewUrl ? (
+                        <img src={record.previewUrl} alt={record.crop} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px', marginRight: '16px' }} />
+                      ) : (
+                        <div style={{ width: '50px', height: '50px', background: '#e0e0e0', borderRadius: '6px', marginRight: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🌱</div>
+                      )}
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>{record.crop}</div>
+                        <div style={{ fontSize: '0.85rem', color: '#666' }}>{record.disease} - {record.confidence}%</div>
+                        <div style={{ fontSize: '0.75rem', color: '#999', marginTop: '2px' }}>{new Date(record.date).toLocaleDateString()}</div>
+                      </div>
+                      <button 
+                        onClick={() => deleteFromHistory(record.id)}
+                        style={{ background: 'none', border: 'none', color: '#d32f2f', cursor: 'pointer', padding: '8px' }}
+                        title="Delete Scan"
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* ════════════════ RIGHT COLUMN ════════════════ */}

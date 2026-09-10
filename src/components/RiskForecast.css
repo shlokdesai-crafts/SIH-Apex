@@ -89,7 +89,11 @@
 }
 
 .rf-card-span-2 {
-  grid-column: span 1; /* reset this, we don't need it to span 2 anymore if we're sizing columns */
+  grid-column: span 1; /* keep as span 1 so first row fits 3 cards */
+}
+
+.rf-weather-card-wide {
+  grid-column: span 2;
 }
 
 /* Card Common */
@@ -357,6 +361,7 @@
 
 .badge.high { background: #ffcdd2; color: #c62828; }
 .badge.mod { background: #ffecb3; color: #f57f17; }
+.badge.low { background: #c8e6c9; color: #2e7d32; }
 
 .rf-factor p {
   font-size: 12px;
