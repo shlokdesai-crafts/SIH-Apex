@@ -6,4 +6,5 @@ Pillow
 torch
 torchvision
 numpy
+transformers
 
