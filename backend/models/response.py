@@ -17,12 +17,20 @@ class ImageQuality(BaseModel):
     is_sharp_enough: bool
 
 
+class CropIdentification(BaseModel):
+    crop_name: str                        # "Rice", "Wheat", "Maize", "Cotton", "Soybean", "Sugarcane", "Tomato", "Chickpea"
+    confidence: float                     # Actual model confidence (0.0 to 1.0)
+    is_identified: bool                   # True if confidence >= threshold
+    message: Optional[str] = None         # Rejection message if confidence < threshold
+
+
 class CropAnalysis(BaseModel):
     is_relevant: bool
     confidence: float                     # 0.0 to 1.0 model confidence
     detected_category: str                # e.g. "Plant/Crop", "Person", "Animal", "Vehicle", "Building/Scenery", "Irrelevant Object"
     label: str                            # Top predicted label (e.g. "ear of corn", "sports car")
     rejection_reason: Optional[str] = None
+    crop_identification: Optional[CropIdentification] = None
 
 
 class ScanResponse(BaseModel):
@@ -39,4 +47,5 @@ class ScanResponse(BaseModel):
     severity: Optional[Any] = None           # Severity level (Mild/Moderate/Severe)
     risk_score: Optional[Any] = None         # 0-100 risk index
     advisory: Optional[Any] = None           # Treatment recommendations
+
 

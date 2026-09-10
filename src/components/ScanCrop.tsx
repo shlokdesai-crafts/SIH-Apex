@@ -205,20 +205,26 @@ export default function ScanCrop() {
         return;
       }
       
-      // json.status === 'valid' → display validation success (no fake predictions)
+      // json.status === 'valid' → display Phase 3A crop identification results
+      const crop_id = json.crop_analysis?.crop_identification;
+      const cropName = crop_id?.crop_name ? `${crop_id.crop_name} Identified` : 'Validation Passed';
+      const actualConfidence = crop_id?.confidence != null
+        ? Number((crop_id.confidence * 100).toFixed(1))
+        : 100;
+
       setDiagnosis({
-        disease: 'Validation Passed',
-        severity: 'None',
+        disease: cropName,
+        severity: 'Verified',
         severityColor: '#2e7d32',
-        confidence: 100,
-        description: json.message || 'Image passed quality checks.',
+        confidence: actualConfidence,
+        description: json.message || 'Image passed quality and relevance checks.',
         recommendations: json.image_quality ? [
           `Resolution: ${json.image_quality.resolution}`,
           `Brightness Score: ${json.image_quality.brightness_score}/255`,
           `Sharpness Score: ${json.image_quality.blur_score}`,
           `File Size: ${json.image_quality.file_size_mb} MB`,
         ] : ['No image quality data available.'],
-        icon: '✅',
+        icon: '🌿',
       });
       
       // Advance progress bar to results

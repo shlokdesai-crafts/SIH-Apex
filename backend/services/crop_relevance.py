@@ -43,7 +43,8 @@ PLANT_CROP_KEYWORDS = {
     'hen-of-the-woods', 'bolete', 'daisy', 'rose', 'tulip', 'orchid',
     'sunflower', 'hay', 'leaf', 'tree', 'flower', 'plant', 'grass',
     'garden', 'meadow', 'forest', 'potatoes', 'vine', 'pot', 'flowerpot',
-    'rapeseed', 'cotton', 'straw', 'paddy', 'wheat', 'maize', 'rice',
+    'rapeseed', 'cotton', 'straw', 'paddy', 'wheat', 'maize', 'rice', 'maze',
+    'plantation', 'field', 'pasture', 'grain', 'crop',
     # Plant-dwelling crop insects & flora indicators
     'mantis', 'leaf beetle', 'grasshopper', 'leafhopper', 'cabbage butterfly',
     'ant', 'chameleon', 'lizard', 'snail', 'slug', 'dragonfly', 'admiral',
