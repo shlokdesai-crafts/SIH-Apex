@@ -106,7 +106,7 @@ class TestCropRouting(unittest.TestCase):
         self.assertIn("explanation", disease_det)
 
     def test_scan_api_soybean(self):
-        """Test POST /api/scan integration with Soybean image."""
+        """Test POST /api/scan integration and response contract for Soybean image."""
         soybean_file = self.images_dir / "crop_soybean.jpg"
         with open(soybean_file, "rb") as f:
             img_bytes = f.read()
@@ -120,14 +120,30 @@ class TestCropRouting(unittest.TestCase):
         data = response.json()
         self.assertEqual(data["status"], "valid")
 
+        # Phase 3A Crop Identification contract check
+        crop_id = data.get("crop_analysis", {}).get("crop_identification")
+        self.assertIsNotNone(crop_id)
+        self.assertTrue(crop_id["is_identified"])
+        self.assertEqual(crop_id["crop_name"], "Soybean")
+        self.assertIsNone(crop_id.get("message"))
+
+        # Phase 3B Disease Model Routing & Response contract check
         disease_det = data.get("disease_detection")
         self.assertIsNotNone(disease_det)
         self.assertEqual(disease_det["crop"], "Soybean")
         self.assertIn("disease", disease_det)
+        self.assertIsInstance(disease_det["confidence"], float)
+        self.assertIn(disease_det["severity"], ["None", "Mild", "Moderate", "Severe"])
+        self.assertNotEqual(disease_det["severity"], "Verified")
+        self.assertIn(disease_det["status"], ["Healthy", "Diseased", "Needs expert verification"])
         self.assertIn("explanation", disease_det)
+        self.assertIsInstance(disease_det["symptoms"], list)
+        self.assertIsInstance(disease_det["recommended_actions"], list)
+        self.assertIsInstance(disease_det["prevention"], list)
+        self.assertIsInstance(disease_det["expert_verification_required"], bool)
 
     def test_scan_api_rice(self):
-        """Test POST /api/scan integration with Rice image."""
+        """Test POST /api/scan integration and response contract for Rice image."""
         rice_file = self.images_dir / "crop_rice.jpg"
         with open(rice_file, "rb") as f:
             img_bytes = f.read()
@@ -141,11 +157,27 @@ class TestCropRouting(unittest.TestCase):
         data = response.json()
         self.assertEqual(data["status"], "valid")
 
+        # Phase 3A Crop Identification contract check
+        crop_id = data.get("crop_analysis", {}).get("crop_identification")
+        self.assertIsNotNone(crop_id)
+        self.assertTrue(crop_id["is_identified"])
+        self.assertEqual(crop_id["crop_name"], "Rice")
+        self.assertIsNone(crop_id.get("message"))
+
+        # Phase 3B Disease Model Routing & Response contract check
         disease_det = data.get("disease_detection")
         self.assertIsNotNone(disease_det)
         self.assertEqual(disease_det["crop"], "Rice")
         self.assertIn("disease", disease_det)
+        self.assertIsInstance(disease_det["confidence"], float)
+        self.assertIn(disease_det["severity"], ["None", "Mild", "Moderate", "Severe"])
+        self.assertNotEqual(disease_det["severity"], "Verified")
+        self.assertIn(disease_det["status"], ["Healthy", "Diseased", "Needs expert verification"])
         self.assertIn("explanation", disease_det)
+        self.assertIsInstance(disease_det["symptoms"], list)
+        self.assertIsInstance(disease_det["recommended_actions"], list)
+        self.assertIsInstance(disease_det["prevention"], list)
+        self.assertIsInstance(disease_det["expert_verification_required"], bool)
 
     def test_wheat_crop_inference(self):
         """Test Wheat disease inference and advisory payload."""
@@ -235,7 +267,7 @@ class TestCropRouting(unittest.TestCase):
         self.assertIsInstance(res["symptoms"], list)
 
     def test_scan_api_maize(self):
-        """Test POST /api/scan integration with Maize image."""
+        """Test POST /api/scan integration and response contract for Maize image."""
         maize_file = self.images_dir / "crop_maize.jpg"
         with open(maize_file, "rb") as f:
             img_bytes = f.read()
@@ -249,11 +281,27 @@ class TestCropRouting(unittest.TestCase):
         data = response.json()
         self.assertEqual(data["status"], "valid")
 
+        # Phase 3A Crop Identification contract check
+        crop_id = data.get("crop_analysis", {}).get("crop_identification")
+        self.assertIsNotNone(crop_id)
+        self.assertTrue(crop_id["is_identified"])
+        self.assertEqual(crop_id["crop_name"], "Maize")
+        self.assertIsNone(crop_id.get("message"))
+
+        # Phase 3B Disease Model Routing & Response contract check
         disease_det = data.get("disease_detection")
         self.assertIsNotNone(disease_det)
         self.assertEqual(disease_det["crop"], "Maize")
         self.assertIn("disease", disease_det)
+        self.assertIsInstance(disease_det["confidence"], float)
+        self.assertIn(disease_det["severity"], ["None", "Mild", "Moderate", "Severe"])
+        self.assertNotEqual(disease_det["severity"], "Verified")
+        self.assertIn(disease_det["status"], ["Healthy", "Diseased", "Needs expert verification"])
         self.assertIn("explanation", disease_det)
+        self.assertIsInstance(disease_det["symptoms"], list)
+        self.assertIsInstance(disease_det["recommended_actions"], list)
+        self.assertIsInstance(disease_det["prevention"], list)
+        self.assertIsInstance(disease_det["expert_verification_required"], bool)
 
     def test_chickpea_crop_inference(self):
         """Test Chickpea disease inference and advisory payload."""
