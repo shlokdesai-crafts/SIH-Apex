@@ -1,0 +1,20 @@
+.district-analytics {
+  display: flex;
+  flex-direction: column;
+}
+
+.text-right th, .text-right td {
+  text-align: right !important;
+}
+
+.text-left {
+  text-align: left !important;
+}
+
+.text-danger {
+  color: #e53e3e !important;
+}
+
+.text-purple {
+  color: #805ad5 !important;
+}
