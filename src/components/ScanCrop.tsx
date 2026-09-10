@@ -218,20 +218,31 @@ export default function ScanCrop() {
         ? Number((diseaseDet.confidence * 100).toFixed(1))
         : null;
 
-      // Replace "Severity: Verified" with "Severity: Unable to assess" if missing or non-assessed
+      // Handle severity: use actual severity (None, Mild, Moderate, Severe).
+      // Replace 'Verified' with 'Unable to assess' UNLESS there is an actual expert verification record.
       let severityText = 'Unable to assess';
-      if (diseaseDet?.severity && diseaseDet.severity !== 'None' && diseaseDet.severity !== 'Verified') {
-        severityText = diseaseDet.severity;
+      if (diseaseDet?.severity) {
+        if (diseaseDet.severity === 'Verified') {
+          if (json.expert_verified || diseaseDet.expert_verified) {
+            severityText = 'Verified';
+          } else {
+            severityText = 'Unable to assess';
+          }
+        } else {
+          severityText = diseaseDet.severity;
+        }
       }
 
       const isDiseased = diseaseDet?.status === 'Diseased';
       const isNeedsVerification = diseaseDet?.expert_verification_required || diseaseDet?.status === 'Needs expert verification';
+      const statusText = diseaseDet?.status || (isDiseased ? 'Diseased' : (isNeedsVerification ? 'Needs expert verification' : 'Healthy'));
 
       setDiagnosis({
         cropName,
         cropConfidence,
         disease: diseaseName,
         diseaseConfidence,
+        status: statusText,
         severity: severityText,
         severityColor: isDiseased ? '#c62828' : (isNeedsVerification ? '#e65100' : '#2e7d32'),
         description: diseaseDet?.explanation || json.message || 'Image passed quality and relevance checks.',
@@ -271,10 +282,33 @@ export default function ScanCrop() {
     setBackendError(null);
   };
 
+  const loadFileFromUrl = async (url: string, filename: string) => {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const file = new File([blob], filename, { type: blob.type || 'image/jpeg' });
+      setUploadedFile(file);
+    } catch (err) {
+      console.error('Failed to fetch image file:', err);
+    }
+  };
+
   const handleCropClick = (crop: typeof CROPS[0]) => {
     setSelectedCrop(crop.name);
     setPreviewUrl(crop.img);
+    setBackendError(null);
     setStep('preview');
+    const filename = crop.img.split('/').pop() || `${crop.name.toLowerCase()}.jpg`;
+    loadFileFromUrl(crop.img, filename);
+  };
+
+  const handleExampleClick = (ex: { img: string; label: string; color: string }) => {
+    setSelectedCrop(null);
+    setPreviewUrl(ex.img);
+    setBackendError(null);
+    setStep('preview');
+    const filename = ex.img.split('/').pop() || 'example.jpg';
+    loadFileFromUrl(ex.img, filename);
   };
 
   // ── Scan steps label ─────────────────────────────────────────────────────────
@@ -623,7 +657,7 @@ export default function ScanCrop() {
                   <button
                     key={i}
                     className="sc-example-item"
-                    onClick={() => { setPreviewUrl(ex.img); setStep('preview'); }}
+                    onClick={() => handleExampleClick(ex)}
                     title={`Use as ${ex.label} example`}
                   >
                     <img src={ex.img} alt={ex.label} className="sc-example-img" />
