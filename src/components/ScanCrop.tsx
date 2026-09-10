@@ -205,27 +205,42 @@ export default function ScanCrop() {
         return;
       }
       
-      // json.status === 'valid' → display Phase 3A crop identification results
+      // json.status === 'valid' → display Phase 3A & Phase 3B crop + disease diagnosis
       const crop_id = json.crop_analysis?.crop_identification;
-      const cropName = crop_id?.crop_name ? `${crop_id.crop_name} Identified` : 'Validation Passed';
-      const actualConfidence = crop_id?.confidence != null
+      const cropName = crop_id?.crop_name || 'Crop';
+      const cropConfidence = crop_id?.confidence != null
         ? Number((crop_id.confidence * 100).toFixed(1))
         : 100;
 
+      const diseaseDet = json.disease_detection;
+      const diseaseName = diseaseDet?.disease || 'Healthy Plant';
+      const diseaseConfidence = diseaseDet?.confidence != null
+        ? Number((diseaseDet.confidence * 100).toFixed(1))
+        : null;
+
+      // Replace "Severity: Verified" with "Severity: Unable to assess" if missing or non-assessed
+      let severityText = 'Unable to assess';
+      if (diseaseDet?.severity && diseaseDet.severity !== 'None' && diseaseDet.severity !== 'Verified') {
+        severityText = diseaseDet.severity;
+      }
+
+      const isDiseased = diseaseDet?.status === 'Diseased';
+      const isNeedsVerification = diseaseDet?.expert_verification_required || diseaseDet?.status === 'Needs expert verification';
+
       setDiagnosis({
-        disease: cropName,
-        severity: 'Verified',
-        severityColor: '#2e7d32',
-        confidence: actualConfidence,
-        description: json.message || 'Image passed quality and relevance checks.',
-        recommendations: json.image_quality ? [
-          `Resolution: ${json.image_quality.resolution}`,
-          `Brightness Score: ${json.image_quality.brightness_score}/255`,
-          `Sharpness Score: ${json.image_quality.blur_score}`,
-          `File Size: ${json.image_quality.file_size_mb} MB`,
-        ] : ['No image quality data available.'],
-        icon: '🌿',
-      });
+        cropName,
+        cropConfidence,
+        disease: diseaseName,
+        diseaseConfidence,
+        severity: severityText,
+        severityColor: isDiseased ? '#c62828' : (isNeedsVerification ? '#e65100' : '#2e7d32'),
+        description: diseaseDet?.explanation || json.message || 'Image passed quality and relevance checks.',
+        symptoms: diseaseDet?.symptoms || [],
+        recommended_actions: diseaseDet?.recommended_actions || [],
+        prevention: diseaseDet?.prevention || [],
+        expertVerificationRequired: isNeedsVerification,
+        icon: isDiseased ? '🍂' : (isNeedsVerification ? '⚠️' : '✅'),
+      } as any);
       
       // Advance progress bar to results
       let prog = 0;
@@ -368,36 +383,103 @@ export default function ScanCrop() {
                       {previewUrl && <img src={previewUrl} alt="Scanned" className="sc-result-thumb" />}
                     </div>
                     <div className="sc-result-meta">
-                      <div className="sc-result-disease">
-                        <span className="sc-result-icon">{diagnosis.icon}</span>
-                        {diagnosis.disease}
+                      {/* Prominent Disease Title */}
+                      <div className="sc-prominent-disease">
+                        <span className="sc-result-icon">{(diagnosis as any).icon}</span>
+                        <span>Disease:</span>
+                        <span className={`sc-disease-highlight ${(diagnosis as any).disease === 'Healthy' || (diagnosis as any).disease === 'Healthy Plant' ? 'sc-disease-highlight--healthy' : ''}`}>
+                          {(diagnosis as any).disease}
+                        </span>
                       </div>
-                      <div className="sc-result-severity" style={{ color: diagnosis.severityColor }}>
-                        Severity: <strong>{diagnosis.severity}</strong>
+
+                      <div className="sc-result-crop-name">
+                        🌾 Crop Identified: <strong>{(diagnosis as any).cropName}</strong>
                       </div>
-                      <div className="sc-confidence-bar-wrap">
-                        <span className="sc-confidence-label">AI Confidence</span>
-                        <div className="sc-confidence-track">
-                          <div className="sc-confidence-fill" style={{ width: `${diagnosis.confidence}%`, background: diagnosis.severityColor }} />
+
+                      {/* Expert Verification Banner if required */}
+                      {(diagnosis as any).expertVerificationRequired && (
+                        <div className="sc-expert-alert">
+                          ⚠️ Expert verification recommended
                         </div>
-                        <span className="sc-confidence-val">{diagnosis.confidence}%</span>
+                      )}
+
+                      {/* Severity Label (Never says "Verified") */}
+                      <div className="sc-result-severity" style={{ color: (diagnosis as any).severityColor }}>
+                        Severity: <strong>{(diagnosis as any).severity}</strong>
+                      </div>
+
+                      {/* Separate Crop and Disease Confidence Bars */}
+                      <div className="sc-confidence-row">
+                        <div className="sc-confidence-bar-wrap">
+                          <span className="sc-confidence-label">Crop Confidence:</span>
+                          <div className="sc-confidence-track">
+                            <div className="sc-confidence-fill" style={{ width: `${(diagnosis as any).cropConfidence}%`, background: '#2e7d32' }} />
+                          </div>
+                          <span className="sc-confidence-val">{(diagnosis as any).cropConfidence}%</span>
+                        </div>
+
+                        {(diagnosis as any).diseaseConfidence != null && (
+                          <div className="sc-confidence-bar-wrap">
+                            <span className="sc-confidence-label">Disease Confidence:</span>
+                            <div className="sc-confidence-track">
+                              <div className="sc-confidence-fill" style={{ width: `${(diagnosis as any).diseaseConfidence}%`, background: (diagnosis as any).severityColor }} />
+                            </div>
+                            <span className="sc-confidence-val">{(diagnosis as any).diseaseConfidence}%</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
 
-                  <p className="sc-result-desc">{diagnosis.description}</p>
+                  {/* Backend Advisory Explanation */}
+                  <p className="sc-result-desc">
+                    <strong>Diagnosis Summary:</strong> {(diagnosis as any).description}
+                  </p>
 
-                  <div className="sc-recommendations">
-                    <div className="sc-rec-title">📋 Recommendations</div>
-                    <ul className="sc-rec-list">
-                      {diagnosis.recommendations.map((r, i) => (
-                        <li key={i} className="sc-rec-item">
-                          <span className="sc-rec-dot" />
-                          {r}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  {/* Symptoms Section */}
+                  {(diagnosis as any).symptoms && (diagnosis as any).symptoms.length > 0 && (
+                    <div className="sc-advisory-block sc-symptoms-block">
+                      <div className="sc-block-title">🔍 Field Symptoms</div>
+                      <ul className="sc-rec-list">
+                        {(diagnosis as any).symptoms.map((s: string, i: number) => (
+                          <li key={i} className="sc-rec-item">
+                            <span className="sc-rec-dot" />
+                            {s}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Recommended Actions Section */}
+                  {(diagnosis as any).recommended_actions && (diagnosis as any).recommended_actions.length > 0 && (
+                    <div className="sc-advisory-block sc-actions-block">
+                      <div className="sc-block-title">📋 Recommended Cultural Actions</div>
+                      <ul className="sc-rec-list">
+                        {(diagnosis as any).recommended_actions.map((a: string, i: number) => (
+                          <li key={i} className="sc-rec-item">
+                            <span className="sc-rec-dot" />
+                            {a}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Prevention Measures Section */}
+                  {(diagnosis as any).prevention && (diagnosis as any).prevention.length > 0 && (
+                    <div className="sc-advisory-block sc-prevention-block">
+                      <div className="sc-block-title">🛡️ Prevention & Field Hygiene</div>
+                      <ul className="sc-rec-list">
+                        {(diagnosis as any).prevention.map((p: string, i: number) => (
+                          <li key={i} className="sc-rec-item">
+                            <span className="sc-rec-dot" />
+                            {p}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
                   <div className="sc-result-actions">
                     <button className="sc-action-btn sc-action-primary" onClick={reset}>

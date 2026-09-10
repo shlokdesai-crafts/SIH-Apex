@@ -19,8 +19,8 @@ from PIL import Image, ImageFilter, ImageStat
 # ── Thresholds ────────────────────────────────────────────────────────────────
 BRIGHTNESS_MIN  = 40.0   # mean grayscale below this → "too dark"
 BRIGHTNESS_MAX  = 230.0  # mean grayscale above this → "overexposed"
-BLUR_THRESHOLD  = 200.0  # Laplacian variance below this → "blurry"
-                          # (Calibrated: clear crop images >= 259.17, blurry test images <= 127.59)
+BLUR_THRESHOLD  = 100.0  # Laplacian variance below this → "blurry"
+                          # (Calibrated for real field leaf photos: clear leaf photos >= 100.0)
 
 
 def analyze_quality(image_bytes: bytes) -> dict:
