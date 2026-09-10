@@ -1,6 +1,8 @@
-import React from 'react';
+import { useTranslation } from '../i18n/useTranslation';
 
 export default function StatsRow() {
+  const { t } = useTranslation();
+
   return (
     <section className="stats-row" id="stats-row">
       {/* Crop Health Score */}
@@ -14,17 +16,17 @@ export default function StatsRow() {
           </div>
         </div>
         <div className="card-content">
-          <span className="card-label">Crop Health Score</span>
+          <span className="card-label">{t('stats.cropHealthScore')}</span>
           <div className="score-row">
             <span className="score-value">78</span>
             <span className="score-denom">/ 100</span>
             <span className="score-change positive">▲ +12%</span>
           </div>
-          <div className="score-change-note">vs last week</div>
+          <div className="score-change-note">{t('stats.vsLastWeek')}</div>
           <div className="progress-bar-track">
             <div className="progress-bar-fill" style={{ width: '78%' }}></div>
           </div>
-          <div className="card-note">Your crop is in good health</div>
+          <div className="card-note">{t('stats.cropGoodHealth')}</div>
         </div>
       </div>
 
@@ -38,13 +40,13 @@ export default function StatsRow() {
           </div>
         </div>
         <div className="card-content">
-          <span className="card-label">Today's Risk Level</span>
+          <span className="card-label">{t('stats.todaysRiskLevel')}</span>
           <div className="risk-level-row">
-            <span className="risk-level-text">Moderate</span>
+            <span className="risk-level-text">{t('stats.moderate')}</span>
             <span className="risk-up-arrow">↑</span>
           </div>
-          <div className="risk-crop-row">Cotton • Bollworm</div>
-          <div className="risk-warning">Risk increasing in next 3 days</div>
+          <div className="risk-crop-row">{t('stats.cottonBollworm')}</div>
+          <div className="risk-warning">{t('stats.riskIncreasing')}</div>
         </div>
       </div>
 
@@ -62,25 +64,25 @@ export default function StatsRow() {
         </div>
         <div className="weather-main">
           <div className="weather-label-row">
-            <span className="card-label">Weather Today</span>
+            <span className="card-label">{t('stats.weatherToday')}</span>
           </div>
           <div className="weather-temp">28°C</div>
-          <div className="weather-desc">Partly Cloudy</div>
+          <div className="weather-desc">{t('stats.partlyCloudy')}</div>
         </div>
         <div className="weather-details">
           <div className="weather-detail-row">
             <span className="weather-detail-icon">💧</span>
-            <span className="weather-detail-label">Humidity</span>
+            <span className="weather-detail-label">{t('stats.humidity')}</span>
             <span className="weather-detail-value">72%</span>
           </div>
           <div className="weather-detail-row">
             <span className="weather-detail-icon">🌧</span>
-            <span className="weather-detail-label">Rainfall</span>
+            <span className="weather-detail-label">{t('stats.rainfall')}</span>
             <span className="weather-detail-value">0 mm</span>
           </div>
           <div className="weather-detail-row">
             <span className="weather-detail-icon">💨</span>
-            <span className="weather-detail-label">Wind</span>
+            <span className="weather-detail-label">{t('stats.wind')}</span>
             <span className="weather-detail-value">12 km/h</span>
           </div>
         </div>
