@@ -5,9 +5,10 @@ Phase 2: Pretrained Computer Vision model for real crop/plant relevance validati
 Uses PyTorch MobileNetV2 (ImageNet-1k) to verify that an uploaded image contains
 a genuine crop, plant, leaf, fruit, vegetable, or agricultural flora.
 
-Rejection rules:
-  • Rejects people, animals, vehicles, buildings, scenery, and irrelevant objects.
-  • Low model confidence (< 0.12) → "Unable to verify crop/plant image".
+Features:
+  • Multi-category evidence aggregation over top-20 ImageNet predictions.
+  • Evaluates plant/crop evidence independently of raw top-1 object labels (e.g. insects, soil, weeds).
+  • Rejects people, vehicles, buildings, scenery, and irrelevant urban objects.
   • Returns CropAnalysis model with relevance, confidence, category, and rejection reason.
 """
 
@@ -31,10 +32,9 @@ _categories: Optional[list] = None
 _preprocess: Optional[transforms.Compose] = None
 
 # ── Category Taxonomy Sets ───────────────────────────────────────────────────
-# Keywords used to match ImageNet 1,000 class names into domain buckets
 
 PLANT_CROP_KEYWORDS = {
-    # Vegetables & Crops
+    # Vegetables, Fruits, Crops & Agricultural Flora
     'cabbage', 'broccoli', 'cauliflower', 'zucchini', 'squash', 'cucumber',
     'artichoke', 'cardoon', 'mushroom', 'fungus', 'strawberry', 'orange',
     'lemon', 'lime', 'banana', 'apple', 'fig', 'pineapple', 'pomegranate',
@@ -44,18 +44,23 @@ PLANT_CROP_KEYWORDS = {
     'sunflower', 'hay', 'leaf', 'tree', 'flower', 'plant', 'grass',
     'garden', 'meadow', 'forest', 'potatoes', 'vine', 'pot', 'flowerpot',
     'rapeseed', 'cotton', 'straw', 'paddy', 'wheat', 'maize', 'rice', 'maze',
-    'plantation', 'field', 'pasture', 'grain', 'crop',
-    # Plant-dwelling crop insects & flora indicators
+    'plantation', 'field', 'pasture', 'grain', 'crop', 'bell pepper', 'thatch',
+    'yellow lady\'s slipper',
+    # Field-dwelling flora & canopy co-occurrences (insects, reptiles, small fauna)
     'mantis', 'leaf beetle', 'grasshopper', 'leafhopper', 'cabbage butterfly',
     'ant', 'chameleon', 'lizard', 'snail', 'slug', 'dragonfly', 'admiral',
     'lacewing', 'honeycomb', 'long-horned beetle', 'monarch', 'bee', 'beetle',
-    'egret', 'cockatoo', 'ptarmigan', 'spoonbill'
+    'cicada', 'walking stick', 'cricket', 'ladybug', 'green lizard', 'green snake',
+    'vine snake', 'tree frog', 'harvestman', 'weevil', 'damselfly', 'lycaenid',
+    'sulphur butterfly', 'frilled lizard', 'cockatoo', 'ptarmigan', 'spoonbill',
+    'egret'
 }
 
 PERSON_KEYWORDS = {
     'groom', 'scuba diver', 'wig', 'bikini', 'trench coat', 'suit', 'jersey',
     'pajama', 'overcoat', 'gown', 'miniskirt', 'sarong', 'lab coat',
-    'academic gown', 'unicycle', 'jean', 'neckbrace', 'diaper', 'brassiere'
+    'academic gown', 'unicycle', 'jean', 'neckbrace', 'diaper', 'brassiere',
+    'ballplayer', 'person', 'doctor', 'patient'
 }
 
 VEHICLE_KEYWORDS = {
@@ -69,7 +74,7 @@ VEHICLE_KEYWORDS = {
 BUILDING_KEYWORDS = {
     'house', 'church', 'castle', 'building', 'dam', 'bridge', 'tower',
     'skyscraper', 'barn', 'palace', 'monastery', 'greenhouse', 'boathouse',
-    'chimney', 'prison'
+    'chimney', 'prison', 'tile roof', 'quilt', 'doormat'
 }
 
 
@@ -93,6 +98,7 @@ def _get_model():
 def validate_crop_relevance(image_bytes: bytes) -> CropAnalysis:
     """
     Validates whether the image contains a genuine crop/plant.
+    Aggregates plant & field environment evidence across top-20 ImageNet predictions.
 
     Returns:
         CropAnalysis containing is_relevant (bool), confidence (float),
@@ -109,13 +115,13 @@ def validate_crop_relevance(image_bytes: bytes) -> CropAnalysis:
         with torch.no_grad():
             output = model(tensor)
             probabilities = torch.nn.functional.softmax(output[0], dim=0)
-            top10_prob, top10_catid = torch.topk(probabilities, 10)
+            top20_prob, top20_catid = torch.topk(probabilities, 20)
 
-        top_idx = top10_catid[0].item()
+        top_idx = top20_catid[0].item()
         top_label = categories[top_idx]
-        top_conf = float(top10_prob[0].item())
+        top_conf = float(top20_prob[0].item())
 
-        # Aggregate top-10 probability scores per category
+        # Aggregate evidence scores per category bucket across top 20 predictions
         plant_score = 0.0
         person_score = 0.0
         vehicle_score = 0.0
@@ -126,10 +132,10 @@ def validate_crop_relevance(image_bytes: bytes) -> CropAnalysis:
         top_non_plant_cat = None
         top_non_plant_label = None
 
-        for i in range(10):
-            idx = top10_catid[i].item()
+        for i in range(20):
+            idx = top20_catid[i].item()
             label = categories[idx]
-            p = float(top10_prob[i].item())
+            p = float(top20_prob[i].item())
             lbl_lower = label.lower()
 
             if any(k in lbl_lower for k in PLANT_CROP_KEYWORDS) or idx in range(936, 958) or idx in range(984, 999):
@@ -160,27 +166,25 @@ def validate_crop_relevance(image_bytes: bytes) -> CropAnalysis:
                     top_non_plant_cat = "Irrelevant Object"
                     top_non_plant_label = label
 
-        # Decision threshold logic
-        is_plant_domain = (plant_score >= 0.12) or any(k in top_label.lower() for k in PLANT_CROP_KEYWORDS) or (top_idx in range(936, 958) or top_idx in range(984, 999))
+        # Decision logic: image is relevant if plant/field score >= 0.05 and exceeds hard non-plant targets
+        hard_non_plant_score = person_score + vehicle_score + building_score
+        is_relevant = (plant_score >= 0.05) and (plant_score > hard_non_plant_score)
 
-        if is_plant_domain:
+        # Hard override for explicit human/vehicle/building top predictions
+        top_lower = top_label.lower()
+        if any(k in top_lower for k in PERSON_KEYWORDS) or any(k in top_lower for k in VEHICLE_KEYWORDS) or any(k in top_lower for k in BUILDING_KEYWORDS):
+            if hard_non_plant_score > plant_score:
+                is_relevant = False
+
+        if is_relevant:
             conf = max(top_conf, plant_score)
-            if conf >= 0.12:
-                return CropAnalysis(
-                    is_relevant=True,
-                    confidence=round(conf, 4),
-                    detected_category="Plant/Crop",
-                    label=top_label,
-                    rejection_reason=None,
-                )
-            else:
-                return CropAnalysis(
-                    is_relevant=False,
-                    confidence=round(conf, 4),
-                    detected_category="Plant/Crop",
-                    label=top_label,
-                    rejection_reason="This image does not appear to contain a crop or plant. Please upload a clear photo of a crop leaf, plant, fruit, or field.",
-                )
+            return CropAnalysis(
+                is_relevant=True,
+                confidence=round(conf, 4),
+                detected_category="Plant/Crop",
+                label=top_label,
+                rejection_reason=None,
+            )
         else:
             cat_name = top_non_plant_cat or "Irrelevant Object"
             label_name = top_non_plant_label or top_label
