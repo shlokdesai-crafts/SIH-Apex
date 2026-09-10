@@ -290,6 +290,8 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
         prevention: diseaseDet?.prevention || [],
         expertVerificationRequired: isNeedsVerification,
         icon: isDiseased ? '🍂' : (isNeedsVerification ? '⚠️' : '✅'),
+      } as any);
+
       const newRecord: ScanRecord = {
         id: Date.now().toString(),
         date: Date.now(),
