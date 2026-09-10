@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CropGuard – Healthy Crops. Stronger Maharashtra</title>
+  <meta name="description"
+    content="CropGuard – AI-powered crop health monitoring for farmers of Maharashtra. Get real-time crop health scores, risk levels, and AI-driven advisory." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- ===== NAVBAR ===== -->
+  <header class="navbar" id="main-navbar">
+    <div class="nav-brand">
+      <div class="nav-logo">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="16" cy="22" rx="10" ry="7" fill="#2d8a3e" />
+          <path d="M16 22 C12 14, 6 10, 10 4 C14 10, 22 8, 22 4 C24 10, 20 16, 16 22Z" fill="#4CAF50" />
+          <path d="M16 22 C14 16, 10 12, 16 6 C16 12, 20 16, 16 22Z" fill="#81C784" opacity="0.7" />
+        </svg>
+      </div>
+      <div class="nav-brand-text">
+        <span class="nav-title">CropGuard</span>
+        <span class="nav-subtitle">Healthy Crops. Stronger Maharashtra</span>
+      </div>
+    </div>
+
+    <nav class="nav-links" id="main-nav">
+      <a href="#" class="nav-link active" id="nav-home">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+        </svg>
+        Home
+      </a>
+      <a href="#" class="nav-link" id="nav-scan">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M3 9V5a2 2 0 0 1 2-2h4M3 15v4a2 2 0 0 0 2 2h4M21 9V5a2 2 0 0 0-2-2h-4M21 15v4a2 2 0 0 1-2 2h-4" />
+        </svg>
+        Scan Crop
+      </a>
+      <a href="#" class="nav-link" id="nav-risk">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+        </svg>
+        Risk Forecast
+      </a>
+      <a href="#" class="nav-link" id="nav-farm">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        My Farm
+      </a>
+      <a href="#" class="nav-link" id="nav-advisory">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <polyline points="10 9 9 9 8 9" />
+        </svg>
+        Advisory
+      </a>
+      <a href="#" class="nav-link" id="nav-more">
+        <span class="more-dots">•••</span>
+        More
+      </a>
+    </nav>
+
+    <div class="nav-right">
+      <button class="lang-btn" id="lang-toggle">
+        <span>मराठी</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M7 10l5 5 5-5z" />
+        </svg>
+      </button>
+      <button class="notif-btn" id="notif-btn" aria-label="Notifications">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
+        </svg>
+        <span class="notif-badge">3</span>
+      </button>
+      <div class="user-profile" id="user-profile-btn">
+        <img src="images/ramesh_avatar.jpg" alt="Ramesh Patil" class="user-avatar" id="user-avatar-img" />
+        <div class="user-info">
+          <span class="user-name">Ramesh Patil</span>
+          <span class="user-loc">Farmer | Akola, Maharashtra</span>
+        </div>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="#333">
+          <path d="M7 10l5 5 5-5z" />
+        </svg>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== HERO SECTION ===== -->
+  <section class="hero" id="hero-section">
+    <!-- Background field image handled by CSS -->
+    <div class="hero-overlay"></div>
+
+    <!-- Left text content -->
+    <div class="hero-left">
+      <p class="hero-namaskar">Namaskar,</p>
+      <h1 class="hero-name">Ramesh Patil <span class="leaf-emoji">🌿</span></h1>
+      <p class="hero-tagline">Your crops. Our AI. A healthier tomorrow.</p>
+      <div class="hero-quote-box">
+        <div class="quote-mark-col">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#2d7d3a"><text x="0" y="20" font-size="26"
+              font-family="Georgia,serif">&ldquo;</text></svg>
+        </div>
+        <div class="quote-body">
+          <span class="quote-text">"समृद्ध शेती, समृद्ध महाराष्ट्र."</span>
+          <span class="quote-author">— CropGuard</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center farmer image -->
+    <div class="hero-center">
+      <img src="images/farmer_hero.jpg.png" alt="Farmer using CropGuard app" class="hero-farmer-img"
+        id="hero-farmer-img" />
+    </div>
+
+    <!-- Right slogan -->
+    <div class="hero-right">
+      <div class="hero-slogan-main">
+        <span class="hero-slogan-from">From</span>
+        <span class="hero-slogan-our">Our Fields</span>
+        <div class="hero-slogan-leaf-row">
+          <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+            <path d="M16 28 C12 20, 4 16, 8 6 C12 14, 24 10, 24 4 C26 12, 22 22, 16 28Z" fill="#4CAF50" />
+            <path d="M16 28 C14 20, 14 14, 16 8 C18 14, 18 20, 16 28Z" fill="#81C784" opacity="0.7" />
+          </svg>
+        </div>
+        <span class="hero-slogan-to">to a Healthier</span>
+        <span class="hero-slogan-tomorrow">Tomorrow</span>
+        <div class="hero-underline"></div>
+      </div>
+      <div class="hero-slogan-right-text">
+        <p>Stronger</p>
+        <p>Farmers</p>
+        <p>Greener</p>
+        <p>Maharashtra</p>
+        <div class="hero-right-underline"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== STATS CARDS ROW ===== -->
+  <section class="stats-row" id="stats-row">
+    <!-- Crop Health Score -->
+    <div class="stat-card crop-health-card" id="crop-health-card">
+      <div class="card-icon-col">
+        <div class="green-leaf-icon">
+          <svg width="36" height="36" viewBox="0 0 32 32" fill="none">
+            <path d="M16 28 C10 20, 4 14, 8 6 C12 16, 24 12, 24 4 C28 14, 22 24, 16 28Z" fill="#4CAF50" />
+            <path d="M16 28 C14 20, 12 14, 16 8 C18 14, 20 20, 16 28Z" fill="#81C784" opacity="0.6" />
+          </svg>
+        </div>
+      </div>
+      <div class="card-content">
+        <span class="card-label">Crop Health Score</span>
+        <div class="score-row">
+          <span class="score-value">78</span>
+          <span class="score-denom">/ 100</span>
+          <span class="score-change positive">▲ +12%</span>
+        </div>
+        <div class="score-change-note">vs last week</div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" style="width: 78%"></div>
+        </div>
+        <div class="card-note">Your crop is in good health</div>
+      </div>
+    </div>
+
+    <!-- Today's Risk Level -->
+    <div class="stat-card risk-card" id="risk-card">
+      <div class="risk-icon-col">
+        <div class="risk-icon-circle">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+            <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+          </svg>
+        </div>
+      </div>
+      <div class="card-content">
+        <span class="card-label">Today's Risk Level</span>
+        <div class="risk-level-row">
+          <span class="risk-level-text">Moderate</span>
+          <span class="risk-up-arrow">↑</span>
+        </div>
+        <div class="risk-crop-row">Cotton • Bollworm</div>
+        <div class="risk-warning">Risk increasing in next 3 days</div>
+      </div>
+    </div>
+
+    <!-- Weather Today -->
+    <div class="stat-card weather-card" id="weather-card">
+      <div class="weather-icon-col">
+        <div class="weather-icon">
+          <!-- Sun + cloud SVG -->
+          <svg width="52" height="42" viewBox="0 0 52 42" fill="none">
+            <!-- Sun -->
+            <circle cx="22" cy="16" r="10" fill="#FDD835" />
+            <!-- Cloud -->
+            <ellipse cx="32" cy="28" rx="14" ry="9" fill="#90CAF9" />
+            <ellipse cx="22" cy="30" rx="10" ry="7" fill="#90CAF9" />
+            <ellipse cx="38" cy="30" rx="8" ry="6" fill="#BBDEFB" />
+          </svg>
+        </div>
+      </div>
+      <div class="weather-main">
+        <div class="weather-label-row">
+          <span class="card-label">Weather Today</span>
+        </div>
+        <div class="weather-temp">28°C</div>
+        <div class="weather-desc">Partly Cloudy</div>
+      </div>
+      <div class="weather-details">
+        <div class="weather-detail-row">
+          <span class="weather-detail-icon">💧</span>
+          <span class="weather-detail-label">Humidity</span>
+          <span class="weather-detail-value">72%</span>
+        </div>
+        <div class="weather-detail-row">
+          <span class="weather-detail-icon">🌧</span>
+          <span class="weather-detail-label">Rainfall</span>
+          <span class="weather-detail-value">0 mm</span>
+        </div>
+        <div class="weather-detail-row">
+          <span class="weather-detail-icon">💨</span>
+          <span class="weather-detail-label">Wind</span>
+          <span class="weather-detail-value">12 km/h</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== BOTTOM THREE PANELS ===== -->
+  <section class="panels-row" id="panels-row">
+
+    <!-- Scan Crop Panel -->
+    <div class="panel scan-panel" id="scan-panel">
+      <div class="panel-header-row">
+        <div class="scan-cam-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+            <circle cx="12" cy="12" r="3.2" />
+            <path
+              d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z" />
+          </svg>
+        </div>
+        <div class="scan-header-text">
+          <h2 class="panel-title">Scan Crop</h2>
+          <p class="panel-subtitle">Take or upload a photo<br>for AI diagnosis</p>
+        </div>
+      </div>
+      <div class="scan-images-row">
+        <div class="scan-img-wrap"><img src="images/crop_leaf1.jpg" alt="Crop leaf disease 1" class="scan-thumb" />
+        </div>
+        <div class="scan-img-wrap"><img src="images/crop_leaf2.jpg" alt="Crop leaf disease 2" class="scan-thumb" />
+        </div>
+        <div class="scan-img-wrap"><img src="images/crop_leaf3.jpg" alt="Crop leaf disease 3" class="scan-thumb" />
+        </div>
+      </div>
+      <button class="scan-btn" id="scan-crop-btn">
+        Scan Crop →
+      </button>
+    </div>
+
+    <!-- Field Map & Risk Zones Panel -->
+    <div class="panel map-panel" id="map-panel">
+      <div class="map-panel-header">
+        <h2 class="panel-title">Field Map &amp; Risk Zones</h2>
+        <a href="#" class="view-full-map" id="view-full-map-btn">View Full Map →</a>
+      </div>
+      <div class="map-tabs">
+        <button class="map-tab active" id="map-tab-fields">My Fields</button>
+        <button class="map-tab" id="map-tab-satellite">Satellite View</button>
+      </div>
+      <div class="map-container" id="map-container">
+        <img src="images/field_map.jpg" alt="Field map with risk zones" class="map-img" id="map-img" />
+        <!-- Field 1 High Risk overlay label -->
+        <div class="map-label high-risk-label" id="field1-label">
+          <span>Field 1</span><br><span>High Risk</span>
+        </div>
+        <!-- Map controls -->
+        <div class="map-controls" id="map-controls">
+          <button class="map-ctrl-btn" id="map-zoom-in" aria-label="Zoom in">+</button>
+          <button class="map-ctrl-btn" id="map-zoom-out" aria-label="Zoom out">−</button>
+          <button class="map-ctrl-btn" id="map-locate" aria-label="Locate">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06z" />
+            </svg>
+          </button>
+        </div>
+        <!-- Bottom info bar -->
+        <div class="map-info-bar" id="map-info-bar">
+          <strong>Field 1 - Cotton</strong>
+          <span>3.5 acres | Sowing: 12 Oct 2025</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Voice Assistant Panel -->
+    <div class="panel voice-panel" id="voice-panel">
+      <div class="voice-panel-header">
+        <div class="voice-icon-wrap">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
+            <path
+              d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+          </svg>
+        </div>
+        <div class="voice-header-text">
+          <h2 class="panel-title">AI Voice Assistant</h2>
+          <p class="panel-subtitle">Ask anything about your crop<br>in your language</p>
+        </div>
+      </div>
+
+      <div class="voice-waveform-area" id="voice-waveform">
+        <div class="voice-wave-bars">
+          <span class="wave-bar" style="height:14px"></span>
+          <span class="wave-bar" style="height:22px"></span>
+          <span class="wave-bar" style="height:32px"></span>
+          <span class="wave-bar" style="height:18px"></span>
+          <span class="wave-bar" style="height:10px"></span>
+        </div>
+        <button class="mic-btn" id="mic-btn" aria-label="Speak">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+            <path
+              d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+          </svg>
+        </button>
+        <div class="voice-wave-bars">
+          <span class="wave-bar" style="height:10px"></span>
+          <span class="wave-bar" style="height:18px"></span>
+          <span class="wave-bar" style="height:32px"></span>
+          <span class="wave-bar" style="height:22px"></span>
+          <span class="wave-bar" style="height:14px"></span>
+        </div>
+      </div>
+
+      <div class="voice-query-text" id="voice-query">
+        "माझ्या पिकाम्ध्ये कोणता आजार असू शकतो?"
+      </div>
+
+      <div class="voice-lang-btns" id="voice-lang-btns">
+        <button class="lang-select-btn active" id="lang-marathi">मराठी</button>
+        <button class="lang-select-btn" id="lang-hindi">हिंदी</button>
+        <button class="lang-select-btn" id="lang-english">English</button>
+      </div>
+
+      <div class="voice-tap-hint" id="voice-tap-hint">Tap to speak</div>
+    </div>
+
+  </section>
+
+  <script src="app.js"></script>
+</body>
+
+</html>

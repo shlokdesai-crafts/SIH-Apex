@@ -1,0 +1,10 @@
+.unident-cases {
+  display: flex;
+  flex-direction: column;
+}
+
+.gov-crop-img-placeholder.small {
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+}

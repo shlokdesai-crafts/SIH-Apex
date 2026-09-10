@@ -30,3 +30,7 @@ dist-ssr
 
 # Temporary files
 scratch/
+
+# Python
+__pycache__/
+*.pyc

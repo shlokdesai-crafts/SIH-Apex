@@ -1,5 +1,4 @@
 import { useTranslation } from '../i18n/useTranslation';
-
 export default function Hero() {
   const { t } = useTranslation();
 

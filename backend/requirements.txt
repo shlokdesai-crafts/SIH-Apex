@@ -1,0 +1,9 @@
+# CropGuard Phase 1 & Phase 2 packages
+fastapi
+uvicorn[standard]
+python-multipart
+Pillow
+torch
+torchvision
+numpy
+

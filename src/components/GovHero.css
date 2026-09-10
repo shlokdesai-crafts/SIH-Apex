@@ -1,0 +1,91 @@
+.gov-hero {
+  background: linear-gradient(to right, #e2f0e6, #f8fbf9);
+  border-radius: 12px;
+  padding: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #d1e5d7;
+}
+
+/* We could add a subtle background image here if needed */
+.gov-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 40%;
+  background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+.gov-hero-content {
+  flex: 1;
+  z-index: 1;
+}
+
+.gov-hero-content h1 {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  font-weight: 800;
+  color: #1a202c;
+}
+
+.gov-hero-content h2 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.gov-hero-content p {
+  margin: 0 0 20px 0;
+  font-size: 14px;
+  color: #4a5568;
+}
+
+.gov-hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #718096;
+  background: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: inline-flex;
+  border: 1px solid #e2e8f0;
+}
+
+.gov-hero-branding {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  z-index: 1;
+}
+
+.gov-hero-badge {
+  background-color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid #c6f6d5;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.marathi-text {
+  color: #2f855a;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.gov-hero-slogan h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #22543d;
+  line-height: 1.2;
+}
