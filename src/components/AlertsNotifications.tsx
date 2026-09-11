@@ -1,12 +1,8 @@
 import './AlertsNotifications.css';
+import { GOV_ALERTS } from '../services/govDataService';
 
 const AlertsNotifications = () => {
-  const alerts = [
-    { id: 1, type: 'high', title: 'New pest outbreak detected in Jalgaon district', desc: '124 farmer reports', time: '2 hours ago', icon: '🐞' },
-    { id: 2, type: 'unident', title: 'Unidentified crop case in Latur taluka', desc: 'Needs field verification', time: '3 hours ago', icon: '❓' },
-    { id: 3, type: 'medium', title: 'Water stress reports increasing in Marathwada', desc: '3 districts affected', time: '5 hours ago', icon: '💧' },
-    { id: 4, type: 'low', title: 'Weather Alert: Heavy rainfall expected in Konkan region', desc: 'Next 48 hours', time: '6 hours ago', icon: '🌧️' },
-  ];
+  const alerts = GOV_ALERTS.slice(0, 4);
 
   return (
     <div className="gov-card alerts-card">

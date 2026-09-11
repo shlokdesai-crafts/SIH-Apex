@@ -1,104 +1,989 @@
-import { useState } from 'react';
-import type { CSSProperties, ReactNode } from 'react';
+import React, { useState } from 'react';
+import { useFarm } from '../../context/FarmContext';
+import type { FarmCrop, PriorityAction } from '../../types/farm';
 import './MyFarm.css';
 
-type Tone = 'attention' | 'healthy' | 'excellent' | 'good';
-type IconName = 'leaf' | 'map' | 'plus' | 'arrow' | 'spark' | 'area' | 'crops' | 'alert' | 'health' | 'thermometer' | 'humidity' | 'rain' | 'soil' | 'wind' | 'clock' | 'close' | 'scan' | 'shield' | 'water' | 'harvest' | 'field' | 'pest' | 'weather' | 'disease';
-
-type Crop = {
-  id: string;
-  name: string;
-  acreage: string;
-  health: number;
-  status: string;
-  tone: Tone;
-  stage: string;
-  scanned: string;
-  image: string;
-  trend: string;
-};
-
-type FarmField = { id: string; name: string; crop: string; area: string; health: number; tone: Tone; x: number; y: number; width: number; height: number };
-
-const initialCrops: Crop[] = [
-  { id: 'cotton', name: 'Cotton', acreage: '3.0 acres', health: 64, status: 'Moderate risk', tone: 'attention', stage: 'Flowering', scanned: 'Today, 9:42 AM', image: '/images/crop_leaf1.jpg', trend: '+2% risk' },
-  { id: 'tomato', name: 'Tomato', acreage: '2.0 acres', health: 87, status: 'Healthy', tone: 'healthy', stage: 'Fruiting', scanned: 'Today, 8:10 AM', image: '/images/crop_leaf2.jpg', trend: '+4% this week' },
-  { id: 'onion', name: 'Onion', acreage: '1.5 acres', health: 91, status: 'Excellent', tone: 'excellent', stage: 'Bulb formation', scanned: 'Yesterday, 8:24 AM', image: '/images/crop_leaf3.jpg', trend: '+6% this week' },
-  { id: 'soybean', name: 'Soybean', acreage: '2.0 acres', health: 82, status: 'Good', tone: 'good', stage: 'Pod formation', scanned: 'Yesterday, 11:35 AM', image: '/images/crop_leaf1.jpg', trend: '+3% this week' },
-];
-
-const fields: FarmField[] = [
-  { id: 'field-a', name: 'Field A', crop: 'Cotton', area: '3 acres', health: 64, tone: 'attention', x: 7, y: 13, width: 40, height: 32 },
-  { id: 'field-b', name: 'Field B', crop: 'Tomato', area: '2 acres', health: 87, tone: 'healthy', x: 51, y: 10, width: 42, height: 36 },
-  { id: 'field-c', name: 'Field C', crop: 'Onion', area: '1.5 acres', health: 91, tone: 'excellent', x: 10, y: 51, width: 38, height: 38 },
-  { id: 'field-d', name: 'Field D', crop: 'Soybean', area: '2 acres', health: 82, tone: 'good', x: 54, y: 53, width: 39, height: 34 },
-];
-
-const iconPaths: Record<IconName, ReactNode> = {
-  leaf: <><path d="M20.7 3.3C12.4 3.3 5.3 7.1 4.2 15.5c-.2 1.5.3 3.1 1.4 4.2 1.1 1.1 2.7 1.6 4.2 1.4C18.2 20 22 12.9 22 4.6c0-.7-.6-1.3-1.3-1.3Z" /><path d="M3 21c3.1-4.6 7.2-7.7 12.3-10.3" /></>,
-  map: <><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Z" /><path d="M9 3v15M15 6v15" /></>, plus: <><path d="M12 5v14M5 12h14" /></>, arrow: <><path d="M5 12h13" /><path d="m13 6 6 6-6 6" /></>,
-  spark: <><path d="m12 3-1.4 5.6L5 10l5.6 1.4L12 17l1.4-5.6L19 10l-5.6-1.4L12 3Z" /><path d="m19 16-.7 2.3L16 19l2.3.7L19 22l.7-2.3L22 19l-2.3-.7L19 16Z" /></>,
-  area: <><path d="M4 19V5M4 5h14l-3 4 3 4H4" /><path d="M8 19h12" /></>, crops: <><path d="M12 21V8" /><path d="M12 12c-4 0-6-2-6-6 4 0 6 2 6 6ZM12 9c0-4 2-6 6-6 0 4-2 6-6 6Z" /></>,
-  alert: <><path d="M10.3 3.9 2.5 17.5a1.5 1.5 0 0 0 1.3 2.2h16.4a1.5 1.5 0 0 0 1.3-2.2L13.7 3.9a2 2 0 0 0-3.4 0Z" /><path d="M12 9v4M12 16h.01" /></>, health: <><path d="M20.8 8.7c0 5.7-8.8 10.4-8.8 10.4S3.2 14.4 3.2 8.7A4.7 4.7 0 0 1 12 6.1a4.7 4.7 0 0 1 8.8 2.6Z" /><path d="M7.5 11h2l1-2.5 2 5 1.2-2.5h2.8" /></>,
-  thermometer: <><path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4.5 4.5 0 1 0 4 0Z" /><path d="M12 11v6" /></>, humidity: <path d="M12 3.5S5.5 10.3 5.5 14.7a6.5 6.5 0 0 0 13 0C18.5 10.3 12 3.5 12 3.5Z" />, rain: <><path d="M7 16.5 5.5 20M12 16.5 10.5 20M17 16.5 15.5 20" /><path d="M5 14a5 5 0 0 1 1.4-9.8A6.5 6.5 0 0 1 18.7 7 4 4 0 1 1 19 14H5Z" /></>, soil: <><path d="M3 17h18M5 17c1.5-4 4-6 7-6s5.5 2 7 6" /><path d="M12 11V5M9 7l3-2 3 2" /></>, wind: <><path d="M3 8h11a2.5 2.5 0 1 0-2.5-2.5M3 12h15a2.5 2.5 0 1 1-2.5 2.5M3 16h8" /></>, clock: <><circle cx="12" cy="12" r="8.5" /><path d="M12 7v5l3 2" /></>, close: <><path d="m6 6 12 12M18 6 6 18" /></>, scan: <><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" /><circle cx="12" cy="12" r="3" /></>, shield: <><path d="M12 3 20 6v5c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10V6l8-3Z" /><path d="m8.5 12 2.2 2.2 4.8-5" /></>, water: <><path d="M12 3.5S6 10.2 6 14a6 6 0 0 0 12 0c0-3.8-6-10.5-6-10.5Z" /><path d="M9 15.2a3.2 3.2 0 0 0 3 2" /></>, harvest: <><path d="M4 20h16M7 20v-5M17 20v-5M5 15h14" /><path d="M12 15V4M8 7l4-3 4 3" /></>, field: <><path d="M3 20 9 4l6 16 6-16" /><path d="M4.5 16h15M6 11h12" /></>, pest: <><circle cx="12" cy="12" r="4" /><path d="M8 12H4M20 12h-4M9 8 6 5M15 8l3-3M9 16l-3 3M15 16l3 3" /></>, weather: <><path d="M7 17h10a4 4 0 0 0 .4-8A6 6 0 0 0 6 10a3.5 3.5 0 0 0 1 7Z" /><path d="M8 20h.01M12 20h.01M16 20h.01" /></>, disease: <><circle cx="12" cy="12" r="7" /><path d="M12 5v14M5 12h14M7 7l10 10M17 7 7 17" /></>,
-};
-
-function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
-  return <svg className="my-farm-icon" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{iconPaths[name]}</svg>;
+interface MyFarmProps {
+  onNavigateTab?: (tab: string) => void;
 }
 
-function HealthRing({ value }: { value: number }) {
-  const circumference = 2 * Math.PI * 52;
-  return <div className="health-ring" style={{ '--health-progress': `${circumference - (value / 100) * circumference}px` } as CSSProperties}><svg viewBox="0 0 120 120" role="img" aria-label={`Farm health ${value} out of 100`}><circle className="ring-track" cx="60" cy="60" r="52" /><circle className="ring-value" cx="60" cy="60" r="52" /></svg><div className="ring-copy"><strong>{value}</strong><span>/ 100</span></div></div>;
+export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
+  const { farmState, isLoading, addCropRecord, scheduleFieldVisit } = useFarm();
+
+  // Modal states
+  const [showAddCropModal, setShowAddCropModal] = useState(false);
+  const [showVisitModal, setShowVisitModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showSourceModal, setShowSourceModal] = useState(false);
+  const [selectedCrop, setSelectedCrop] = useState<FarmCrop | null>(null);
+  const [selectedAction, setSelectedAction] = useState<PriorityAction | null>(null);
+  const [viewAllActivityModal, setViewAllActivityModal] = useState(false);
+  const [viewAllFieldsModal, setViewAllFieldsModal] = useState(false);
+
+  // Form states
+  const [newCropName, setNewCropName] = useState('');
+  const [newCropArea, setNewCropArea] = useState('0.5');
+  const [newCropStage, setNewCropStage] = useState('Flowering');
+
+  const [visitCrop, setVisitCrop] = useState('Cotton');
+  const [visitDate, setVisitDate] = useState('');
+  const [visitOfficer, setVisitOfficer] = useState('Village A Extension Officer');
+
+  if (isLoading || !farmState) {
+    return (
+      <div className="my-farm-container" style={{ padding: '60px', textAlign: 'center' }}>
+        <h2>Loading farm telemetry...</h2>
+      </div>
+    );
+  }
+
+  const {
+    farmDetails,
+    crops,
+    fields,
+    activities,
+    priorityActions,
+    farmInsights,
+    overallHealthScore,
+    lastUpdated,
+  } = farmState;
+
+  // Health classification
+  const healthClass =
+    overallHealthScore >= 70 ? 'healthy' : overallHealthScore >= 50 ? 'warning' : 'critical';
+  const healthLabel =
+    overallHealthScore >= 80
+      ? 'Good'
+      : overallHealthScore >= 70
+      ? 'Good'
+      : overallHealthScore >= 50
+      ? 'Attention'
+      : 'Critical';
+
+  // SVG Gauge calculations (radius = 38, circ = 238.76)
+  const radius = 38;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (Math.min(100, Math.max(0, overallHealthScore)) / 100) * circumference;
+
+  const handleAddCropSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCropName.trim()) return;
+    await addCropRecord({
+      cropName: newCropName.trim(),
+      areaHa: parseFloat(newCropArea) || 0.5,
+      stage: newCropStage,
+    });
+    setNewCropName('');
+    setShowAddCropModal(false);
+  };
+
+  const handleScheduleVisitSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await scheduleFieldVisit({
+      crop: visitCrop,
+      date: visitDate || 'Next Monday',
+      officerVillage: visitOfficer,
+    });
+    setShowVisitModal(false);
+  };
+
+  return (
+    <div className="my-farm-container">
+      {/* ════════════════ HERO BANNER ════════════════ */}
+      <section className="farm-hero-banner">
+        <img
+          src="/images/farmer_hero.jpg.png"
+          alt="Farmer overlooking crops"
+          className="farm-banner-bg-img"
+        />
+        <div className="farm-hero-content">
+          <div className="farm-hero-header">
+            <div className="farm-hero-title-group">
+              <h1>
+                My Farm <span role="img" aria-label="leaf">🌿</span>
+              </h1>
+              <p>Manage your farm, track your crops and get personalized insights for better yield.</p>
+            </div>
+
+            {/* Farmer Quote Banner */}
+            <div className="farmer-quote-card">
+              <span className="quote-icon">“</span>
+              <p>
+                Healthy soil, healthy crops, brighter future. <span role="img" aria-label="leaf">🌿</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════ MAIN SHELL ════════════════ */}
+      <main className="farm-main-shell">
+        <div className="farm-dashboard-layout">
+          {/* ── LEFT COLUMN: Profile & Health, My Crops, Bottom 3 Panels, Footer ── */}
+          <div className="farm-left-col">
+            {/* 1. Farm Profile & Health Score Card */}
+            <div className="farm-profile-hero-card">
+              {/* Subcard 1: Farm Info */}
+              <div className="farm-profile-info">
+                <img
+                  src="/images/farm_landscape.jpg"
+                  alt="Farm landscape thumbnail"
+                  className="farm-profile-thumb"
+                />
+                <div className="farm-profile-text">
+                  <h2>
+                    {farmDetails.name}
+                    <button title="Edit Farm Profile" onClick={() => setShowAddCropModal(true)}>
+                      ✏️
+                    </button>
+                  </h2>
+                  <div className="farm-profile-loc">
+                    <span role="img" aria-label="pin">📍</span> {farmDetails.location}
+                  </div>
+                  <div className="farm-profile-stats">
+                    <div className="farm-stat-pill">
+                      <span className="stat-icon">📐</span>
+                      <div>
+                        <span>Total Land Area</span>
+                        <strong>{farmDetails.totalAreaHa} Ha</strong>
+                      </div>
+                    </div>
+                    <div className="farm-stat-pill">
+                      <span className="stat-icon">🌾</span>
+                      <div>
+                        <span>Farm Type</span>
+                        <strong>{farmDetails.farmType}</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="farm-profile-divider" />
+
+              {/* Subcard 2: Farm Health Score */}
+              <div className="farm-health-gauge-section">
+                <div className="farm-health-header">
+                  <span className="farm-health-header-icon">🌿</span>
+                  <span>Farm Health Score</span>
+                </div>
+
+                <div className="farm-gauge-row">
+                  <div className="health-gauge-circle">
+                    <svg viewBox="0 0 92 92">
+                      <circle className="gauge-bg-ring" cx="46" cy="46" r={radius} />
+                      <circle
+                        className={`gauge-fill-ring ${healthClass}`}
+                        cx="46"
+                        cy="46"
+                        r={radius}
+                        strokeDasharray={circumference}
+                        strokeDashoffset={strokeDashoffset}
+                      />
+                    </svg>
+                    <div className="gauge-center-text">
+                      <strong>{overallHealthScore}%</strong>
+                      <span>{healthLabel}</span>
+                    </div>
+                  </div>
+
+                  <div className={`farm-health-callout ${healthClass}`}>
+                    <span className="callout-icon">🌱</span>
+                    <div>
+                      {overallHealthScore >= 75
+                        ? 'Your farm is in good condition! Keep up the healthy practices.'
+                        : overallHealthScore >= 55
+                        ? 'Attention needed: Some fields show moderate risk or early symptoms.'
+                        : 'Immediate action required: Severe disease symptoms detected.'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Middle Section: 🌿 My Crops */}
+            <section className="farm-crops-section">
+              <div className="panel-header">
+                <h3>🌿 My Crops</h3>
+                <button
+                  className="panel-view-all-btn"
+                  onClick={() => setShowAddCropModal(true)}
+                >
+                  View All Crops →
+                </button>
+              </div>
+
+              {crops.length === 0 ? (
+                <div className="empty-state-text">No crops monitored yet. Click &quot;Add Crop Record&quot; to begin.</div>
+              ) : (
+                <div className="crops-cards-row">
+                  {crops.map((crop) => {
+                    const statusSlug = crop.status.toLowerCase().replace(/\s+/g, '-');
+                    return (
+                      <div key={crop.id} className="crop-mini-card">
+                        <div className="crop-card-img-wrap">
+                          <img src={crop.image} alt={crop.name} />
+                        </div>
+                        <div className="crop-card-content">
+                          <div className="crop-card-topline">
+                            <h4>
+                              <span>{crop.icon}</span> {crop.name}
+                            </h4>
+                            <span className={`status-badge ${statusSlug}`}>
+                              {crop.status}
+                            </span>
+                          </div>
+
+                          <div className="crop-card-metrics">
+                            <div className="crop-card-metric-row">
+                              <span className="metric-lbl">Area</span>
+                              <strong className="metric-val">{crop.areaHa} Ha</strong>
+                            </div>
+                            <div className="crop-card-yield-row">
+                              <div className="yield-text-group">
+                                <span className="metric-lbl">Expected Yield</span>
+                                <strong className="metric-val">{crop.expectedYieldQtHa} Qt/Ha</strong>
+                              </div>
+                              <button
+                                className="crop-action-circle-btn"
+                                title={`View ${crop.name} details`}
+                                onClick={() => setSelectedCrop(crop)}
+                              >
+                                →
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+
+            {/* 3. Bottom Grid: Recent Activity, Your Fields, Priority Actions */}
+            <div className="farm-grid-bottom">
+              {/* Card 1: 🕒 Recent Activity */}
+              <div className="farm-panel-card">
+                <div className="panel-header">
+                  <h3>🕒 Recent Activity</h3>
+                  <button
+                    className="panel-view-all-btn"
+                    onClick={() => setViewAllActivityModal(true)}
+                  >
+                    View All →
+                  </button>
+                </div>
+
+                {activities.length === 0 ? (
+                  <div className="empty-state-text">No recent activity</div>
+                ) : (
+                  <div className="activity-table-wrap">
+                    <table className="activity-table">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Activity</th>
+                          <th>Crop</th>
+                          <th>Details</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {activities.slice(0, 4).map((act) => {
+                          const statusClass = act.status.toLowerCase();
+                          const cropIcon =
+                            act.crop.toLowerCase() === 'tomato'
+                              ? '🍅'
+                              : act.crop.toLowerCase() === 'cotton'
+                              ? '☁️'
+                              : act.crop.toLowerCase() === 'soybean'
+                              ? '🌱'
+                              : act.crop.toLowerCase() === 'onion'
+                              ? '🧅'
+                              : '🌿';
+
+                          return (
+                            <tr key={act.id}>
+                              <td className="act-date">{act.date}</td>
+                              <td className="act-name">
+                                <span>{cropIcon}</span> {act.activity}
+                              </td>
+                              <td className="act-crop">{act.crop}</td>
+                              <td className="act-details" title={act.details}>
+                                {act.details}
+                              </td>
+                              <td>
+                                <span className={`status-badge ${statusClass}`}>
+                                  {act.status}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* Card 2: 🌾 Your Fields */}
+              <div className="farm-panel-card">
+                <div className="panel-header">
+                  <h3>🌾 Your Fields</h3>
+                  <button
+                    className="panel-view-all-btn"
+                    onClick={() => setViewAllFieldsModal(true)}
+                  >
+                    View All →
+                  </button>
+                </div>
+
+                {fields.length === 0 ? (
+                  <div className="empty-state-text">No fields added yet</div>
+                ) : (
+                  <div className="fields-list">
+                    {fields.slice(0, 4).map((field) => {
+                      const statusSlug = field.status.toLowerCase().replace(/\s+/g, '-');
+                      const fieldCrop = field.crop?.toLowerCase() || '';
+                      const fieldIcon =
+                        fieldCrop === 'tomato' ? '🍅' : fieldCrop === 'cotton' ? '☁️' : '🌱';
+
+                      return (
+                        <div key={field.id} className="field-list-item">
+                          <div className="field-item-left">
+                            <span className="field-bullet-icon">{fieldIcon}</span>
+                            <div className="field-item-names">
+                              <strong>{field.name}</strong>
+                              <span>{field.areaHa} Ha</span>
+                            </div>
+                          </div>
+                          <span className="field-mid-area">{field.areaHa} Ha</span>
+                          <span className={`status-badge ${statusSlug}`}>
+                            {field.status}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Card 3: ⚠️ Priority Actions */}
+              <div className="farm-panel-card">
+                <div className="panel-header">
+                  <h3>⚠️ Priority Actions</h3>
+                  <button
+                    className="panel-view-all-btn"
+                    onClick={() => onNavigateTab ? onNavigateTab('advisory') : null}
+                  >
+                    View All →
+                  </button>
+                </div>
+
+                {priorityActions.length === 0 ? (
+                  <div className="empty-state-text">No priority actions</div>
+                ) : (
+                  <div className="priority-actions-list">
+                    {priorityActions.slice(0, 4).map((pa) => (
+                      <div
+                        key={pa.id}
+                        className="priority-action-card"
+                        onClick={() => setSelectedAction(pa)}
+                      >
+                        <div className="pa-card-left">
+                          <img
+                            src={pa.thumbnail || '/images/tomato_crop.jpg'}
+                            alt={pa.crop}
+                            className="pa-card-thumb"
+                          />
+                          <div className="pa-card-text">
+                            <strong>{pa.title}</strong>
+                            <span>{pa.subtitle}</span>
+                          </div>
+                        </div>
+                        <span className={`pa-priority-pill ${pa.priority.toLowerCase()}`}>
+                          {pa.priority}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ── RIGHT COLUMN: Quick Actions & Farm Insights ── */}
+          <aside className="farm-right-col">
+            {/* ⚡ Quick Actions */}
+            <div className="farm-panel-card">
+              <div className="panel-header">
+                <h3>⚡ Quick Actions</h3>
+              </div>
+              <div className="quick-actions-list">
+                <button
+                  className="quick-action-item"
+                  onClick={() => setShowAddCropModal(true)}
+                >
+                  <div className="qa-left">
+                    <div className="qa-icon-circle leaf">🌿</div>
+                    <div className="qa-text">
+                      <strong>Add Crop Record</strong>
+                      <span>Update your crop details</span>
+                    </div>
+                  </div>
+                  <span className="qa-chevron">›</span>
+                </button>
+
+                <button
+                  className="quick-action-item"
+                  onClick={() => onNavigateTab ? onNavigateTab('advisory') : null}
+                >
+                  <div className="qa-left">
+                    <div className="qa-icon-circle bulb">💡</div>
+                    <div className="qa-text">
+                      <strong>Get Advisory</strong>
+                      <span>Personalized farming tips</span>
+                    </div>
+                  </div>
+                  <span className="qa-chevron">›</span>
+                </button>
+
+                <button
+                  className="quick-action-item"
+                  onClick={() => setShowReportModal(true)}
+                >
+                  <div className="qa-left">
+                    <div className="qa-icon-circle report">📄</div>
+                    <div className="qa-text">
+                      <strong>View Farm Report</strong>
+                      <span>Download complete report</span>
+                    </div>
+                  </div>
+                  <span className="qa-chevron">›</span>
+                </button>
+
+                <button
+                  className="quick-action-item"
+                  onClick={() => setShowVisitModal(true)}
+                >
+                  <div className="qa-left">
+                    <div className="qa-icon-circle calendar">📅</div>
+                    <div className="qa-text">
+                      <strong>Schedule Field Visit</strong>
+                      <span>Book a visit with expert</span>
+                    </div>
+                  </div>
+                  <span className="qa-chevron">›</span>
+                </button>
+              </div>
+            </div>
+
+            {/* ✨ Farm Insights */}
+            <div className="farm-panel-card">
+              <div className="panel-header">
+                <h3>✨ Farm Insights</h3>
+                <button
+                  className="panel-view-all-btn"
+                  onClick={() => onNavigateTab ? onNavigateTab('risk') : null}
+                >
+                  View All →
+                </button>
+              </div>
+
+              <div className="insights-list">
+                {farmInsights.length === 0 ? (
+                  <div className="empty-state-text">
+                    Insights will appear as your farm data grows.
+                  </div>
+                ) : (
+                  farmInsights.slice(0, 3).map((fi) => (
+                    <div
+                      key={fi.id}
+                      className="insight-card-item"
+                      onClick={() => onNavigateTab ? onNavigateTab('risk') : null}
+                    >
+                      <div className="insight-card-left">
+                        <div className={`insight-icon-box ${fi.iconType}`}>
+                          {fi.iconType === 'leaf' && '🌿'}
+                          {fi.iconType === 'alert' && '⚠️'}
+                          {fi.iconType === 'chart' && '📊'}
+                        </div>
+                        <div className="insight-card-text">
+                          <strong>{fi.title}</strong>
+                          <span>{fi.subtitle}</span>
+                        </div>
+                      </div>
+                      <span className="qa-chevron">›</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        {/* 4. Footer Citation Bar */}
+        <footer className="farm-footer-bar">
+          <div className="farm-footer-left">
+            <span role="img" aria-label="leaf">🌿</span>
+            <span>
+              <strong>Data Sources:</strong> Ministry of Agriculture &amp; Farmers Welfare | ICAR | IMD | data.gov.in
+            </span>
+          </div>
+
+          <button
+            className="farm-footer-center-link"
+            onClick={() => setShowSourceModal(true)}
+          >
+            View Source →
+          </button>
+
+          <div className="farm-footer-right">
+            <span>🕒 Last Updated: {lastUpdated}</span>
+          </div>
+        </footer>
+      </main>
+
+      {/* ════════════════ MODALS ════════════════ */}
+
+      {/* Add Crop Record Modal */}
+      {showAddCropModal && (
+        <div className="farm-modal-overlay" onClick={() => setShowAddCropModal(false)}>
+          <div className="farm-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="farm-modal-header">
+              <h3>🌿 Add Crop Record</h3>
+              <button
+                className="farm-modal-close-btn"
+                onClick={() => setShowAddCropModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleAddCropSubmit}>
+              <div className="farm-modal-body">
+                <p style={{ margin: 0, fontSize: '0.85rem', color: '#475569' }}>
+                  Register a new crop plot into your farm portfolio to enable AI telemetry and automatic advisory tracking.
+                </p>
+                <div className="farm-modal-form-group">
+                  <label>Crop Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Groundnut, Cotton, Tomato"
+                    value={newCropName}
+                    onChange={(e) => setNewCropName(e.target.value)}
+                  />
+                </div>
+                <div className="farm-modal-form-group">
+                  <label>Plot Area (Hectares)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0.1"
+                    required
+                    value={newCropArea}
+                    onChange={(e) => setNewCropArea(e.target.value)}
+                  />
+                </div>
+                <div className="farm-modal-form-group">
+                  <label>Growth Stage</label>
+                  <select
+                    value={newCropStage}
+                    onChange={(e) => setNewCropStage(e.target.value)}
+                  >
+                    <option value="Germination">Germination</option>
+                    <option value="Vegetative">Vegetative</option>
+                    <option value="Flowering">Flowering</option>
+                    <option value="Fruiting / Pod formation">Fruiting / Pod formation</option>
+                    <option value="Maturity">Maturity</option>
+                  </select>
+                </div>
+                <div className="farm-modal-actions">
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => setShowAddCropModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn-primary">
+                    Save Crop Record
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Schedule Field Visit Modal */}
+      {showVisitModal && (
+        <div className="farm-modal-overlay" onClick={() => setShowVisitModal(false)}>
+          <div className="farm-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="farm-modal-header">
+              <h3>📅 Schedule Field Visit</h3>
+              <button
+                className="farm-modal-close-btn"
+                onClick={() => setShowVisitModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleScheduleVisitSubmit}>
+              <div className="farm-modal-body">
+                <p style={{ margin: 0, fontSize: '0.85rem', color: '#475569' }}>
+                  Request an in-person diagnostic evaluation by a certified agricultural extension officer.
+                </p>
+                <div className="farm-modal-form-group">
+                  <label>Target Field / Crop</label>
+                  <select
+                    value={visitCrop}
+                    onChange={(e) => setVisitCrop(e.target.value)}
+                  >
+                    {crops.map((c) => (
+                      <option key={c.id} value={c.name}>
+                        {c.name} ({c.status})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="farm-modal-form-group">
+                  <label>Preferred Visit Date</label>
+                  <input
+                    type="date"
+                    required
+                    value={visitDate}
+                    onChange={(e) => setVisitDate(e.target.value)}
+                  />
+                </div>
+                <div className="farm-modal-form-group">
+                  <label>Assigned Krishi Vigyan Kendra (KVK)</label>
+                  <input
+                    type="text"
+                    value={visitOfficer}
+                    onChange={(e) => setVisitOfficer(e.target.value)}
+                  />
+                </div>
+                <div className="farm-modal-actions">
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => setShowVisitModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn-primary">
+                    Confirm Visit Request
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Farm Report Modal */}
+      {showReportModal && (
+        <div className="farm-modal-overlay" onClick={() => setShowReportModal(false)}>
+          <div className="farm-modal-card" style={{ maxWidth: '620px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="farm-modal-header">
+              <h3>📄 Farm Telemetry & Health Audit Report</h3>
+              <button
+                className="farm-modal-close-btn"
+                onClick={() => setShowReportModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="farm-modal-body">
+              <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                <h4 style={{ margin: '0 0 8px 0', color: '#0f172a' }}>{farmDetails.name} — Executive Summary</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.85rem' }}>
+                  <div><strong>Location:</strong> {farmDetails.location}</div>
+                  <div><strong>Total Area:</strong> {farmDetails.totalAreaHa} Ha</div>
+                  <div><strong>Health Score:</strong> {overallHealthScore}% ({healthLabel})</div>
+                  <div><strong>Audit Date:</strong> {lastUpdated}</div>
+                </div>
+              </div>
+
+              <div>
+                <h4 style={{ margin: '0 0 8px 0', fontSize: '0.9rem' }}>Monitored Crops Health Summary</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {crops.map((c) => (
+                    <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 10px', background: '#f1f5f9', borderRadius: '6px', fontSize: '0.82rem' }}>
+                      <span><strong>{c.name}</strong> ({c.areaHa} Ha)</span>
+                      <span>Status: <strong>{c.status}</strong> {c.detectedDisease ? `(${c.detectedDisease})` : ''}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="farm-modal-actions">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => window.print()}
+                >
+                  Print Report 🖨️
+                </button>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => setShowReportModal(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Crop Detail Modal */}
+      {selectedCrop && (
+        <div className="farm-modal-overlay" onClick={() => setSelectedCrop(null)}>
+          <div className="farm-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="farm-modal-header">
+              <h3>
+                {selectedCrop.icon} {selectedCrop.name} Telemetry
+              </h3>
+              <button
+                className="farm-modal-close-btn"
+                onClick={() => setSelectedCrop(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="farm-modal-body">
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                <img
+                  src={selectedCrop.image}
+                  alt={selectedCrop.name}
+                  style={{ width: '90px', height: '90px', borderRadius: '12px', objectFit: 'cover' }}
+                />
+                <div>
+                  <h4 style={{ margin: '0 0 4px 0', fontSize: '1.1rem' }}>{selectedCrop.name} Field</h4>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', margin: '4px 0' }}>
+                    <span className={`status-badge ${selectedCrop.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                      {selectedCrop.status}
+                    </span>
+                    <span style={{ fontSize: '0.82rem', color: '#64748b' }}>
+                      Health: <strong>{selectedCrop.healthScore}/100</strong>
+                    </span>
+                  </div>
+                  <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                    Last Scanned: <strong>{selectedCrop.lastScanDate}</strong>
+                  </span>
+                </div>
+              </div>
+
+              {selectedCrop.detectedDisease && (
+                <div style={{ background: '#fef2f2', border: '1px solid #fecaca', padding: '12px', borderRadius: '8px', color: '#991b1b', fontSize: '0.85rem' }}>
+                  <strong>Detected Issue:</strong> {selectedCrop.detectedDisease} ({selectedCrop.severity || 'Moderate'} severity)
+                </div>
+              )}
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', background: '#f8fafc', padding: '12px', borderRadius: '8px', fontSize: '0.84rem' }}>
+                <div><strong>Acreage:</strong> {selectedCrop.areaHa} Hectares</div>
+                <div><strong>Expected Yield:</strong> {selectedCrop.expectedYieldQtHa} Qt/Ha</div>
+              </div>
+
+              <div className="farm-modal-actions">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => onNavigateTab ? onNavigateTab('scan') : null}
+                >
+                  Scan Crop Now 📷
+                </button>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => onNavigateTab ? onNavigateTab('advisory') : null}
+                >
+                  View Advisory 💡
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Priority Action Detail Modal */}
+      {selectedAction && (
+        <div className="farm-modal-overlay" onClick={() => setSelectedAction(null)}>
+          <div className="farm-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="farm-modal-header">
+              <h3>Action Plan: {selectedAction.crop}</h3>
+              <button
+                className="farm-modal-close-btn"
+                onClick={() => setSelectedAction(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="farm-modal-body">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h4 style={{ margin: 0 }}>{selectedAction.title}</h4>
+                <span className={`pa-priority-pill ${selectedAction.priority.toLowerCase()}`}>
+                  {selectedAction.priority} Priority
+                </span>
+              </div>
+              <p style={{ margin: '8px 0', fontSize: '0.88rem', color: '#475569' }}>
+                <strong>Issue:</strong> {selectedAction.subtitle}
+              </p>
+              <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '14px', borderRadius: '10px', color: '#166534', fontSize: '0.88rem', lineHeight: 1.4 }}>
+                <strong>Recommended Action:</strong>
+                <div>{selectedAction.action}</div>
+              </div>
+              <div className="farm-modal-actions">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setSelectedAction(null)}
+                >
+                  Dismiss
+                </button>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => {
+                    setSelectedAction(null);
+                    if (onNavigateTab) onNavigateTab('advisory');
+                  }}
+                >
+                  Open Full Advisory 💡
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View All Activities Modal */}
+      {viewAllActivityModal && (
+        <div className="farm-modal-overlay" onClick={() => setViewAllActivityModal(false)}>
+          <div className="farm-modal-card" style={{ maxWidth: '640px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="farm-modal-header">
+              <h3>🕒 All Recent Activities</h3>
+              <button
+                className="farm-modal-close-btn"
+                onClick={() => setViewAllActivityModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="farm-modal-body" style={{ maxHeight: '420px', overflowY: 'auto' }}>
+              <table className="activity-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Activity</th>
+                    <th>Crop</th>
+                    <th>Details</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activities.map((act) => (
+                    <tr key={act.id}>
+                      <td className="act-date">{act.date}</td>
+                      <td className="act-name">{act.activity}</td>
+                      <td>{act.crop}</td>
+                      <td>{act.details}</td>
+                      <td>
+                        <span className={`status-badge ${act.status.toLowerCase()}`}>
+                          {act.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View All Fields Modal */}
+      {viewAllFieldsModal && (
+        <div className="farm-modal-overlay" onClick={() => setViewAllFieldsModal(false)}>
+          <div className="farm-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="farm-modal-header">
+              <h3>🌾 Monitored Fields Breakdown</h3>
+              <button
+                className="farm-modal-close-btn"
+                onClick={() => setViewAllFieldsModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="farm-modal-body">
+              <div className="fields-list">
+                {fields.map((f) => (
+                  <div key={f.id} className="field-list-item">
+                    <div className="field-item-left">
+                      <span className="field-bullet-icon">🌱</span>
+                      <div className="field-item-names">
+                        <strong>{f.name}</strong>
+                        <span>{f.areaHa} Ha · Last scan: {f.lastScanDate}</span>
+                      </div>
+                    </div>
+                    <span className={`status-badge ${f.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                      {f.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Official Data Source Modal */}
+      {showSourceModal && (
+        <div className="farm-modal-overlay" onClick={() => setShowSourceModal(false)}>
+          <div className="farm-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="farm-modal-header">
+              <h3>🌿 Official Government Data Citation</h3>
+              <button
+                className="farm-modal-close-btn"
+                onClick={() => setShowSourceModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="farm-modal-body" style={{ fontSize: '0.85rem', lineHeight: 1.5, color: '#334155' }}>
+              <p>
+                <strong>Government of India Open Data Platform (data.gov.in)</strong>
+              </p>
+              <ul>
+                <li>
+                  <strong>DES Production & Yield:</strong> Directorate of Economics and Statistics, Ministry of Agriculture & Farmers Welfare. Resource ID: <code>979c7333-e918-4796-a8fa-7299c85fa809</code>.
+                </li>
+                <li>
+                  <strong>IMD Rainfall & Telemetry:</strong> India Meteorological Department, Ministry of Earth Sciences. Resource ID: <code>ee7c8b07-6b4d-4e96-a36c-94cc5351a0e8</code>.
+                </li>
+                <li>
+                  <strong>Crop Health Advisory:</strong> ICAR-CRIDA district agriculture contingencies.
+                </li>
+              </ul>
+              <div className="farm-modal-actions">
+                <a
+                  href="https://data.gov.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary"
+                  style={{ textDecoration: 'none' }}
+                >
+                  Visit data.gov.in ↗
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
-
-function Modal({ title, eyebrow, children, onClose }: { title: string; eyebrow: string; children: ReactNode; onClose: () => void }) {
-  return <div className="modal-backdrop" role="presentation" onMouseDown={onClose}><section className="my-farm-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" onMouseDown={(event) => event.stopPropagation()}><button className="modal-close" onClick={onClose} aria-label="Close dialog"><Icon name="close" size={18} /></button><span className="modal-eyebrow">{eyebrow}</span><h2 id="modal-title">{title}</h2>{children}</section></div>;
-}
-
-function CropCard({ crop, onSelect }: { crop: Crop; onSelect: (crop: Crop) => void }) {
-  return <button className={`crop-card ${crop.tone === 'attention' ? 'crop-card-attention' : ''}`} onClick={() => onSelect(crop)}><div className="crop-image"><img src={crop.image} alt="" /><span className="crop-image-label"><Icon name="field" size={13} /> {crop.name === 'Cotton' ? 'Field A' : `Field ${crop.name === 'Tomato' ? 'B' : crop.name === 'Onion' ? 'C' : 'D'}`}</span><span className={`image-health image-health-${crop.tone}`}>{crop.health}</span></div><div className="crop-card-body"><div className="crop-card-heading"><div><h3>{crop.name}</h3><span>{crop.acreage} <i /> {crop.stage}</span></div><span className={`status-dot status-${crop.tone}`} /></div><div className="crop-health-line"><span>Health score</span><strong>{crop.health}<small>/100</small></strong></div><div className="crop-progress"><span style={{ width: `${crop.health}%` }} /></div><div className="crop-card-footer"><span className={`status-text status-text-${crop.tone}`}>{crop.status}</span><span className="crop-detail-link">View details <Icon name="arrow" size={13} /></span></div><span className="crop-scanned"><Icon name="clock" size={12} /> Scanned {crop.scanned}</span></div></button>;
-}
-
-function FarmMap({ onSelect }: { onSelect: (field: FarmField) => void }) {
-  return <div className="farm-map"><div className="map-corner-label">AKOLA FARM PLOT <span>DEMO VIEW</span></div><div className="map-compass">N</div><div className="map-road road-one" /><div className="map-road road-two" /><div className="map-water" />{fields.map((field) => <button key={field.id} className={`map-field map-field-${field.tone}`} style={{ left: `${field.x}%`, top: `${field.y}%`, width: `${field.width}%`, height: `${field.height}%` }} onClick={() => onSelect(field)}><span>{field.name}</span><strong>{field.crop}</strong><small>{field.health}/100</small></button>)}</div>;
-}
-
-function MyFarm() {
-  const [crops, setCrops] = useState(initialCrops);
-  const [selectedCrop, setSelectedCrop] = useState<Crop | null>(null);
-  const [selectedField, setSelectedField] = useState<FarmField | null>(null);
-  const [modal, setModal] = useState<'add' | 'field' | 'advice' | 'map' | null>(null);
-  const [period, setPeriod] = useState('7 days');
-  const [newCrop, setNewCrop] = useState({ name: '', area: '', stage: '', plantingDate: '' });
-  const closeModal = () => { setSelectedCrop(null); setSelectedField(null); setModal(null); };
-  const openAdvice = () => { setSelectedCrop(null); setSelectedField(null); setModal('advice'); };
-  const submitCrop = (event: React.FormEvent) => { event.preventDefault(); if (!newCrop.name || !newCrop.area) return; setCrops((current) => [...current, { id: newCrop.name.toLowerCase().replace(/\s+/g, '-'), name: newCrop.name, acreage: `${newCrop.area} acres`, health: 100, status: 'Newly added', tone: 'good', stage: newCrop.stage || 'Early growth', scanned: 'Not scanned yet', image: '/images/crop_leaf3.jpg', trend: 'Awaiting scan' }]); setNewCrop({ name: '', area: '', stage: '', plantingDate: '' }); closeModal(); };
-
-  const modalTitle = selectedCrop ? `${selectedCrop.name} field` : selectedField ? `${selectedField.name} · ${selectedField.crop}` : modal === 'add' ? 'Add a crop' : modal === 'field' ? 'Add a field' : modal === 'map' ? 'Farm map overview' : 'Cotton action plan';
-  const modalEyebrow = selectedCrop || selectedField ? 'FIELD DETAIL' : modal === 'add' || modal === 'field' ? 'FIELD SETUP' : modal === 'map' ? 'FIELD VIEW' : 'AI RECOMMENDATION';
-
-  return <main className="my-farm-page"><div className="my-farm-shell">
-    <header className="farm-page-header"><div><div className="page-kicker"><span className="kicker-line" /> FARM COMMAND CENTER <span className="live-dot" /><span className="updated-copy">Updated 5 min ago</span></div><h1>My Farm</h1><p>Good evening, Ramesh <span aria-hidden="true">👋</span><br /><span>Your farm at a glance — health, risks and recommendations.</span></p><div className="farm-location"><span className="location-pin">●</span> Akola, Maharashtra <span className="monitoring-status"><i /> Monitoring active</span></div></div><div className="farm-header-actions"><button className="button button-quiet" onClick={() => setModal('field')}><Icon name="field" size={17} /> Add field</button><button className="button button-quiet" onClick={() => setModal('map')}><Icon name="map" size={17} /> View farm map</button><button className="button button-primary" onClick={() => setModal('add')}><Icon name="plus" size={17} /> Add crop</button></div></header>
-
-    <section className="health-hero" aria-labelledby="farm-health-title"><div className="health-hero-score"><div className="section-overline">TODAY&apos;S SNAPSHOT</div><h2 id="farm-health-title">Farm health</h2><div className="health-score-layout"><HealthRing value={86} /><div><span className="trend-badge">↗ 8% this week</span><p className="health-status"><span /> Healthy overall</p><small className="health-scale">Compared with last week</small></div></div></div><div className="health-insight"><div className="insight-icon"><Icon name="spark" size={21} /></div><div><span className="insight-label">AI FARM INSIGHT <b>EXPLAINABLE</b></span><p>Your farm is performing well overall. <strong>Cotton is currently the only crop requiring attention.</strong></p><div className="evidence"><span>Based on</span><i><Icon name="health" size={13} /> Crop health</i><i><Icon name="weather" size={13} /> Weather</i><i><Icon name="soil" size={13} /> Soil moisture</i><i><Icon name="scan" size={13} /> Recent scans</i></div><button onClick={openAdvice}>Explore the insight <Icon name="arrow" size={15} /></button></div></div><div className="hero-sunrise" aria-hidden="true"><span /><span /><span /></div></section>
-
-    <section className="quick-metrics" aria-label="Smart farm metrics">{[['area', '8.5', 'Acres', 'Total farm area'], ['crops', '4', 'Active crops', 'All fields monitored'], ['alert', '1', 'Needs attention', 'Cotton field', 'metric-alert'], ['health', '86/100', 'Farm health', '↗ 8% this week'], ['harvest', '+6%', 'Expected yield', 'vs previous estimate', 'metric-yield']].map(([icon, value, label, note, tone]) => <div className={`quick-metric ${tone || ''}`} key={label}><span className="metric-icon"><Icon name={icon as IconName} size={19} /></span><div><strong>{value}</strong><span>{label}</span><small>{note}</small></div></div>)}</section>
-
-    <section className="content-section crops-section"><div className="section-heading"><div><span className="section-overline">CROP PORTFOLIO</span><h2>My crops</h2><p>Monitor the health and progress of every crop.</p></div><button className="text-button" onClick={() => document.getElementById('fields')?.scrollIntoView({ behavior: 'smooth' })}>View field overview <Icon name="arrow" size={15} /></button></div><div className="crop-grid">{crops.map((crop) => <CropCard key={crop.id} crop={crop} onSelect={(item) => { setSelectedField(null); setSelectedCrop(item); }} />)}</div></section>
-
-    <section className="command-grid content-section" id="fields"><div className="panel field-panel"><div className="section-heading compact"><div><span className="section-overline">FIELD-LEVEL VISIBILITY</span><h2>Your fields</h2><p>Select a field to inspect its current health.</p></div><span className="map-legend"><i className="legend-attention" /> Needs attention</span></div><FarmMap onSelect={(field) => { setSelectedCrop(null); setSelectedField(field); }} /><div className="field-list">{fields.map((field) => <button key={field.id} onClick={() => { setSelectedCrop(null); setSelectedField(field); }}><span className={`field-list-dot dot-${field.tone}`} /><span><strong>{field.name}</strong><small>{field.crop} · {field.area}</small></span><b>{field.health}<small>/100</small></b><Icon name="arrow" size={14} /></button>)}</div></div><div className="panel risk-panel"><div className="section-heading compact"><div><span className="section-overline">EARLY WARNING</span><h2>Farm risk radar</h2><p>Signals needing your attention.</p></div><Icon name="shield" size={21} /></div><div className="risk-radar"><div className="radar-rings" /><div className="radar-sweep" /><div className="radar-center"><Icon name="leaf" size={17} /></div><span className="radar-point radar-point-one" /><span className="radar-point radar-point-two" /></div><div className="risk-list"><div><Icon name="disease" size={16} /><span>Crop disease</span><b className="risk-low">Low</b></div><div className="risk-focus"><Icon name="pest" size={16} /><span>Pest</span><b className="risk-moderate">Moderate</b></div><div><Icon name="weather" size={16} /><span>Weather</span><b className="risk-low">Low</b></div><div className="risk-focus"><Icon name="water" size={16} /><span>Moisture</span><b className="risk-moderate">Moderate</b></div></div></div></section>
-
-    <section className="insights-grid content-section"><div className="trend-card panel"><div className="card-topline"><div><span className="section-overline">PERFORMANCE</span><h2>Farm health trend</h2><p>Last {period}</p></div><select value={period} onChange={(event) => setPeriod(event.target.value)} aria-label="Select trend period"><option>7 days</option><option>30 days</option></select></div><div className="trend-summary"><strong>86</strong><span>/ 100 current health</span><em>↗ 8% this week</em></div><div className="chart"><div className="chart-y-axis"><span>100</span><span>80</span><span>60</span></div><div className="chart-area"><div className="chart-gridlines"><i /><i /><i /></div><svg viewBox="0 0 700 160" preserveAspectRatio="none" role="img" aria-label="Farm health rose from 70 to 86 over seven days"><defs><linearGradient id="trend-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#4e9c69" stopOpacity=".24" /><stop offset="1" stopColor="#4e9c69" stopOpacity="0" /></linearGradient></defs><path className="chart-area-fill" d="M0 120 C70 114 94 112 116 108 S195 101 233 90 S300 94 350 82 S426 72 466 64 S535 57 583 45 S650 38 700 26 V160 H0Z" /><path className="chart-line" d="M0 120 C70 114 94 112 116 108 S195 101 233 90 S300 94 350 82 S426 72 466 64 S535 57 583 45 S650 38 700 26" /><circle cx="700" cy="26" r="5" className="chart-point" /></svg><div className="chart-labels">{['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => <span key={day}>{day}</span>)}</div></div></div><p className="trend-note"><span><Icon name="spark" size={15} /></span> Farm health has improved steadily over the past week.</p></div><div className="panel distribution-card"><div className="card-topline"><div><span className="section-overline">CROP MIX</span><h2>Health distribution</h2></div><span className="distribution-total">4 crops</span></div><div className="distribution-donut"><div className="donut-hole"><strong>86</strong><span>average</span></div></div><div className="distribution-legend"><span><i className="legend-healthy" /> Healthy <b>2</b></span><span><i className="legend-good" /> Good <b>1</b></span><span><i className="legend-risk" /> Moderate risk <b>1</b></span></div><p className="distribution-note">75% of your crop area is in a healthy or good state.</p></div></section>
-
-    <section className="action-irrigation-grid content-section"><div className="panel actions-panel"><div className="section-heading compact"><div><span className="section-overline">WHAT TO DO NEXT</span><h2>Priority actions</h2><p>Clear steps based on today&apos;s signals.</p></div><span className="attention-count">2 actions</span></div><div className="priority-action"><span className="action-number">01</span><div className="action-icon action-cotton"><Icon name="pest" size={18} /></div><div className="action-copy"><h3>Cotton <em>Moderate</em></h3><strong>Bollworm risk increasing</strong><p>Weather conditions and recent crop-health observations indicate increasing risk.</p><span className="why-label">ACTION</span><b>Inspect cotton field within the next 24 hours.</b><button onClick={openAdvice}>View advice <Icon name="arrow" size={13} /></button></div></div><div className="priority-action"><span className="action-number">02</span><div className="action-icon action-tomato"><Icon name="water" size={18} /></div><div className="action-copy"><h3>Tomato <em className="monitor-label">Monitor</em></h3><strong>Moisture slightly low</strong><p>Soil moisture is below the preferred range for the next irrigation cycle.</p><span className="why-label">ACTION</span><b>Check the field before the next irrigation cycle.</b><button onClick={() => { setSelectedCrop(crops.find((crop) => crop.id === 'tomato') || null); setModal(null); }}>Check field <Icon name="arrow" size={13} /></button></div></div></div><div className="panel irrigation-panel"><div className="section-overline">SMART IRRIGATION</div><h2>Moisture is adequate</h2><div className="moisture-meter"><div><strong>64%</strong><span>Soil moisture</span></div><div className="moisture-circle"><span /></div></div><div className="irrigation-status"><i /> No immediate irrigation required</div><p>No immediate irrigation required. Recheck moisture tomorrow.</p><div className="next-check"><span>Next recommended check</span><strong>Tomorrow morning</strong></div></div></section>
-
-    <section className="conditions-strip content-section"><div className="conditions-heading"><span className="section-overline">ENVIRONMENT</span><h2>Right now in Akola</h2><p>Favorable for most crops.</p></div><div className="condition-list">{[['thermometer', '28°C', 'Temperature'], ['humidity', '72%', 'Humidity'], ['rain', '0 mm', 'Rainfall'], ['soil', '64%', 'Soil moisture'], ['wind', '12 km/h', 'Wind']].map(([icon, value, label]) => <div className="condition" key={label}><Icon name={icon as IconName} size={19} /><div><strong>{value}</strong><span>{label}</span></div>{label === 'Soil moisture' && <i className="condition-meter"><b /></i>}</div>)}</div></section>
-
-    <section className="harvest-advisor-grid content-section"><div className="panel harvest-panel"><div className="section-heading compact"><div><span className="section-overline">DEMO OUTLOOK</span><h2>Harvest outlook</h2><p>Indicative estimate from current farm signals.</p></div><Icon name="harvest" size={22} /></div><div className="harvest-score"><div><span>Expected yield</span><strong>+6%</strong><small>vs previous estimate</small></div><div className="readiness"><div className="readiness-ring"><strong>68%</strong></div><span>Harvest readiness</span></div></div><div className="harvest-progress"><span style={{ width: '68%' }} /></div><div className="harvest-foot"><span>Estimated harvest window</span><strong>18–24 days</strong></div></div><section className="advisor-card"><div className="advisor-orbit" aria-hidden="true"><span /><span /><span /><Icon name="spark" size={24} /></div><div className="advisor-main"><span className="section-overline advisor-overline">PERSONALIZED FARM INSIGHT</span><h2>AI Farm Advisor</h2><h3>Your cotton field may require attention within the next 24–48 hours.</h3><p>Current weather conditions combined with the crop&apos;s health trend indicate a moderate pest risk.</p><div className="advisor-evidence"><span>Based on</span><b>Weather</b><b>Crop health</b><b>Recent scan</b></div></div><div className="advisor-action"><div className="advisor-stats"><span>Risk <strong>Moderate</strong></span><span>Confidence <strong className="confidence">High</strong></span></div><div className="recommended"><span>Recommended action</span><strong>Inspect the cotton field and monitor for early signs of pest activity.</strong></div><div className="advisor-buttons"><button className="button advisor-primary" onClick={openAdvice}>View full advice <Icon name="arrow" size={15} /></button><button className="button advisor-secondary" onClick={() => setModal('map')}><Icon name="scan" size={15} /> Scan crop</button></div></div></section></section>
-
-    <section className="bottom-grid content-section"><div className="activity-card panel"><div className="section-heading compact"><div><span className="section-overline">FARM LOG</span><h2>Recent activity</h2></div><button className="text-button">View history <Icon name="arrow" size={14} /></button></div><div className="timeline"><div className="timeline-item"><span className="timeline-dot current" /><div><span>Today <small>9:42 AM</small></span><strong>Cotton scanned</strong><p>Health score updated to <b>64</b></p></div></div><div className="timeline-item"><span className="timeline-dot" /><div><span>Today <small>8:10 AM</small></span><strong>Weather conditions updated</strong><p>Conditions are favorable for most crops</p></div></div><div className="timeline-item"><span className="timeline-dot" /><div><span>Yesterday <small>4:10 PM</small></span><strong>Tomato health improved</strong><p>Score moved from 82 to <b>87</b></p></div></div><div className="timeline-item"><span className="timeline-dot" /><div><span>2 days ago <small>8:24 AM</small></span><strong>Field moisture checked</strong></div></div></div></div><div className="field-note"><span className="note-icon"><Icon name="leaf" size={20} /></span><span className="section-overline">A LITTLE ENCOURAGEMENT</span><p>Healthy fields start with<br /><strong>small, consistent decisions.</strong></p><span className="note-signature">CropGuard AI</span></div></section>
-  </div>{(selectedCrop || selectedField || modal) && <Modal eyebrow={modalEyebrow} title={modalTitle} onClose={closeModal}>{selectedCrop ? <div className="modal-content"><div className="modal-detail-hero"><div className="modal-score"><strong>{selectedCrop.health}</strong><span>/100 health score</span></div><span className={`modal-status status-text-${selectedCrop.tone}`}>{selectedCrop.status}</span></div><div className="modal-detail-grid"><span>Growth stage<strong>{selectedCrop.stage}</strong></span><span>Area<strong>{selectedCrop.acreage}</strong></span><span>Last scan<strong>{selectedCrop.scanned}</strong></span><span>Current risk<strong>{selectedCrop.id === 'cotton' ? 'Bollworm' : 'Low'}</strong></span></div><p className="modal-explanation">{selectedCrop.id === 'cotton' ? 'AI signals show weather impact and recent crop observations are combining to increase pest risk.' : 'AI signals show stable crop health. Continue regular monitoring and scheduled field checks.'}</p><div className="modal-detail-row"><span>AI recommendation</span><strong>{selectedCrop.id === 'cotton' ? 'Inspect leaves for early pest symptoms within 24 hours.' : 'Continue regular monitoring and record the next scan.'}</strong></div><button className="button button-primary modal-action" onClick={openAdvice}>View full recommendation <Icon name="arrow" size={15} /></button></div> : selectedField ? <div className="modal-content"><div className="modal-field-banner"><span className={`field-list-dot dot-${selectedField.tone}`} /><strong>{selectedField.crop}</strong><span>{selectedField.area}</span><b>{selectedField.health}/100</b></div><p>{selectedField.name} is currently marked as <b>{selectedField.tone === 'attention' ? 'the priority field' : 'stable and monitored'}</b>. CropGuard combines scan, weather and soil signals for this view.</p><div className="modal-detail-row"><span>Next best action</span><strong>{selectedField.tone === 'attention' ? 'Inspect the cotton field within the next 24 hours.' : 'Continue regular monitoring.'}</strong></div><button className="button button-primary modal-action" onClick={closeModal}>Close field view <Icon name="arrow" size={15} /></button></div> : modal === 'add' ? <form className="modal-content" onSubmit={submitCrop}><p>Add a crop to your farm profile so CropGuard can tailor field health signals and recommendations.</p><label className="modal-label">Crop name<input value={newCrop.name} onChange={(event) => setNewCrop({ ...newCrop, name: event.target.value })} placeholder="e.g. Cotton" autoFocus required /></label><label className="modal-label">Area in acres<input type="number" min="0.1" step="0.1" value={newCrop.area} onChange={(event) => setNewCrop({ ...newCrop, area: event.target.value })} placeholder="e.g. 2.5" required /></label><label className="modal-label">Growth stage<input value={newCrop.stage} onChange={(event) => setNewCrop({ ...newCrop, stage: event.target.value })} placeholder="e.g. Early growth" /></label><label className="modal-label">Planting date<input type="date" value={newCrop.plantingDate} onChange={(event) => setNewCrop({ ...newCrop, plantingDate: event.target.value })} /></label><div className="modal-form-actions"><button type="button" className="button button-quiet" onClick={closeModal}>Cancel</button><button type="submit" className="button button-primary">Add crop <Icon name="plus" size={16} /></button></div></form> : modal === 'field' ? <form className="modal-content" onSubmit={(event) => { event.preventDefault(); closeModal(); }}><p>Set up a monitored field so CropGuard can connect its crop, area and future scans.</p><label className="modal-label">Field name<input placeholder="e.g. North field" autoFocus required /></label><label className="modal-label">Field area in acres<input type="number" min="0.1" step="0.1" placeholder="e.g. 2.5" required /></label><div className="modal-form-actions"><button type="button" className="button button-quiet" onClick={closeModal}>Cancel</button><button type="submit" className="button button-primary">Save field <Icon name="plus" size={16} /></button></div></form> : modal === 'map' ? <div className="modal-content"><FarmMap onSelect={(field) => { setSelectedField(field); setModal(null); }} /><p className="map-modal-copy">Four monitored fields are visible. Field A, Cotton, is currently the priority area.</p><button className="button button-primary modal-action" onClick={closeModal}>Close map <Icon name="arrow" size={15} /></button></div> : <div className="modal-content"><div className="advice-callout"><Icon name="shield" size={20} /><div><strong>Moderate pest risk</strong><span>Confidence: High</span></div></div><p>Weather conditions combined with the cotton crop&apos;s health trend indicate a moderate bollworm risk developing in the next 24–48 hours.</p><div className="advice-steps"><span><b>01</b>Inspect the underside of leaves for early symptoms.</span><span><b>02</b>Record a crop scan after the field inspection.</span><span><b>03</b>Review the recommendation before treatment.</span></div><button className="button button-primary modal-action" onClick={closeModal}>Mark as understood <Icon name="arrow" size={15} /></button></div>}</Modal>}</main>;
-}
-
-export default MyFarm;

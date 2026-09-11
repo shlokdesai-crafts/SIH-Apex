@@ -1,14 +1,14 @@
 import './DistrictAnalyticsTable.css';
+import { MAHARASHTRA_DISTRICTS } from '../services/govDataService';
 
 const DistrictAnalyticsTable = () => {
-  const districts = [
-    { name: 'Nashik', total: '1,842', resolved: '1,520', needsVisit: 210, unident: 112 },
-    { name: 'Pune', total: '1,620', resolved: '1,420', needsVisit: 150, unident: 50 },
-    { name: 'Jalgaon', total: '1,280', resolved: '980', needsVisit: 220, unident: 80 },
-    { name: 'Latur', total: '1,060', resolved: '720', needsVisit: 260, unident: 80 },
-    { name: 'Nagpur', total: '980', resolved: '860', needsVisit: 80, unident: 40 },
-    { name: 'Beed', total: '840', resolved: '640', needsVisit: 160, unident: 40 },
-  ];
+  const districts = MAHARASHTRA_DISTRICTS.slice(0, 6).map(d => ({
+    name: d.name,
+    total: d.total.toLocaleString(),
+    resolved: d.resolved.toLocaleString(),
+    needsVisit: d.needsVisit,
+    unident: d.unident,
+  }));
 
   return (
     <div className="gov-card district-analytics">

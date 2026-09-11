@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './GovernmentDashboard.css';
 
-// Placeholder imports for components we will build next
 import GovHeader from './GovHeader';
 import GovSidebar from './GovSidebar';
 import GovHero from './GovHero';
@@ -12,28 +12,64 @@ import AlertsNotifications from './AlertsNotifications';
 import AIAdvisoryPreview from './AIAdvisoryPreview';
 import UnidentifiedCasesTable from './UnidentifiedCasesTable';
 import DistrictAnalyticsTable from './DistrictAnalyticsTable';
+import CropHealth from './CropHealth/CropHealth';
 
-const GovernmentDashboard = () => {
+interface GovernmentDashboardProps {
+  initialTab?: string;
+}
+
+const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardProps) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [activeTab, setActiveTab] = useState(() => {
+    if (location.pathname === '/crop-health') return 'crop-health';
+    return initialTab;
+  });
+
+  useEffect(() => {
+    if (location.pathname === '/crop-health') {
+      setActiveTab('crop-health');
+    } else if (location.pathname === '/' || location.pathname === '/dashboard') {
+      setActiveTab('dashboard');
+    }
+  }, [location.pathname]);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    if (tab === 'crop-health') {
+      navigate('/crop-health');
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <div className="gov-dashboard-container">
-      <GovHeader />
+      <GovHeader activeTab={activeTab} onSelectTab={handleTabChange} />
       <div className="gov-dashboard-main">
-        <GovSidebar />
+        <GovSidebar activeTab={activeTab} onSelectTab={handleTabChange} />
         <div className="gov-dashboard-content">
-          <GovHero />
-          <GovStatsRow />
-          
-          <div className="gov-dashboard-grid-row-1">
-            <RecentSubmissions />
-            <MaharashtraMap />
-            <AlertsNotifications />
-          </div>
+          {activeTab === 'crop-health' ? (
+            <CropHealth />
+          ) : (
+            <>
+              <GovHero />
+              <GovStatsRow />
+              
+              <div className="gov-dashboard-grid-row-1">
+                <RecentSubmissions />
+                <MaharashtraMap />
+                <AlertsNotifications />
+              </div>
 
-          <div className="gov-dashboard-grid-row-2">
-            <AIAdvisoryPreview />
-            <UnidentifiedCasesTable />
-            <DistrictAnalyticsTable />
-          </div>
+              <div className="gov-dashboard-grid-row-2">
+                <AIAdvisoryPreview />
+                <UnidentifiedCasesTable />
+                <DistrictAnalyticsTable />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

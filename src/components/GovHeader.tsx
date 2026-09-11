@@ -1,9 +1,14 @@
 import './GovHeader.css';
 
-const GovHeader = () => {
+interface GovHeaderProps {
+  activeTab?: string;
+  onSelectTab?: (tab: string) => void;
+}
+
+const GovHeader = ({ activeTab = 'dashboard', onSelectTab }: GovHeaderProps) => {
   return (
     <header className="gov-header">
-      <div className="gov-header-left">
+      <div className="gov-header-left" style={{ cursor: 'pointer' }} onClick={() => onSelectTab?.('dashboard')}>
         <div className="gov-logo-container">
           <span className="gov-logo-icon">🌿</span>
           <div className="gov-logo-text">
@@ -14,7 +19,10 @@ const GovHeader = () => {
       </div>
       
       <div className="gov-header-nav">
-        <button className="gov-nav-btn active">
+        <button 
+          className={`gov-nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+          onClick={() => onSelectTab?.('dashboard')}
+        >
           <span className="icon">🏠</span> Dashboard
         </button>
         <button className="gov-nav-btn">

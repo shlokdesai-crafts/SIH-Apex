@@ -11,20 +11,28 @@ import GovernmentDashboard from './components/GovernmentDashboard';
 function AppRoutes() {
   const { user } = useContext(AuthContext);
 
-  if (user?.role === 'government') {
-    return <GovernmentDashboard />;
-  }
-
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route
+        path="/crop-health"
+        element={
+          <ProtectedRoute allowedRoles={['government']}>
+            <GovernmentDashboard initialTab="crop-health" />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/*"
         element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
+          user?.role === 'government' ? (
+            <GovernmentDashboard initialTab="dashboard" />
+          ) : (
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          )
         }
       />
     </Routes>

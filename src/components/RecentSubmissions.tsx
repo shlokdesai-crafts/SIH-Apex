@@ -1,13 +1,16 @@
 import './RecentSubmissions.css';
+import { GOV_SUBMISSIONS, GOV_SUMMARY_STATS } from '../services/govDataService';
 
 const RecentSubmissions = () => {
-  const submissions = [
-    { id: 1, name: 'Ramesh Patil', location: 'Nashik', crop: 'Cotton', aiResult: 'Leaf Blight (87%)', status: 'Resolved', actionText: 'View Advice' },
-    { id: 2, name: 'Savitri Jadhav', location: 'Jalgaon', crop: 'Soybean', aiResult: 'Healthy (92%)', status: 'Resolved', actionText: 'View Advice' },
-    { id: 3, name: 'Mahesh Pawar', location: 'Latur', crop: 'Unknown', aiResult: 'Not Recognized', status: 'Needs Visit', actionText: 'Assign Officer' },
-    { id: 4, name: 'Sunita Shinde', location: 'Beed', crop: 'Tur (Arhar)', aiResult: 'Possible Pest (60%)', status: 'Needs Visit', actionText: 'Assign Officer' },
-    { id: 5, name: 'Vikas More', location: 'Nagpur', crop: 'Wheat', aiResult: 'Nutrient Deficiency', status: 'Resolved', actionText: 'View Advice' },
-  ];
+  const submissions = GOV_SUBMISSIONS.slice(0, 5).map(s => ({
+    id: s.id,
+    name: s.farmerName,
+    location: s.location,
+    crop: s.crop,
+    aiResult: s.aiResult,
+    status: s.status,
+    actionText: s.actionText,
+  }));
 
   return (
     <div className="gov-card recent-submissions">
@@ -17,10 +20,10 @@ const RecentSubmissions = () => {
       </div>
       
       <div className="gov-tabs">
-        <button className="gov-tab active">All (12,842)</button>
-        <button className="gov-tab">Pending (1,286)</button>
-        <button className="gov-tab">Resolved (10,436)</button>
-        <button className="gov-tab highlight">Unidentified (412)</button>
+        <button className="gov-tab active">All ({GOV_SUMMARY_STATS.totalSubmissions.toLocaleString()})</button>
+        <button className="gov-tab">Pending ({GOV_SUMMARY_STATS.needsFieldVisit.toLocaleString()})</button>
+        <button className="gov-tab">Resolved ({GOV_SUMMARY_STATS.issuesResolved.toLocaleString()})</button>
+        <button className="gov-tab highlight">Unidentified ({GOV_SUMMARY_STATS.unidentifiedCases.toLocaleString()})</button>
       </div>
 
       <div className="gov-table-container">
