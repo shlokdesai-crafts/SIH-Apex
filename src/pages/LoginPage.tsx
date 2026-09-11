@@ -10,6 +10,7 @@ export default function LoginPage() {
 
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('farmer');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,7 +21,7 @@ export default function LoginPage() {
     setError('');
     setIsSubmitting(true);
 
-    const result = await login(phone, password);
+    const result = await login(phone, password, role);
 
     if (result.success) {
       navigate('/', { replace: true });
@@ -70,6 +71,40 @@ export default function LoginPage() {
         )}
 
         <form onSubmit={handleSubmit} className="auth-form">
+          {/* Role Selection */}
+          <div className="auth-field">
+            <label className="auth-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+              Account Type
+            </label>
+            <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
+                <input 
+                  type="radio" 
+                  name="role" 
+                  value="farmer" 
+                  checked={role === 'farmer'} 
+                  onChange={(e) => setRole(e.target.value)} 
+                  style={{ accentColor: '#2e7d32' }}
+                />
+                Farmer
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
+                <input 
+                  type="radio" 
+                  name="role" 
+                  value="government" 
+                  checked={role === 'government'} 
+                  onChange={(e) => setRole(e.target.value)} 
+                  style={{ accentColor: '#2e7d32' }}
+                />
+                Government
+              </label>
+            </div>
+          </div>
+
           <div className="auth-field">
             <label htmlFor="login-phone" className="auth-label">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">

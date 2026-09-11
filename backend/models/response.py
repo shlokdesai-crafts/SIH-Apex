@@ -33,19 +33,33 @@ class CropAnalysis(BaseModel):
     crop_identification: Optional[CropIdentification] = None
 
 
+class DiseaseDetectionResult(BaseModel):
+    crop: str
+    disease: str
+    confidence: float
+    severity: str                                # "None", "Mild", "Moderate", "Severe"
+    status: str                                  # "Healthy", "Diseased", "Needs expert verification"
+    explanation: Optional[str] = None
+    symptoms: List[str] = []
+    recommended_actions: List[str] = []
+    prevention: List[str] = []
+    expert_verification_required: bool = False
+    abstain_reason: Optional[str] = None         # Why model abstained (entropy/margin/confidence)
+
+
 class ScanResponse(BaseModel):
     """
     Structured response for the /api/scan endpoint.
-    Fields marked 'future' will be populated in later phases when ML models are integrated.
     """
     status: str                          # "valid" | "invalid"
     message: str                         # Human-readable primary message
     validation: ValidationResult
     image_quality: Optional[ImageQuality] = None
     crop_analysis: Optional[CropAnalysis] = None
-    disease_detection: Optional[Any] = None  # Disease name + confidence score
-    severity: Optional[Any] = None           # Severity level (Mild/Moderate/Severe)
+    disease_detection: Optional[DiseaseDetectionResult] = None  # Crop + Disease + Confidence + Severity + Status
+    severity: Optional[str] = None           # Severity level (None/Mild/Moderate/Severe)
     risk_score: Optional[Any] = None         # 0-100 risk index
     advisory: Optional[Any] = None           # Treatment recommendations
+
 
 

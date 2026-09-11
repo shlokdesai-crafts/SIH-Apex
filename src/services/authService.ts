@@ -17,6 +17,7 @@ export interface User {
   passwordHash: string;
   location: string;
   language: Language;
+  role?: string;
   createdAt: string;
 }
 
@@ -26,6 +27,7 @@ export interface UserPublic {
   phone: string;
   location: string;
   language: Language;
+  role?: string;
   createdAt: string;
 }
 
@@ -35,6 +37,7 @@ export interface SignupData {
   password: string;
   location: string;
   language: Language;
+  role?: string;
 }
 
 export interface AuthResult {
@@ -82,6 +85,7 @@ function toPublicUser(user: User): UserPublic {
     phone: user.phone,
     location: user.location,
     language: user.language,
+    role: user.role,
     createdAt: user.createdAt,
   };
 }
@@ -149,6 +153,7 @@ export async function signup(data: SignupData): Promise<AuthResult> {
     passwordHash: await hashPassword(data.password),
     location: data.location.trim(),
     language: data.language,
+    role: data.role || 'farmer',
     createdAt: new Date().toISOString(),
   };
 
@@ -162,7 +167,7 @@ export async function signup(data: SignupData): Promise<AuthResult> {
   return { success: true, user: publicUser };
 }
 
-export async function login(phone: string, password: string): Promise<AuthResult> {
+export async function login(phone: string, password: string, role: string): Promise<AuthResult> {
   const phoneError = validatePhone(phone);
   if (phoneError) return { success: false, error: phoneError };
 
@@ -172,6 +177,12 @@ export async function login(phone: string, password: string): Promise<AuthResult
 
   if (!user) {
     return { success: false, error: 'No account found with this phone number' };
+  }
+
+  // Ensure role matches, defaulting to 'farmer' if role is undefined in legacy accounts
+  const userRole = user.role || 'farmer';
+  if (userRole !== role) {
+    return { success: false, error: `Account exists but is not registered as a ${role}` };
   }
 
   const inputHash = await hashPassword(password);

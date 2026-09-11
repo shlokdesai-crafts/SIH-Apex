@@ -8,25 +8,36 @@ advisory) are wired in the response model but return null until the
 respective ML service modules are implemented.
 """
 
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter, File, Form, UploadFile
+from typing import Optional
 
 from services.validation import validate_upload
 from services.image_quality import analyze_quality, quality_errors
 from services.crop_relevance import validate_crop_relevance
 from services.crop_identification import identify_crop
-from models.response import ImageQuality, ScanResponse, ValidationResult, CropAnalysis, CropIdentification
+from models.response import ImageQuality, ScanResponse, ValidationResult, CropAnalysis, CropIdentification, DiseaseDetectionResult
+from ml.inference import predict_crop_disease
+from ml.config import CROP_CONFIGS
+from db import insert_submission
 
 router = APIRouter()
 
 
 @router.post("/scan", response_model=ScanResponse, summary="Validate and analyse a crop image")
-async def scan_crop(file: UploadFile = File(..., description="JPG or PNG crop image, max 10 MB")):
+async def scan_crop(
+    file: UploadFile = File(..., description="JPG or PNG crop image, max 10 MB"),
+    farmer_name: Optional[str] = Form(default="Anonymous"),
+    location: Optional[str] = Form(default="Unknown"),
+    latitude: Optional[float] = Form(default=None),
+    longitude: Optional[float] = Form(default=None),
+):
     """
-    Phase 1, Phase 2 & Phase 3A pipeline:
+    Phase 1, Phase 2, Phase 3A & Phase 3B Multi-Crop pipeline:
     1. File-type, size, and resolution validation (Phase 1)
     2. Image brightness & blur/sharpness analysis (Phase 1)
     3. Crop/plant relevance validation using CV model (Phase 2)
     4. Real Crop Species Identification (Phase 3A)
+    5. Crop Disease Detection using dedicated MobileNetV3 model (Phase 3B)
     """
 
     # ── Step 1: upload validation ─────────────────────────────────────────────
@@ -113,9 +124,41 @@ async def scan_crop(file: UploadFile = File(..., description="JPG or PNG crop im
 
     # Passed Phase 1 quality + Phase 2 relevance + Phase 3A crop identification!
     conf_pct = round(crop_id.confidence * 100, 1)
+
+    # ── Step 5: Phase 3B Real Crop Disease Detection ──────────────────────────
+    disease_detection: DiseaseDetectionResult | None = None
+    severity: str | None = None
+    msg = f"Crop identified as {crop_id.crop_name} with {conf_pct}% confidence."
+
+    crop_cfg = CROP_CONFIGS.get(crop_id.crop_name)
+    if crop_cfg and crop_cfg.get("classes"):
+        disease_res = predict_crop_disease(crop_id.crop_name, contents)
+        disease_detection = DiseaseDetectionResult(**disease_res)
+        severity = disease_detection.severity
+        disease_conf_pct = round(disease_detection.confidence * 100, 1)
+        msg = (
+            f"Crop identified as {crop_id.crop_name} ({conf_pct}% confidence). "
+            f"Disease: {disease_detection.disease} ({disease_conf_pct}% confidence)."
+        )
+
+    # ── Step 6: Persist to database ──────────────────────────────────────────
+    ai_result_str = disease_detection.disease if disease_detection else "Unknown"
+    confidence_val = disease_detection.confidence if disease_detection else None
+    insert_submission(
+        crop=crop_id.crop_name,
+        ai_result=ai_result_str,
+        disease=disease_detection.disease if disease_detection else None,
+        confidence=confidence_val,
+        severity=severity,
+        farmer_name=farmer_name or "Anonymous",
+        location=location or "Unknown",
+        latitude=latitude,
+        longitude=longitude,
+    )
+
     return ScanResponse(
         status="valid",
-        message=f"Crop identified as {crop_id.crop_name} with {conf_pct}% confidence.",
+        message=msg,
         validation=ValidationResult(
             passed=True,
             errors=[],
@@ -123,8 +166,8 @@ async def scan_crop(file: UploadFile = File(..., description="JPG or PNG crop im
         ),
         image_quality=image_quality,
         crop_analysis=crop_analysis,
-        disease_detection=None,
-        severity=None,
+        disease_detection=disease_detection,
+        severity=severity,
         risk_score=None,
         advisory=None,
     )

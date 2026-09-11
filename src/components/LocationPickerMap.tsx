@@ -58,7 +58,6 @@ export default function LocationPickerMap({ onLocationSelect, initialLocation }:
   // Center of Maharashtra
   const defaultCenter = { lat: 19.7515, lng: 75.7139 };
   const center = initialLocation || defaultCenter;
-  const LOCATION_TOKEN = import.meta.env.VITE_LOCATION_TOKEN as string;
 
   // Maharashtra boundaries (South-West to North-East)
   const maharashtraBounds = L.latLngBounds(
@@ -85,9 +84,8 @@ export default function LocationPickerMap({ onLocationSelect, initialLocation }:
         style={{ height: '200px', width: '100%', borderRadius: '8px', zIndex: 0 }}
       >
         <TileLayer
-          attribution='&copy; <a href="https://locationiq.com/?ref=maps">LocationIQ</a>'
-          url={`https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=${LOCATION_TOKEN}`}
-          subdomains={['a', 'b', 'c', 'd']}
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <LocationMarker onLocationSelect={onLocationSelect} initialLocation={initialLocation} />
       </MapContainer>

@@ -5,7 +5,7 @@
  * then calls LocationIQ reverse geocoding to get a human-readable address.
  */
 
-const LOCATION_TOKEN = import.meta.env.VITE_LOCATION_TOKEN as string;
+// No token required for Nominatim free tier
 
 export interface LocationResult {
   lat: number;
@@ -23,7 +23,7 @@ export interface LocationError {
 /**
  * Get the user's current position via the browser Geolocation API.
  */
-function getBrowserPosition(): Promise<GeolocationPosition> {
+export function getBrowserPosition(): Promise<GeolocationPosition> {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
       reject({ code: 'POSITION_UNAVAILABLE', message: 'Geolocation is not supported by this browser' });
@@ -53,14 +53,18 @@ function getBrowserPosition(): Promise<GeolocationPosition> {
 }
 
 /**
- * Reverse geocode coordinates using LocationIQ API.
+ * Reverse geocode coordinates using Nominatim API (Free).
  */
 export async function reverseGeocode(lat: number, lng: number): Promise<LocationResult> {
-  const url = `https://us1.locationiq.com/v1/reverse?key=${LOCATION_TOKEN}&lat=${lat}&lon=${lng}&format=json`;
+  const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`;
 
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    headers: {
+      'Accept': 'application/json'
+    }
+  });
   if (!response.ok) {
-    throw { code: 'API_ERROR', message: `LocationIQ API error: ${response.status}` } as LocationError;
+    throw { code: 'API_ERROR', message: `Reverse Geocoding API error: ${response.status}` } as LocationError;
   }
 
   const data = await response.json();

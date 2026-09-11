@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './auth/AuthContext';
 import { LanguageProvider } from './i18n/LanguageContext';
@@ -11,20 +11,28 @@ import GovernmentDashboard from './components/GovernmentDashboard';
 function AppRoutes() {
   const { user } = useContext(AuthContext);
 
-  if (user?.role === 'government') {
-    return <GovernmentDashboard />;
-  }
-
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route
+        path="/crop-health"
+        element={
+          <ProtectedRoute allowedRoles={['government']}>
+            <GovernmentDashboard initialTab="crop-health" />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/*"
         element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
+          user?.role === 'government' ? (
+            <GovernmentDashboard initialTab="dashboard" />
+          ) : (
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          )
         }
       />
     </Routes>

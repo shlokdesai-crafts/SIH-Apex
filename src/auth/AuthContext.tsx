@@ -13,7 +13,7 @@ interface AuthContextType {
   user: UserPublic | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (phone: string, password: string) => Promise<AuthResult>;
+  login: (phone: string, password: string, role: string) => Promise<AuthResult>;
   signup: (data: SignupData) => Promise<AuthResult>;
   logout: () => void;
 }
@@ -44,8 +44,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setIsLoading(false);
   }, []);
 
-  const login = useCallback(async (phone: string, password: string): Promise<AuthResult> => {
-    const result = await authLogin(phone, password);
+  const login = useCallback(async (phone: string, password: string, role: string): Promise<AuthResult> => {
+    const result = await authLogin(phone, password, role);
     if (result.success && result.user) {
       setUser(result.user);
     }
