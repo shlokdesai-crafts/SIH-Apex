@@ -87,7 +87,6 @@ export default function ScanCrop() {
   const [showCamera, setShowCamera] = useState(false);
 
   const fileInputRef   = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
   const videoRef       = useRef<HTMLVideoElement>(null);
   const streamRef      = useRef<MediaStream | null>(null);
   const dropRef        = useRef<HTMLDivElement>(null);

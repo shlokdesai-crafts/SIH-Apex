@@ -27,6 +27,7 @@ export interface UserPublic {
   location: string;
   language: Language;
   createdAt: string;
+  role?: string;
 }
 
 export interface SignupData {
