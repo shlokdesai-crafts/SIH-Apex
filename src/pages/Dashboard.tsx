@@ -8,6 +8,7 @@ import AdvisoryOverview from '../components/AdvisoryOverview';
 import FertilizerRecommendation from '../components/FertilizerRecommendation';
 import RiskForecast from '../components/RiskForecast';
 import MyFarm from './MyFarm/MyFarm';
+import { FarmProvider } from '../context/FarmContext';
 import { detectLocation, getBrowserPosition, type LocationResult } from '../services/locationService';
 import { fetchWeather, type WeatherData } from '../services/weatherService';
 
@@ -67,7 +68,7 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <>
+    <FarmProvider>
       <Header activeTab={activeTab === 'fertilizer' ? 'advisory' : activeTab} setActiveTab={setActiveTab} />
       {activeTab === 'home' && (
         <>
@@ -76,7 +77,7 @@ export default function Dashboard() {
           <PanelsRow scanResult={scanResult} locationData={locationData} setActiveTab={setActiveTab} />
         </>
       )}
-      {activeTab === 'farm' && <MyFarm />}
+      {activeTab === 'farm' && <MyFarm onNavigateTab={setActiveTab} />}
       {activeTab === 'scan' && <ScanCrop onScanComplete={(data) => setScanResult(data)} />}
       {activeTab === 'risk' && <RiskForecast weatherData={weatherData} locationData={locationData} scanResult={scanResult} />}
       {activeTab === 'advisory' && (
@@ -96,6 +97,6 @@ export default function Dashboard() {
           <p>This page is not yet implemented.</p>
         </div>
       )}
-    </>
+    </FarmProvider>
   );
 }

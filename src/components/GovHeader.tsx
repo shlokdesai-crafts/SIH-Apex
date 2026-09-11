@@ -3,10 +3,12 @@ import { AuthContext } from '../auth/AuthContext';
 import './GovHeader.css';
 
 interface GovHeaderProps {
+  activeTab?: string;
+  onSelectTab?: (tab: string) => void;
   onToggleSidebar?: () => void;
 }
 
-const GovHeader = ({ onToggleSidebar }: GovHeaderProps) => {
+const GovHeader = ({ activeTab = 'dashboard', onSelectTab, onToggleSidebar }: GovHeaderProps) => {
   const { user, logout } = useContext(AuthContext);
 
   const initials = user?.fullName
@@ -23,7 +25,7 @@ const GovHeader = ({ onToggleSidebar }: GovHeaderProps) => {
 
   return (
     <header className="gov-header">
-      <div className="gov-header-left">
+      <div className="gov-header-left" style={{ cursor: 'pointer' }} onClick={() => onSelectTab?.('dashboard')}>
         <div className="gov-logo-container">
           <button 
             onClick={onToggleSidebar} 
@@ -50,7 +52,35 @@ const GovHeader = ({ onToggleSidebar }: GovHeaderProps) => {
         </div>
       </div>
       
-
+      <div className="gov-header-nav">
+        <button 
+          className={`gov-nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+          onClick={() => onSelectTab?.('dashboard')}
+        >
+          <span className="icon">🏠</span> Dashboard
+        </button>
+        <button 
+          className={`gov-nav-btn ${activeTab === 'crop-health' ? 'active' : ''}`}
+          onClick={() => onSelectTab?.('crop-health')}
+        >
+          <span className="icon">🌿</span> Crop Health
+        </button>
+        <button className="gov-nav-btn">
+          <span className="icon">📄</span> Farmer Submissions
+        </button>
+        <button className="gov-nav-btn">
+          <span className="icon">📍</span> Field Visits
+        </button>
+        <button className="gov-nav-btn">
+          <span className="icon">📚</span> Knowledge Base
+        </button>
+        <button className="gov-nav-btn">
+          <span className="icon">📊</span> Reports
+        </button>
+        <button className="gov-nav-btn">
+          <span className="icon">🏛️</span> Schemes
+        </button>
+      </div>
 
       <div className="gov-header-right">
         <div className="gov-region-select">

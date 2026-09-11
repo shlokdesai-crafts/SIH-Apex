@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import './GovStatsRow.css';
+import { GOV_SUMMARY_STATS } from '../services/govDataService';
 
 interface Stats {
   total_submissions: number;
@@ -36,8 +37,16 @@ const GovStatsRow = () => {
         </div>
         <div className="gov-stat-info">
           <p className="gov-stat-title">Total Farmer Submissions</p>
-          <h3 className="gov-stat-value">{fmt(stats?.total_submissions)}</h3>
-          <p className="gov-stat-desc">Live from database</p>
+          <h3 className="gov-stat-value">
+            {stats?.total_submissions !== undefined
+              ? fmt(stats.total_submissions)
+              : GOV_SUMMARY_STATS.totalSubmissions.toLocaleString('en-IN')}
+          </h3>
+          {stats?.total_submissions !== undefined ? (
+            <p className="gov-stat-desc">Live from database</p>
+          ) : (
+            <p className="gov-stat-trend positive">{GOV_SUMMARY_STATS.totalSubmissionsTrend}</p>
+          )}
         </div>
       </div>
 
@@ -47,8 +56,16 @@ const GovStatsRow = () => {
         </div>
         <div className="gov-stat-info">
           <p className="gov-stat-title">Issues Resolved</p>
-          <h3 className="gov-stat-value">{fmt(stats?.resolved)}</h3>
-          <p className="gov-stat-desc">Healthy / resolved scans</p>
+          <h3 className="gov-stat-value">
+            {stats?.resolved !== undefined
+              ? fmt(stats.resolved)
+              : GOV_SUMMARY_STATS.issuesResolved.toLocaleString('en-IN')}
+          </h3>
+          {stats?.resolved !== undefined ? (
+            <p className="gov-stat-desc">Healthy / resolved scans</p>
+          ) : (
+            <p className="gov-stat-trend positive">{GOV_SUMMARY_STATS.issuesResolvedTrend}</p>
+          )}
         </div>
       </div>
 
@@ -58,8 +75,16 @@ const GovStatsRow = () => {
         </div>
         <div className="gov-stat-info">
           <p className="gov-stat-title">Needs Field Visit</p>
-          <h3 className="gov-stat-value">{fmt(stats?.needs_field_visit)}</h3>
-          <p className="gov-stat-desc">Pending / assigned</p>
+          <h3 className="gov-stat-value">
+            {stats?.needs_field_visit !== undefined
+              ? fmt(stats.needs_field_visit)
+              : GOV_SUMMARY_STATS.needsFieldVisit.toLocaleString('en-IN')}
+          </h3>
+          {stats?.needs_field_visit !== undefined ? (
+            <p className="gov-stat-desc">Pending / assigned</p>
+          ) : (
+            <p className="gov-stat-trend negative">{GOV_SUMMARY_STATS.needsFieldVisitTrend}</p>
+          )}
         </div>
       </div>
 
@@ -69,8 +94,14 @@ const GovStatsRow = () => {
         </div>
         <div className="gov-stat-info">
           <p className="gov-stat-title">Crops Analyzed</p>
-          <h3 className="gov-stat-value">{fmt(stats?.crops_analyzed)}</h3>
-          <p className="gov-stat-desc">Distinct crop types</p>
+          <h3 className="gov-stat-value">
+            {stats?.crops_analyzed !== undefined
+              ? fmt(stats.crops_analyzed)
+              : GOV_SUMMARY_STATS.cropsAnalyzed}
+          </h3>
+          <p className="gov-stat-desc">
+            {stats?.crops_analyzed !== undefined ? 'Distinct crop types' : 'Major crops in Maharashtra'}
+          </p>
         </div>
       </div>
 
@@ -80,8 +111,16 @@ const GovStatsRow = () => {
         </div>
         <div className="gov-stat-info">
           <p className="gov-stat-title">Unidentified Cases</p>
-          <h3 className="gov-stat-value">{fmt(stats?.unidentified)}</h3>
-          <p className="gov-stat-desc">Could not identify crop</p>
+          <h3 className="gov-stat-value">
+            {stats?.unidentified !== undefined
+              ? fmt(stats.unidentified)
+              : GOV_SUMMARY_STATS.unidentifiedCases.toLocaleString('en-IN')}
+          </h3>
+          {stats?.unidentified !== undefined ? (
+            <p className="gov-stat-desc">Could not identify crop</p>
+          ) : (
+            <p className="gov-stat-trend negative">{GOV_SUMMARY_STATS.unidentifiedCasesTrend}</p>
+          )}
         </div>
       </div>
     </div>

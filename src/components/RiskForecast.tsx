@@ -2,7 +2,7 @@ import { useState } from 'react';
 import './RiskForecast.css';
 import type { WeatherData } from '../services/weatherService';
 import type { LocationResult } from '../services/locationService';
-
+import { useFarm } from '../context/FarmContext';
 import type { ScanResultData } from '../pages/Dashboard';
 
 interface RiskForecastProps {
@@ -12,10 +12,11 @@ interface RiskForecastProps {
 }
 
 export default function RiskForecast({ weatherData, locationData, scanResult }: RiskForecastProps = {}) {
+  const { farmState } = useFarm();
   const [selectedCrop, setSelectedCrop] = useState(scanResult?.crop || 'Cotton');
 
-  // Simple mock data depending on crop
-  const cropData: Record<string, any> = {
+  // Dynamic farm-connected crop data
+  const baseCrops: Record<string, any> = {
     Cotton: {
       stage: 'Flowering',
       overallRisk: 'Moderate',
@@ -34,6 +35,33 @@ export default function RiskForecast({ weatherData, locationData, scanResult }: 
       confidence: 90,
       weatherImpact: 'Impact on Soybean (Pod Development)'
     },
+    Tomato: {
+      stage: 'Fruiting',
+      overallRisk: 'High',
+      riskClass: 'high',
+      trend: '↑',
+      riskDesc: 'Early Blight risk elevated due to warm humidity',
+      confidence: 92,
+      weatherImpact: 'Foliar disease risk elevated in current climate'
+    },
+    Onion: {
+      stage: 'Bulb Formation',
+      overallRisk: 'Low',
+      riskClass: 'low',
+      trend: '↓',
+      riskDesc: 'Favorable conditions, healthy bulb formation',
+      confidence: 88,
+      weatherImpact: 'Minimal weather-induced risk observed'
+    },
+    Potato: {
+      stage: 'Tuber Bulking',
+      overallRisk: 'Moderate',
+      riskClass: 'moderate',
+      trend: '↑',
+      riskDesc: 'Late Blight watch: monitor lower canopy',
+      confidence: 84,
+      weatherImpact: 'Soil moisture favorable but requires canopy inspection'
+    },
     Sugarcane: {
       stage: 'Tillering',
       overallRisk: 'High',
@@ -44,6 +72,30 @@ export default function RiskForecast({ weatherData, locationData, scanResult }: 
       weatherImpact: 'Impact on Sugarcane (Tillering)'
     }
   };
+
+  // Overlay real scan data from farmState
+  const cropData = { ...baseCrops };
+  if (farmState && farmState.crops) {
+    farmState.crops.forEach(fc => {
+      const isDiseased = fc.status === 'Diseased';
+      const isAtRisk = fc.status === 'At Risk';
+      cropData[fc.name] = {
+        stage: cropData[fc.name]?.stage || 'Vegetative',
+        overallRisk: isDiseased ? 'High' : isAtRisk ? 'Moderate' : 'Low',
+        riskClass: isDiseased ? 'high' : isAtRisk ? 'moderate' : 'low',
+        trend: isDiseased ? '↑' : isAtRisk ? '↑' : '↓',
+        riskDesc: fc.detectedDisease 
+          ? `${fc.detectedDisease} detected in recent scan` 
+          : isDiseased 
+          ? 'Active disease symptoms detected' 
+          : 'Normal growing conditions',
+        confidence: isDiseased ? 92 : 88,
+        weatherImpact: isDiseased 
+          ? 'Disease spore proliferation alert in humid canopy' 
+          : `Monitored on ${fc.areaHa} Ha field`
+      };
+    });
+  }
 
   const currentData = cropData[selectedCrop] || cropData['Cotton'];
 
@@ -101,9 +153,19 @@ export default function RiskForecast({ weatherData, locationData, scanResult }: 
                 value={selectedCrop} 
                 onChange={(e) => setSelectedCrop(e.target.value)}
               >
-                <option value="Cotton">Cotton</option>
-                <option value="Soybean">Soybean</option>
-                <option value="Sugarcane">Sugarcane</option>
+                {farmState && farmState.crops && farmState.crops.length > 0 ? (
+                  farmState.crops.map((c) => (
+                    <option key={c.id} value={c.name}>
+                      {c.name} ({c.status})
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    <option value="Cotton">Cotton</option>
+                    <option value="Soybean">Soybean</option>
+                    <option value="Sugarcane">Sugarcane</option>
+                  </>
+                )}
               </select>
             </div>
           </div>

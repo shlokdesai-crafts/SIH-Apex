@@ -16,6 +16,14 @@ interface MarkerData {
   created_at: string;
 }
 
+const DEFAULT_MARKERS: MarkerData[] = [
+  { id: 1, farmer_name: 'Suresh Patil', location: 'Nashik, Maharashtra', latitude: 19.9975, longitude: 73.7898, crop: 'Onion', disease: 'Thrips Infestation', severity: 'High', status: 'Pending', created_at: new Date().toISOString() },
+  { id: 2, farmer_name: 'Anil Deshmukh', location: 'Akola, Maharashtra', latitude: 20.7002, longitude: 77.0082, crop: 'Cotton', disease: 'Bollworm', severity: 'Moderate', status: 'Assigned', created_at: new Date().toISOString() },
+  { id: 3, farmer_name: 'Ramesh Kadam', location: 'Pune, Maharashtra', latitude: 18.5204, longitude: 73.8567, crop: 'Tomato', disease: 'Early Blight', severity: 'High', status: 'Pending', created_at: new Date().toISOString() },
+  { id: 4, farmer_name: 'Vijay Shinde', location: 'Latur, Maharashtra', latitude: 18.4088, longitude: 76.5604, crop: 'Soybean', disease: 'Stem Rot', severity: 'Moderate', status: 'Assigned', created_at: new Date().toISOString() },
+  { id: 5, farmer_name: 'Dnyaneshwar More', location: 'Kolhapur, Maharashtra', latitude: 16.7050, longitude: 74.2433, crop: 'Sugarcane', disease: 'Healthy Plant', severity: 'None', status: 'Resolved', created_at: new Date().toISOString() },
+];
+
 const getMarkerColor = (severity: string) => {
   const lowerSev = severity ? severity.toLowerCase() : '';
   if (lowerSev.includes('severe') || lowerSev.includes('high')) return '#e53e3e';
@@ -36,7 +44,11 @@ const MaharashtraMap = () => {
       const url = filter === 'All Cases' ? `${API}/map-markers` : `${API}/map-markers?severity=${encodeURIComponent(filter)}`;
       fetch(url)
         .then(res => res.json())
-        .then(data => setMarkers(data))
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            setMarkers(data);
+          }
+        })
         .catch(err => console.error("Error fetching map markers", err));
     };
 
@@ -44,6 +56,14 @@ const MaharashtraMap = () => {
     const interval = setInterval(fetchMarkers, 10000);
     return () => clearInterval(interval);
   }, [filter]);
+
+  const displayedMarkers = markers.length > 0
+    ? markers
+    : DEFAULT_MARKERS.filter(m => {
+        if (filter === 'High Issues') return m.severity === 'High';
+        if (filter === 'Needs Visit') return m.status === 'Pending';
+        return true;
+      });
 
   return (
     <div className="gov-card maha-map">
@@ -61,7 +81,7 @@ const MaharashtraMap = () => {
             attribution='&copy; OpenStreetMap contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          {markers.map((m) => (
+          {displayedMarkers.map((m) => (
             <CircleMarker 
               key={m.id} 
               center={[m.latitude, m.longitude]} 

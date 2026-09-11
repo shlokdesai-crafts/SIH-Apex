@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import './RecentSubmissions.css';
+import { GOV_SUBMISSIONS, GOV_SUMMARY_STATS } from '../services/govDataService';
 
 interface Submission {
   id: number;
@@ -23,23 +24,43 @@ const statusClass = (status: string) => {
   return 'warning'; // Pending
 };
 
+const DEFAULT_SUBMISSIONS: Submission[] = GOV_SUBMISSIONS.map((s) => ({
+  id: s.id,
+  farmer_name: s.farmerName,
+  location: s.location,
+  crop: s.crop,
+  ai_result: s.aiResult,
+  disease: s.issue || null,
+  confidence: s.confidence,
+  severity: s.severity,
+  status: s.status === 'Needs Visit' ? 'Assigned' : s.status,
+  created_at: s.date || new Date().toISOString(),
+}));
+
 const RecentSubmissions = () => {
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [submissions, setSubmissions] = useState<Submission[]>(DEFAULT_SUBMISSIONS);
   const [activeTab, setActiveTab] = useState<string | null>(null);
-  const [counts, setCounts] = useState({ total: 0, pending: 0, resolved: 0, unidentified: 0 });
+  const [counts, setCounts] = useState({
+    total: GOV_SUMMARY_STATS.totalSubmissions,
+    pending: GOV_SUMMARY_STATS.needsFieldVisit,
+    resolved: GOV_SUMMARY_STATS.issuesResolved,
+    unidentified: GOV_SUMMARY_STATS.unidentifiedCases,
+  });
   const [loading, setLoading] = useState(false);
 
   const fetchStats = useCallback(() => {
     fetch(`${API}/stats`)
       .then((r) => r.json())
-      .then((s) =>
-        setCounts({
-          total: s.total_submissions,
-          pending: s.needs_field_visit,
-          resolved: s.resolved,
-          unidentified: s.unidentified,
-        })
-      )
+      .then((s) => {
+        if (s && s.total_submissions !== undefined) {
+          setCounts({
+            total: s.total_submissions,
+            pending: s.needs_field_visit,
+            resolved: s.resolved,
+            unidentified: s.unidentified,
+          });
+        }
+      })
       .catch(() => {});
   }, []);
 
@@ -50,8 +71,28 @@ const RecentSubmissions = () => {
       : `${API}/submissions?limit=50`;
     fetch(url)
       .then((r) => r.json())
-      .then((data) => setSubmissions(data))
-      .catch(() => {})
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setSubmissions(data);
+        } else {
+          const filtered = statusFilter
+            ? DEFAULT_SUBMISSIONS.filter((s) => {
+                if (statusFilter === 'Pending') return s.status === 'Pending' || s.status === 'Assigned';
+                return s.status.toLowerCase() === statusFilter.toLowerCase();
+              })
+            : DEFAULT_SUBMISSIONS;
+          setSubmissions(filtered);
+        }
+      })
+      .catch(() => {
+        const filtered = statusFilter
+          ? DEFAULT_SUBMISSIONS.filter((s) => {
+              if (statusFilter === 'Pending') return s.status === 'Pending' || s.status === 'Assigned';
+              return s.status.toLowerCase() === statusFilter.toLowerCase();
+            })
+          : DEFAULT_SUBMISSIONS;
+        setSubmissions(filtered);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -82,7 +123,19 @@ const RecentSubmissions = () => {
 
     if (!endpoint) return;
 
-    await fetch(endpoint, { method: 'POST' });
+    try {
+      await fetch(endpoint, { method: 'POST' });
+    } catch {
+      setSubmissions((prev) =>
+        prev.map((s) => {
+          if (s.id === sub.id) {
+            const nextStatus = s.status === 'Assigned' ? 'Resolved' : 'Assigned';
+            return { ...s, status: nextStatus };
+          }
+          return s;
+        })
+      );
+    }
     fetchStats();
     fetchSubmissions(activeTab);
   };
@@ -103,7 +156,9 @@ const RecentSubmissions = () => {
   const formatDate = (iso: string) => {
     try {
       return new Date(iso).toLocaleDateString('en-IN', {
-        day: '2-digit', month: 'short', year: 'numeric',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
       });
     } catch {
       return iso;
@@ -124,25 +179,25 @@ const RecentSubmissions = () => {
           className={`gov-tab ${activeTab === null ? 'active' : ''}`}
           onClick={() => handleTabChange(null)}
         >
-          All ({counts.total})
+          All ({(counts.total ?? 0).toLocaleString()})
         </button>
         <button
           className={`gov-tab ${activeTab === 'Pending' ? 'active' : ''}`}
           onClick={() => handleTabChange('Pending')}
         >
-          Pending ({counts.pending})
+          Pending ({(counts.pending ?? 0).toLocaleString()})
         </button>
         <button
           className={`gov-tab ${activeTab === 'Resolved' ? 'active' : ''}`}
           onClick={() => handleTabChange('Resolved')}
         >
-          Resolved ({counts.resolved})
+          Resolved ({(counts.resolved ?? 0).toLocaleString()})
         </button>
         <button
           className={`gov-tab highlight ${activeTab === 'Unidentified' ? 'active' : ''}`}
           onClick={() => handleTabChange('Unidentified')}
         >
-          Unidentified ({counts.unidentified})
+          Unidentified ({(counts.unidentified ?? 0).toLocaleString()})
         </button>
       </div>
 
