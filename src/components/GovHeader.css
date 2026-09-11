@@ -2,11 +2,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #0b5c2d; /* Dark green */
-  color: white;
-  padding: 12px 24px;
+  background-color: #084f27; /* Dark government forest green */
+  color: #ffffff;
+  padding: 8px 24px;
   height: 60px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-bottom: 1px solid #063e1e;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+  box-sizing: border-box;
 }
 
 .gov-header-left {
@@ -17,109 +19,158 @@
 .gov-logo-container {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .gov-logo-icon {
-  font-size: 32px;
+  font-size: 28px;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
 }
 
 .gov-logo-text h2 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 17px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+  line-height: 1.1;
 }
 
 .gov-logo-text p {
   margin: 0;
   font-size: 10px;
+  font-weight: 500;
   color: #a8d5ba;
+  line-height: 1.2;
+}
+
+.gov-logo-text .gov-logo-dept {
+  font-size: 9.5px;
+  color: #92caa5;
 }
 
 .gov-header-nav {
   display: flex;
-  gap: 16px;
+  align-items: center;
+  gap: 6px;
 }
 
 .gov-nav-btn {
   background: transparent;
   border: none;
-  color: #a8d5ba;
-  font-size: 14px;
+  color: #d1fae5;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 12px;
+  padding: 6px 11px;
   border-radius: 6px;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
 .gov-nav-btn:hover {
   background-color: rgba(255, 255, 255, 0.1);
-  color: white;
+  color: #ffffff;
 }
 
 .gov-nav-btn.active {
-  background-color: #1e8749;
-  color: white;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-weight: 600;
 }
 
 .gov-header-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
+}
+
+.gov-region-select {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 4px 10px 4px 14px;
+  border-radius: 20px;
 }
 
 .gov-region-select select {
   background: transparent;
-  color: white;
-  border: 1px solid #1e8749;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 14px;
+  color: #ffffff;
+  border: none;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 4px;
 }
 
 .gov-region-select select option {
-  color: #333;
+  color: #1e293b;
+  background: #ffffff;
+}
+
+.gov-select-arrow {
+  color: #a8d5ba;
+  font-size: 11px;
+  pointer-events: none;
 }
 
 .gov-notifications {
   position: relative;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 19px;
+  display: flex;
+  align-items: center;
+  color: #ffffff;
+  padding: 2px;
 }
 
 .gov-notifications .badge {
   position: absolute;
-  top: -6px;
-  right: -8px;
-  background: #e53e3e;
+  top: -4px;
+  right: -7px;
+  background: #dc2626;
   color: white;
-  font-size: 10px;
-  font-weight: bold;
-  padding: 2px 6px;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 1px 5px;
   border-radius: 10px;
+  border: 1.5px solid #084f27;
 }
 
 .gov-user-profile {
   display: flex;
   align-items: center;
   gap: 10px;
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 8px;
+  transition: background-color 0.15s;
+}
+
+.gov-user-profile:hover {
+  background-color: rgba(255, 255, 255, 0.08);
 }
 
 .gov-avatar {
-  background: #f6e05e;
-  color: #333;
-  width: 36px;
-  height: 36px;
+  background: #f7e8b6; /* Soft warm cream/yellow avatar */
+  color: #1e3a1e;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-weight: bold;
-  font-size: 14px;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
 }
 
 .gov-user-info {
@@ -128,11 +179,36 @@
 }
 
 .gov-user-name {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
 }
 
 .gov-user-role {
-  font-size: 10px;
+  font-size: 10.5px;
   color: #a8d5ba;
+  font-weight: 500;
+}
+
+/* Switch to Farmer Portal button */
+.gov-switch-portal-btn {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.gov-switch-portal-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: #ffffff;
 }

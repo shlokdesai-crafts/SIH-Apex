@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import './GovernmentDashboard.css';
 
-// Placeholder imports for components we will build next
 import GovHeader from './GovHeader';
 import GovSidebar from './GovSidebar';
 import GovHero from './GovHero';
@@ -12,28 +11,38 @@ import AlertsNotifications from './AlertsNotifications';
 import AIAdvisoryPreview from './AIAdvisoryPreview';
 import UnidentifiedCasesTable from './UnidentifiedCasesTable';
 import DistrictAnalyticsTable from './DistrictAnalyticsTable';
+import GovSettings from './GovSettings';
 
 const GovernmentDashboard = () => {
+  // Default to 'settings' to display the Government Officer Settings page matching UI reference
+  const [activeTab, setActiveTab] = useState('settings');
+
   return (
     <div className="gov-dashboard-container">
-      <GovHeader />
+      <GovHeader activeTab={activeTab} onTabChange={setActiveTab} />
       <div className="gov-dashboard-main">
-        <GovSidebar />
+        <GovSidebar activeTab={activeTab} onTabChange={setActiveTab} />
         <div className="gov-dashboard-content">
-          <GovHero />
-          <GovStatsRow />
-          
-          <div className="gov-dashboard-grid-row-1">
-            <RecentSubmissions />
-            <MaharashtraMap />
-            <AlertsNotifications />
-          </div>
+          {activeTab === 'settings' ? (
+            <GovSettings />
+          ) : (
+            <>
+              <GovHero />
+              <GovStatsRow />
+              
+              <div className="gov-dashboard-grid-row-1">
+                <RecentSubmissions />
+                <MaharashtraMap />
+                <AlertsNotifications />
+              </div>
 
-          <div className="gov-dashboard-grid-row-2">
-            <AIAdvisoryPreview />
-            <UnidentifiedCasesTable />
-            <DistrictAnalyticsTable />
-          </div>
+              <div className="gov-dashboard-grid-row-2">
+                <AIAdvisoryPreview />
+                <UnidentifiedCasesTable />
+                <DistrictAnalyticsTable />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

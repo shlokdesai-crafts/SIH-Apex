@@ -19,6 +19,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
+      <Route path="/government" element={<GovernmentDashboard />} />
       <Route
         path="/*"
         element={

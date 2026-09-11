@@ -2,23 +2,27 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #f4f7f4; /* Light green-grey background */
+  background-color: #f7faf7; /* Clean, light government portal background */
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  width: 100%;
 }
 
 .gov-dashboard-main {
   display: flex;
   flex: 1;
   overflow: hidden;
+  width: 100%;
 }
 
 .gov-dashboard-content {
   flex: 1;
+  min-width: 0;
   padding: 24px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
+  box-sizing: border-box;
 }
 
 .gov-dashboard-grid-row-1 {

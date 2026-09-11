@@ -1,15 +1,25 @@
 .gov-sidebar {
-  width: 240px;
-  background-color: white;
+  width: 250px;
+  min-width: 250px;
+  max-width: 250px;
+  flex: 0 0 250px;
+  flex-basis: 250px;
+  flex-shrink: 0;
+  flex-grow: 0;
+  background-color: #ffffff;
   border-right: 1px solid #e2e8f0;
-  padding: 20px 0;
+  padding: 16px 0 0 0;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .gov-sidebar-nav {
   list-style: none;
-  padding: 0;
+  padding: 0 12px;
   margin: 0;
   display: flex;
   flex-direction: column;
@@ -17,48 +27,117 @@
 }
 
 .gov-sidebar-nav li {
-  padding: 12px 24px;
+  padding: 10px 14px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  color: #4a5568;
+  gap: 13px;
+  color: #475569;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
   position: relative;
+  border-radius: 8px;
 }
 
 .gov-sidebar-nav li:hover {
-  background-color: #f7fafc;
-  color: #2d3748;
+  background-color: #f1f5f9;
+  color: #1e293b;
 }
 
 .gov-sidebar-nav li.active {
   background-color: #e6f4ea;
   color: #0b5c2d;
-  border-right: 3px solid #0b5c2d;
+  font-weight: 600;
 }
 
 .gov-sidebar-nav .icon {
-  font-size: 18px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.gov-sidebar-nav .sidebar-svg-icon {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+}
+
+.gov-sidebar-nav li.active .sidebar-svg-icon {
+  color: #0b5c2d;
+  stroke: #0b5c2d;
 }
 
 .gov-sidebar-nav .badge {
   position: absolute;
-  right: 24px;
+  right: 12px;
   padding: 2px 8px;
   border-radius: 12px;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 700;
+  line-height: 1.2;
 }
 
 .gov-sidebar-nav .badge.warning {
-  background-color: #fbd38d;
-  color: #9c4221;
+  background-color: #ffedd5;
+  color: #c2410c;
 }
 
 .gov-sidebar-nav .badge.danger {
-  background-color: #feb2b2;
-  color: #9b2c2c;
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+/* Sustainability Banner matching UI Reference */
+.gov-sidebar-footer-card {
+  margin: 18px 12px 20px;
+  background: #eaf5ee;
+  border-radius: 12px;
+  padding: 14px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.gov-sidebar-leaf-icon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+}
+
+.gov-sidebar-leaf-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.gov-sidebar-card-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-top-line {
+  font-size: 11.5px;
+  color: #15803d;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.card-highlight-line {
+  font-size: 13px;
+  font-weight: 800;
+  color: #0b5c2d;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+
+.card-sub-line {
+  font-size: 10px;
+  font-weight: 500;
+  color: #475569;
+  line-height: 1.25;
 }
