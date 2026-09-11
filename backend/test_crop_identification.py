@@ -109,11 +109,13 @@ class TestPhase3ACropIdentification(unittest.TestCase):
             crop_id.is_identified,
             "Synthetic ambiguous image was incorrectly identified with high confidence!"
         )
+        self.assertIsNotNone(crop_id.message, "Expected a rejection message but got None")
         self.assertIn("Unable to identify crop", crop_id.message)
 
 
 
     def test_target_crops_identification(self):
+
         """Test crop identification on target crop sample images."""
         crop_samples = {
             "Rice": "crop_rice.jpg",

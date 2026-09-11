@@ -2,7 +2,11 @@ import { useContext } from 'react';
 import { AuthContext } from '../auth/AuthContext';
 import './GovHeader.css';
 
-const GovHeader = () => {
+interface GovHeaderProps {
+  onToggleSidebar?: () => void;
+}
+
+const GovHeader = ({ onToggleSidebar }: GovHeaderProps) => {
   const { user, logout } = useContext(AuthContext);
 
   const initials = user?.fullName
@@ -21,6 +25,23 @@ const GovHeader = () => {
     <header className="gov-header">
       <div className="gov-header-left">
         <div className="gov-logo-container">
+          <button 
+            onClick={onToggleSidebar} 
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'white',
+              fontSize: '24px',
+              cursor: 'pointer',
+              marginRight: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '4px'
+            }}
+          >
+            ☰
+          </button>
           <span className="gov-logo-icon">🌿</span>
           <div className="gov-logo-text">
             <h2>CropGuard</h2>
@@ -29,26 +50,7 @@ const GovHeader = () => {
         </div>
       </div>
       
-      <div className="gov-header-nav">
-        <button className="gov-nav-btn active">
-          <span className="icon">🏠</span> Dashboard
-        </button>
-        <button className="gov-nav-btn">
-          <span className="icon">📄</span> Farmer Submissions
-        </button>
-        <button className="gov-nav-btn">
-          <span className="icon">📍</span> Field Visits
-        </button>
-        <button className="gov-nav-btn">
-          <span className="icon">📚</span> Knowledge Base
-        </button>
-        <button className="gov-nav-btn">
-          <span className="icon">📊</span> Reports
-        </button>
-        <button className="gov-nav-btn">
-          <span className="icon">🏛️</span> Schemes
-        </button>
-      </div>
+
 
       <div className="gov-header-right">
         <div className="gov-region-select">
@@ -65,24 +67,10 @@ const GovHeader = () => {
           <div className="gov-user-info">
             <span className="gov-user-name">{user?.fullName || 'Government Official'}</span>
             <span className="gov-user-role">District Agriculture Officer</span>
-            <button 
-              onClick={handleLogout}
-              style={{ 
-                padding: 0, 
-                marginTop: '4px', 
-                color: '#ff4d4f', 
-                fontSize: '12px', 
-                background: 'none', 
-                border: 'none', 
-                cursor: 'pointer', 
-                textAlign: 'left',
-                textDecoration: 'underline'
-              }}
-              title="Logout"
-            >
-              Logout
-            </button>
           </div>
+          <button className="gov-logout-btn" onClick={handleLogout} title="Logout">
+            <span className="icon">🚪</span> Logout
+          </button>
         </div>
       </div>
     </header>

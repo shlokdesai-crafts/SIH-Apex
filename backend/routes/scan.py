@@ -8,7 +8,8 @@ advisory) are wired in the response model but return null until the
 respective ML service modules are implemented.
 """
 
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter, File, Form, UploadFile
+from typing import Optional
 
 from services.validation import validate_upload
 from services.image_quality import analyze_quality, quality_errors
@@ -17,12 +18,19 @@ from services.crop_identification import identify_crop
 from models.response import ImageQuality, ScanResponse, ValidationResult, CropAnalysis, CropIdentification, DiseaseDetectionResult
 from ml.inference import predict_crop_disease
 from ml.config import CROP_CONFIGS
+from db import insert_submission
 
 router = APIRouter()
 
 
 @router.post("/scan", response_model=ScanResponse, summary="Validate and analyse a crop image")
-async def scan_crop(file: UploadFile = File(..., description="JPG or PNG crop image, max 10 MB")):
+async def scan_crop(
+    file: UploadFile = File(..., description="JPG or PNG crop image, max 10 MB"),
+    farmer_name: Optional[str] = Form(default="Anonymous"),
+    location: Optional[str] = Form(default="Unknown"),
+    latitude: Optional[float] = Form(default=None),
+    longitude: Optional[float] = Form(default=None),
+):
     """
     Phase 1, Phase 2, Phase 3A & Phase 3B Multi-Crop pipeline:
     1. File-type, size, and resolution validation (Phase 1)
@@ -132,6 +140,21 @@ async def scan_crop(file: UploadFile = File(..., description="JPG or PNG crop im
             f"Crop identified as {crop_id.crop_name} ({conf_pct}% confidence). "
             f"Disease: {disease_detection.disease} ({disease_conf_pct}% confidence)."
         )
+
+    # ── Step 6: Persist to database ──────────────────────────────────────────
+    ai_result_str = disease_detection.disease if disease_detection else "Unknown"
+    confidence_val = disease_detection.confidence if disease_detection else None
+    insert_submission(
+        crop=crop_id.crop_name,
+        ai_result=ai_result_str,
+        disease=disease_detection.disease if disease_detection else None,
+        confidence=confidence_val,
+        severity=severity,
+        farmer_name=farmer_name or "Anonymous",
+        location=location or "Unknown",
+        latitude=latitude,
+        longitude=longitude,
+    )
 
     return ScanResponse(
         status="valid",

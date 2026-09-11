@@ -53,7 +53,7 @@ export default function RiskForecast({ weatherData, locationData, scanResult }: 
   let weatherRiskText = 'Normal weather conditions expected';
   
   if (weatherData) {
-    const highHumidityDays = weatherData.daily?.filter((d, i) => i < 3 && weatherData.humidity > 75).length || 0;
+    const highHumidityDays = weatherData.daily?.filter((_, i) => i < 3 && weatherData.humidity > 75).length || 0;
     const rainyDays = weatherData.daily?.filter((d, i) => i < 3 && d.precipitation > 5).length || 0;
     
     if (rainyDays > 0 && highHumidityDays > 0) {

@@ -1,8 +1,12 @@
 import './GovSidebar.css';
 
-const GovSidebar = () => {
+interface GovSidebarProps {
+  isOpen?: boolean;
+}
+
+const GovSidebar = ({ isOpen = false }: GovSidebarProps) => {
   return (
-    <aside className="gov-sidebar">
+    <aside className={`gov-sidebar ${isOpen ? 'open' : ''}`}>
       <ul className="gov-sidebar-nav">
         <li className="active"><span className="icon">🏠</span> Dashboard</li>
         <li><span className="icon">📄</span> Farmer Submissions</li>
