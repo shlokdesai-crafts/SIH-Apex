@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import './AdvisoryOverview.css';
 import { getOrganicPreparationDetails } from '../utils/organicGuides';
 import { 
   calculateAdvisory, 

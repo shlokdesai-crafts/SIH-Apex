@@ -250,6 +250,7 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
       const cropConfidence = crop_id?.confidence != null
         ? Number((crop_id.confidence * 100).toFixed(1))
         : 100;
+      const actualConfidence = cropConfidence;
 
       const diseaseDet = json.disease_detection;
       const diseaseName = diseaseDet?.disease || 'Healthy Plant';
@@ -280,19 +281,6 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
         expertVerificationRequired: isNeedsVerification,
         icon: isDiseased ? '🍂' : (isNeedsVerification ? '⚠️' : '✅'),
       } as any);
-        disease: cropName,
-        severity: 'Verified',
-        severityColor: '#2e7d32',
-        confidence: actualConfidence,
-        description: json.message || 'Image passed quality and relevance checks.',
-        recommendations: json.image_quality ? [
-          `Resolution: ${json.image_quality.resolution}`,
-          `Brightness Score: ${json.image_quality.brightness_score}/255`,
-          `Sharpness Score: ${json.image_quality.blur_score}`,
-          `File Size: ${json.image_quality.file_size_mb} MB`,
-        ] : ['No image quality data available.'],
-        icon: '🌿',
-      });
 
       const newRecord: ScanRecord = {
         id: Date.now().toString(),

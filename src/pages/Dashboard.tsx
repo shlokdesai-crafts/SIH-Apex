@@ -4,6 +4,8 @@ import Hero from '../components/Hero';
 import StatsRow from '../components/StatsRow';
 import PanelsRow from '../components/PanelsRow';
 import ScanCrop from '../components/ScanCrop';
+import AdvisoryOverview from '../components/AdvisoryOverview';
+import FertilizerRecommendation from '../components/FertilizerRecommendation';
 import RiskForecast from '../components/RiskForecast';
 import MyFarm from './MyFarm/MyFarm';
 import { detectLocation, getBrowserPosition, type LocationResult } from '../services/locationService';
@@ -66,7 +68,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <Header activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Header activeTab={activeTab === 'fertilizer' ? 'advisory' : activeTab} setActiveTab={setActiveTab} />
       {activeTab === 'home' && (
         <>
           <Hero />
@@ -78,10 +80,15 @@ export default function Dashboard() {
       {activeTab === 'scan' && <ScanCrop onScanComplete={(data) => setScanResult(data)} />}
       {activeTab === 'risk' && <RiskForecast weatherData={weatherData} locationData={locationData} scanResult={scanResult} />}
       {activeTab === 'advisory' && (
-        <div style={{ padding: '40px', textAlign: 'center' }}>
-          <h2>Advisory - Work in Progress</h2>
-          <p>This page is not yet implemented.</p>
-        </div>
+        <AdvisoryOverview 
+          onBack={() => setActiveTab('home')} 
+          onOpenFertilizer={() => setActiveTab('fertilizer')} 
+        />
+      )}
+      {activeTab === 'fertilizer' && (
+        <FertilizerRecommendation 
+          onBack={() => setActiveTab('advisory')} 
+        />
       )}
       {activeTab === 'more' && (
         <div style={{ padding: '40px', textAlign: 'center' }}>
