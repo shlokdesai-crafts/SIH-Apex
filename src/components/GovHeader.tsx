@@ -1,6 +1,22 @@
+import { useContext } from 'react';
+import { AuthContext } from '../auth/AuthContext';
 import './GovHeader.css';
 
 const GovHeader = () => {
+  const { user, logout } = useContext(AuthContext);
+
+  const initials = user?.fullName
+    ?.split(' ')
+    .map((n) => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase() || 'GO';
+
+  const handleLogout = () => {
+    logout();
+    window.location.href = '/login';
+  };
+
   return (
     <header className="gov-header">
       <div className="gov-header-left">
@@ -45,10 +61,27 @@ const GovHeader = () => {
           <span className="badge">12</span>
         </div>
         <div className="gov-user-profile">
-          <div className="gov-avatar">SD</div>
+          <div className="gov-avatar">{initials}</div>
           <div className="gov-user-info">
-            <span className="gov-user-name">S. Deshmukh</span>
+            <span className="gov-user-name">{user?.fullName || 'Government Official'}</span>
             <span className="gov-user-role">District Agriculture Officer</span>
+            <button 
+              onClick={handleLogout}
+              style={{ 
+                padding: 0, 
+                marginTop: '4px', 
+                color: '#ff4d4f', 
+                fontSize: '12px', 
+                background: 'none', 
+                border: 'none', 
+                cursor: 'pointer', 
+                textAlign: 'left',
+                textDecoration: 'underline'
+              }}
+              title="Logout"
+            >
+              Logout
+            </button>
           </div>
         </div>
       </div>
