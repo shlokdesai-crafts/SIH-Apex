@@ -227,8 +227,25 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
     }
 
     try {
+      let lat: number | null = null;
+      let lng: number | null = null;
+      try {
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+        });
+        lat = position.coords.latitude;
+        lng = position.coords.longitude;
+      } catch (err) {
+        console.warn("Could not get geolocation", err);
+      }
+
       const form = new FormData();
       form.append('file', uploadedFile);
+      if (lat !== null && lng !== null) {
+        form.append('latitude', lat.toString());
+        form.append('longitude', lng.toString());
+        form.append('location', `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`);
+      }
 
       const res  = await fetch('/api/scan', { method: 'POST', body: form });
       

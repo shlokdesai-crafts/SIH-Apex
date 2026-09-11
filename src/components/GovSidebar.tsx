@@ -3,11 +3,12 @@ import './GovSidebar.css';
 interface GovSidebarProps {
   activeTab?: string;
   onSelectTab?: (tab: string) => void;
+  isOpen?: boolean;
 }
 
-const GovSidebar = ({ activeTab = 'dashboard', onSelectTab }: GovSidebarProps) => {
+const GovSidebar = ({ activeTab = 'dashboard', onSelectTab, isOpen = false }: GovSidebarProps) => {
   return (
-    <aside className="gov-sidebar">
+    <aside className={`gov-sidebar ${isOpen ? 'open' : ''}`}>
       <ul className="gov-sidebar-nav">
         <li 
           className={activeTab === 'dashboard' ? 'active' : ''}

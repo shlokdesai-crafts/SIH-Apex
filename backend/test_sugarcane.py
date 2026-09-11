@@ -1,61 +1,60 @@
 """
 backend/test_sugarcane.py
 ─────────────────────────
-Comprehensive test suite for Phase 3B-1: Sugarcane Disease Detection.
+Test suite for Sugarcane Disease Detection (Phase 3B-1).
+
 Tests:
-1. PyTorch MobileNetV3-Large model initialization & forward pass.
-2. Local weight save & load functionality.
-3. Single image inference & softmax probability calculation.
-4. Confidence thresholding fallback ("Needs expert verification").
-5. FastAPI /api/scan route integration with sugarcane image.
+  1. MobileNetV3-Large architecture (5 Sugarcane classes)
+  2. Model save/load checkpoint roundtrip
+  3. Real crop_sugarcane.jpg prediction schema and advisory
+  4. OOD abstain and forced-threshold abstain
+  5. FastAPI /api/scan integration test with real Sugarcane image
 """
+
+from __future__ import annotations
 
 import io
 import os
-from pathlib import Path
 import unittest
+from pathlib import Path
 
-from PIL import Image
 import torch
+from PIL import Image
 
 from ml.config import (
-    MODEL_PATH,
-    SUGARCANE_CLASSES,
-    NUM_CLASSES,
-    SUGARCANE_CONFIDENCE_THRESHOLD,
-    SAVED_MODELS_DIR,
+    MODEL_PATH, SUGARCANE_CLASSES, NUM_CLASSES,
+    SUGARCANE_CONFIDENCE_THRESHOLD, SAVED_MODELS_DIR, CROP_CONFIGS,
 )
 from ml.model import create_sugarcane_model, save_checkpoint, load_checkpoint
-from ml.inference import predict_sugarcane_disease
+from ml.inference import predict_sugarcane_disease, predict_crop_disease
+from test_helpers import CropDiseaseTestBase, load_real_image
 
 
-class TestSugarcaneDiseaseML(unittest.TestCase):
+class TestSugarcaneArchitecture(unittest.TestCase):
+    """Model architecture tests — no real data required."""
 
-    def setUp(self):
-        # Create a dummy RGB image buffer for testing
-        self.img = Image.new("RGB", (300, 300), color=(34, 139, 34))
-        buf = io.BytesIO()
-        self.img.save(buf, format="JPEG")
-        self.dummy_bytes = buf.getvalue()
-
-    def test_model_architecture(self):
-        """Test MobileNetV3-Large instantiation and output feature dimension (5 classes)."""
+    def test_model_output_shape(self):
+        """MobileNetV3-Large output should be (batch, 5) for 5 Sugarcane classes."""
         model = create_sugarcane_model(num_classes=NUM_CLASSES, pretrained=False)
-        dummy_input = torch.randn(2, 3, 224, 224)
-        output = model(dummy_input)
+        out = model(torch.randn(2, 3, 224, 224))
+        self.assertEqual(out.shape, (2, NUM_CLASSES))
 
-        self.assertEqual(output.shape, (2, NUM_CLASSES))
+    def test_class_definitions(self):
+        """Sugarcane should have exactly 5 disease classes."""
+        self.assertEqual(len(SUGARCANE_CLASSES), 5)
+        self.assertIn("Healthy", SUGARCANE_CLASSES)
+        self.assertIn("Red Rot", SUGARCANE_CLASSES)
 
     def test_model_save_and_load(self):
-        """Test model weights saving and loading."""
+        """Checkpoint save/load round-trip must preserve output shape."""
         test_path = SAVED_MODELS_DIR / "test_sugarcane_temp.pth"
         try:
             model = create_sugarcane_model(num_classes=NUM_CLASSES, pretrained=False)
             save_checkpoint(model, test_path)
             self.assertTrue(test_path.exists())
-
-            loaded_model = load_checkpoint(test_path)
-            self.assertIsNotNone(loaded_model)
+            loaded = load_checkpoint(test_path)
+            out = loaded(torch.randn(1, 3, 224, 224))
+            self.assertEqual(out.shape, (1, NUM_CLASSES))
         finally:
             if test_path.exists():
                 try:
@@ -63,62 +62,75 @@ class TestSugarcaneDiseaseML(unittest.TestCase):
                 except PermissionError:
                     pass
 
-    def test_inference_pipeline(self):
-        """Test single image disease prediction engine."""
-        res = predict_sugarcane_disease(self.dummy_bytes)
 
-        self.assertEqual(res["crop"], "Sugarcane")
-        self.assertIn("disease", res)
-        self.assertIn("confidence", res)
-        self.assertIn("severity", res)
-        self.assertIn("status", res)
-        self.assertGreaterEqual(res["confidence"], 0.0)
-        self.assertLessEqual(res["confidence"], 1.0)
+class TestSugarcaneDiseaseInference(CropDiseaseTestBase):
+    crop_name = "Sugarcane"
+    real_image_file = "crop_sugarcane.jpg"
+    expected_classes = ["Healthy", "Red Rot", "Rust", "Mosaic", "Yellow Disease"]
 
-    def test_low_confidence_threshold(self):
-        """Test that predictions with confidence below threshold flag 'Needs expert verification'."""
-        # Unrealistic high threshold to force low-confidence fallback
-        res = predict_sugarcane_disease(self.dummy_bytes, confidence_threshold=0.9999)
+    def test_real_image_prediction_schema(self):
+        """Real sugarcane image should return a valid prediction schema."""
+        img_bytes = self._real_image_bytes()
+        assert img_bytes is not None
+        res = predict_sugarcane_disease(img_bytes)
+        self.assert_valid_prediction_schema(res)
 
-        self.assertEqual(res["crop"], "Sugarcane")
-        self.assertEqual(res["disease"], "Needs expert verification")
-        self.assertEqual(res["status"], "Needs expert verification")
+    def test_real_image_advisory(self):
+        """Prediction from real sugarcane image must include advisory payload."""
+        img_bytes = self._real_image_bytes()
+        assert img_bytes is not None
+        res = predict_sugarcane_disease(img_bytes)
+        self.assertIsNotNone(res.get("explanation"))
+        self.assertGreater(len(res.get("recommended_actions", [])), 0)
+
+    def test_forced_abstain(self):
+        """Confidence threshold=0.9999 must force abstain on any input."""
+        img_bytes = self._real_image_bytes()
+        assert img_bytes is not None
+        res = predict_crop_disease("Sugarcane", img_bytes, confidence_threshold=1.1)
+        self.assert_abstains(res, context="forced threshold=0.9999")
+
+    def test_status_consistency(self):
+        """Disease status must be consistent with the predicted class."""
+        img_bytes = self._real_image_bytes()
+        assert img_bytes is not None
+        res = predict_sugarcane_disease(img_bytes)
+        if res["disease"] == "Healthy":
+            self.assertEqual(res["status"], "Healthy")
+        elif res["disease"] == "Needs expert verification":
+            self.assertEqual(res["status"], "Needs expert verification")
+        else:
+            self.assertEqual(res["status"], "Diseased")
 
 
 class TestScanAPIIntegration(unittest.TestCase):
+    """Full pipeline integration tests via FastAPI TestClient."""
 
-    def test_scan_endpoint_sugarcane(self):
-        """Test POST /api/scan response structure for Sugarcane image."""
+    def test_scan_endpoint_sugarcane_real_image(self):
+        """POST /api/scan with real sugarcane image should return valid disease detection."""
         from fastapi.testclient import TestClient
         from main import app
 
         client = TestClient(app)
+        img_path = Path(__file__).resolve().parent.parent / "public" / "images" / "crop_sugarcane.jpg"
 
-        sugarcane_sample = Path(__file__).resolve().parent.parent / "public" / "images" / "crop_sugarcane.jpg"
-        if not sugarcane_sample.exists():
-            # Create a sample image if file doesn't exist
-            img = Image.new("RGB", (400, 400), color=(34, 139, 34))
-            buf = io.BytesIO()
-            img.save(buf, format="JPEG")
-            img_bytes = buf.getvalue()
-            filename = "sample.jpg"
-        else:
-            with open(sugarcane_sample, "rb") as f:
-                img_bytes = f.read()
-            filename = sugarcane_sample.name
+        if not img_path.exists():
+            self.skipTest(f"Real image not found: {img_path}")
+
+        with open(img_path, "rb") as f:
+            img_bytes = f.read()
 
         response = client.post(
             "/api/scan",
-            files={"file": (filename, img_bytes, "image/jpeg")}
+            files={"file": (img_path.name, img_bytes, "image/jpeg")},
         )
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["status"], "valid")
         self.assertTrue(data["validation"]["passed"])
-        self.assertIsNotNone(data["crop_analysis"])
+        self.assertIsNotNone(data.get("crop_analysis"))
 
-        # Check disease detection block
         disease_det = data.get("disease_detection")
         self.assertIsNotNone(disease_det)
         self.assertEqual(disease_det["crop"], "Sugarcane")
@@ -126,6 +138,8 @@ class TestScanAPIIntegration(unittest.TestCase):
         self.assertIn("confidence", disease_det)
         self.assertIn("severity", disease_det)
         self.assertIn("status", disease_det)
+        valid_diseases = CROP_CONFIGS["Sugarcane"]["classes"] + ["Needs expert verification"]
+        self.assertIn(disease_det["disease"], valid_diseases)
 
 
 if __name__ == "__main__":

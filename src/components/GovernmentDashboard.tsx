@@ -8,8 +8,7 @@ import GovHero from './GovHero';
 import GovStatsRow from './GovStatsRow';
 import RecentSubmissions from './RecentSubmissions';
 import MaharashtraMap from './MaharashtraMap';
-import AlertsNotifications from './AlertsNotifications';
-import AIAdvisoryPreview from './AIAdvisoryPreview';
+
 import UnidentifiedCasesTable from './UnidentifiedCasesTable';
 import DistrictAnalyticsTable from './DistrictAnalyticsTable';
 import CropHealth from './CropHealth/CropHealth';
@@ -26,6 +25,22 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
     if (location.pathname === '/crop-health') return 'crop-health';
     return initialTab;
   });
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1200);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 1200) {
+        setIsSidebarOpen(true);
+      } else {
+        setIsSidebarOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   useEffect(() => {
     if (location.pathname === '/crop-health') {
@@ -46,10 +61,10 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
 
   return (
     <div className="gov-dashboard-container">
-      <GovHeader activeTab={activeTab} onSelectTab={handleTabChange} />
+      <GovHeader activeTab={activeTab} onSelectTab={handleTabChange} onToggleSidebar={toggleSidebar} />
       <div className="gov-dashboard-main">
-        <GovSidebar activeTab={activeTab} onSelectTab={handleTabChange} />
-        <div className="gov-dashboard-content">
+        <GovSidebar activeTab={activeTab} onSelectTab={handleTabChange} isOpen={isSidebarOpen} />
+        <div className={`gov-dashboard-content ${isSidebarOpen ? 'sidebar-open' : ''}`}>
           {activeTab === 'crop-health' ? (
             <CropHealth />
           ) : (
@@ -60,11 +75,9 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
               <div className="gov-dashboard-grid-row-1">
                 <RecentSubmissions />
                 <MaharashtraMap />
-                <AlertsNotifications />
               </div>
 
               <div className="gov-dashboard-grid-row-2">
-                <AIAdvisoryPreview />
                 <UnidentifiedCasesTable />
                 <DistrictAnalyticsTable />
               </div>
