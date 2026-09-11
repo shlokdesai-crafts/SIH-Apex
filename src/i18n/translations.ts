@@ -72,6 +72,9 @@ export const translations: Record<Language, TranslationDictionary> = {
     'panels.voiceSubtitle': 'Ask anything about your crop in your language',
     'panels.voiceQuery': '"माझ्या पिकामध्ये कोणता आजार असू शकतो?"',
     'panels.tapToSpeak': 'Tap to speak',
+    'panels.typeQuery': 'Type your query here...',
+    'panels.processingAudio': 'Processing audio...',
+    'panels.listening': 'Listening...',
 
     // ─── Language Names ────────────────────────────────────────
     'lang.marathi': 'मराठी',
@@ -176,6 +179,9 @@ export const translations: Record<Language, TranslationDictionary> = {
     'panels.voiceSubtitle': 'अपनी भाषा में अपनी फसल के बारे में कुछ भी पूछें',
     'panels.voiceQuery': '"मेरी फसल में कौन सी बीमारी हो सकती है?"',
     'panels.tapToSpeak': 'बोलने के लिए टैप करें',
+    'panels.typeQuery': 'अपनी क्वेरी यहाँ टाइप करें...',
+    'panels.processingAudio': 'ऑडियो प्रोसेस हो रहा है...',
+    'panels.listening': 'सुन रहा हूँ...',
 
     // ─── Language Names ────────────────────────────────────────
     'lang.marathi': 'मराठी',
@@ -280,6 +286,9 @@ export const translations: Record<Language, TranslationDictionary> = {
     'panels.voiceSubtitle': 'तुमच्या भाषेत तुमच्या पिकाबद्दल काहीही विचारा',
     'panels.voiceQuery': '"माझ्या पिकामध्ये कोणता आजार असू शकतो?"',
     'panels.tapToSpeak': 'बोलण्यासाठी टॅप करा',
+    'panels.typeQuery': 'तुमचा प्रश्न येथे टाइप करा...',
+    'panels.processingAudio': 'ऑडिओवर प्रक्रिया करत आहे...',
+    'panels.listening': 'ऐकत आहे...',
 
     // ─── Language Names ────────────────────────────────────────
     'lang.marathi': 'मराठी',
