@@ -250,6 +250,7 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
       const cropConfidence = crop_id?.confidence != null
         ? Number((crop_id.confidence * 100).toFixed(1))
         : 100;
+      const actualConfidence = cropConfidence;
 
       const diseaseDet = json.disease_detection;
       const diseaseName = diseaseDet?.disease || 'Healthy Plant';
