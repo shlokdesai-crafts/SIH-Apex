@@ -5,6 +5,8 @@ import StatsRow from '../components/StatsRow';
 import PanelsRow from '../components/PanelsRow';
 import ScanCrop from '../components/ScanCrop';
 import RiskForecast from '../components/RiskForecast';
+import AdvisoryOverview from '../components/AdvisoryOverview';
+import FertilizerRecommendation from '../components/FertilizerRecommendation';
 import MyFarm from './MyFarm/MyFarm';
 
 export default function Dashboard() {
@@ -24,10 +26,13 @@ export default function Dashboard() {
       {activeTab === 'scan' && <ScanCrop />}
       {activeTab === 'risk' && <RiskForecast />}
       {activeTab === 'advisory' && (
-        <div style={{ padding: '40px', textAlign: 'center' }}>
-          <h2>Advisory - Work in Progress</h2>
-          <p>This page is not yet implemented.</p>
-        </div>
+        <AdvisoryOverview
+          onBack={() => setActiveTab('home')}
+          onOpenFertilizer={() => setActiveTab('fertilizer')}
+        />
+      )}
+      {activeTab === 'fertilizer' && (
+        <FertilizerRecommendation onBack={() => setActiveTab('advisory')} />
       )}
       {activeTab === 'more' && (
         <div style={{ padding: '40px', textAlign: 'center' }}>
