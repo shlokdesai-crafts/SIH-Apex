@@ -7,7 +7,7 @@ const HF_TOKEN = import.meta.env.VITE_HF_TOKEN;
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY || '');
 const hf = new HfInference(HF_TOKEN || '');
 
-export async function transcribeAudio(audioBlob: Blob, language: string): Promise<string> {
+export async function transcribeAudio(audioBlob: Blob): Promise<string> {
   if (!HF_TOKEN) {
     throw new Error("Hugging Face token is missing.");
   }

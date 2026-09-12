@@ -1,0 +1,43 @@
+.operations-hub-page {
+  padding: 24px;
+}
+
+.hub-tabs {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 8px;
+}
+
+.hub-tab {
+  background: none;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 4px 4px 0 0;
+}
+
+.hub-tab:hover {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.hub-tab.active {
+  color: var(--primary-color, #1976d2);
+  border-bottom-color: var(--primary-color, #1976d2);
+}
+
+.hub-content {
+  background: #fff;
+  border-radius: 8px;
+  min-height: 500px;
+}

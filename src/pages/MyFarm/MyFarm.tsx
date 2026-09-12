@@ -27,7 +27,13 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
 
   const [visitCrop, setVisitCrop] = useState('Cotton');
   const [visitDate, setVisitDate] = useState('');
-  const [visitOfficer, setVisitOfficer] = useState('Village A Extension Officer');
+  const [visitOfficer, setVisitOfficer] = useState('off_1');
+
+  const mockOfficers = [
+    { id: 'off_1', name: 'Rajesh Patil', role: 'Agriculture Extension Officer' },
+    { id: 'off_2', name: 'Sneha Deshmukh', role: 'District Agriculture Officer' },
+    { id: 'off_3', name: 'Vikram Joshi', role: 'Field Inspector' },
+  ];
 
   if (isLoading || !farmState) {
     return (
@@ -82,7 +88,7 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
     await scheduleFieldVisit({
       crop: visitCrop,
       date: visitDate || 'Next Monday',
-      officerVillage: visitOfficer,
+      officerVillage: mockOfficers.find(o => o.id === visitOfficer)?.name || visitOfficer,
     });
     setShowVisitModal(false);
   };
@@ -659,11 +665,16 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                 </div>
                 <div className="farm-modal-form-group">
                   <label>Assigned Krishi Vigyan Kendra (KVK)</label>
-                  <input
-                    type="text"
+                  <select
                     value={visitOfficer}
                     onChange={(e) => setVisitOfficer(e.target.value)}
-                  />
+                  >
+                    {mockOfficers.map((o) => (
+                      <option key={o.id} value={o.id}>
+                        {o.name} ({o.role})
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="farm-modal-actions">
                   <button

@@ -1,45 +1,36 @@
+import { useTranslation } from '../i18n/useTranslation';
 import './GovSidebar.css';
-
 interface GovSidebarProps {
   activeTab?: string;
   onSelectTab?: (tab: string) => void;
   isOpen?: boolean;
 }
-
-const GovSidebar = ({ activeTab = 'dashboard', onSelectTab, isOpen = false }: GovSidebarProps) => {
-  return (
-    <aside className={`gov-sidebar ${isOpen ? 'open' : ''}`}>
+const GovSidebar = ({
+  activeTab = 'dashboard',
+  onSelectTab,
+  isOpen = false
+}: GovSidebarProps) => {
+  const {
+    t
+  } = useTranslation();
+  return <aside className={`gov-sidebar ${isOpen ? 'open' : ''}`}>
       <ul className="gov-sidebar-nav">
-        <li 
-          className={activeTab === 'dashboard' ? 'active' : ''}
-          onClick={() => onSelectTab?.('dashboard')}
-        >
-          <span className="icon">🏠</span> Dashboard
+        <li className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => onSelectTab?.('dashboard')}>
+          <span className="icon">🏠</span>{t("Dashboard")}</li>
+        <li><span className="icon">📄</span>{t("Farmer Submissions")}</li>
+        <li className={activeTab === 'operations-hub' ? 'active' : ''} onClick={() => onSelectTab?.('operations-hub')}>
+          <span className="icon">🏢</span>{t("Operations Hub")}
         </li>
-        <li><span className="icon">📄</span> Farmer Submissions</li>
-        <li>
-          <span className="icon">📍</span> Needs Field Visit
-          <span className="badge warning">24</span>
+        <li className={activeTab === 'crop-health' ? 'active' : ''} onClick={() => onSelectTab?.('crop-health')}>
+          <span className="icon">🌿</span>{t("Crop Health")}</li>
+        <li><span className="icon">💡</span>{t("Advisories")}</li>
+        <li><span className="icon">🏛️</span>{t("Schemes")}</li>
+        <li><span className="icon">📑</span>{t("Reports")}</li>
+        <li className={activeTab === 'team-management' ? 'active' : ''} onClick={() => onSelectTab?.('team-management')}>
+          <span className="icon">👥</span>{t("Team Management")}
         </li>
-        <li>
-          <span className="icon">❓</span> AI Unidentified
-          <span className="badge danger">8</span>
-        </li>
-        <li><span className="icon">📊</span> District Insights</li>
-        <li 
-          className={activeTab === 'crop-health' ? 'active' : ''}
-          onClick={() => onSelectTab?.('crop-health')}
-        >
-          <span className="icon">🌿</span> Crop Health
-        </li>
-        <li><span className="icon">💡</span> Advisories</li>
-        <li><span className="icon">🏛️</span> Schemes</li>
-        <li><span className="icon">📑</span> Reports</li>
-        <li><span className="icon">👥</span> Team Management</li>
-        <li><span className="icon">⚙️</span> Settings</li>
+        <li><span className="icon">⚙️</span>{t("Settings")}</li>
       </ul>
-    </aside>
-  );
+    </aside>;
 };
-
 export default GovSidebar;

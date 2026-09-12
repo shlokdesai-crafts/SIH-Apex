@@ -1,18 +1,26 @@
+import { useTranslation } from '../i18n/useTranslation';
 import { useState } from 'react';
 import './RiskForecast.css';
 import type { WeatherData } from '../services/weatherService';
 import type { LocationResult } from '../services/locationService';
 import { useFarm } from '../context/FarmContext';
 import type { ScanResultData } from '../pages/Dashboard';
-
 interface RiskForecastProps {
   weatherData?: WeatherData | null;
   locationData?: LocationResult | null;
   scanResult?: ScanResultData | null;
 }
-
-export default function RiskForecast({ weatherData, locationData, scanResult }: RiskForecastProps = {}) {
-  const { farmState } = useFarm();
+export default function RiskForecast({
+  weatherData,
+  locationData,
+  scanResult
+}: RiskForecastProps = {}) {
+  const {
+    t
+  } = useTranslation();
+  const {
+    farmState
+  } = useFarm();
   const [selectedCrop, setSelectedCrop] = useState(scanResult?.crop || 'Cotton');
 
   // Dynamic farm-connected crop data
@@ -74,7 +82,9 @@ export default function RiskForecast({ weatherData, locationData, scanResult }: 
   };
 
   // Overlay real scan data from farmState
-  const cropData = { ...baseCrops };
+  const cropData = {
+    ...baseCrops
+  };
   if (farmState && farmState.crops) {
     farmState.crops.forEach(fc => {
       const isDiseased = fc.status === 'Diseased';
@@ -84,30 +94,21 @@ export default function RiskForecast({ weatherData, locationData, scanResult }: 
         overallRisk: isDiseased ? 'High' : isAtRisk ? 'Moderate' : 'Low',
         riskClass: isDiseased ? 'high' : isAtRisk ? 'moderate' : 'low',
         trend: isDiseased ? '↑' : isAtRisk ? '↑' : '↓',
-        riskDesc: fc.detectedDisease 
-          ? `${fc.detectedDisease} detected in recent scan` 
-          : isDiseased 
-          ? 'Active disease symptoms detected' 
-          : 'Normal growing conditions',
+        riskDesc: fc.detectedDisease ? `${fc.detectedDisease} detected in recent scan` : isDiseased ? 'Active disease symptoms detected' : 'Normal growing conditions',
         confidence: isDiseased ? 92 : 88,
-        weatherImpact: isDiseased 
-          ? 'Disease spore proliferation alert in humid canopy' 
-          : `Monitored on ${fc.areaHa} Ha field`
+        weatherImpact: isDiseased ? 'Disease spore proliferation alert in humid canopy' : `Monitored on ${fc.areaHa} Ha field`
       };
     });
   }
-
   const currentData = cropData[selectedCrop] || cropData['Cotton'];
 
   // Calculate dynamic weather risk based on real weatherData
   let weatherRiskLevel = 'Moderate';
   let weatherRiskClass = 'mod';
   let weatherRiskText = 'Normal weather conditions expected';
-  
   if (weatherData) {
     const highHumidityDays = weatherData.daily?.filter((_, i) => i < 3 && weatherData.humidity > 75).length || 0;
     const rainyDays = weatherData.daily?.filter((d, i) => i < 3 && d.precipitation > 5).length || 0;
-    
     if (rainyDays > 0 && highHumidityDays > 0) {
       weatherRiskLevel = 'High';
       weatherRiskClass = 'high';
@@ -130,42 +131,30 @@ export default function RiskForecast({ weatherData, locationData, scanResult }: 
       weatherRiskText = 'Favorable weather conditions expected';
     }
   }
-
-  return (
-    <div className="risk-forecast-container">
+  return <div className="risk-forecast-container">
       {/* Top Header Section */}
       <div className="rf-header">
         <div className="rf-title-group">
-          <h1>Risk Forecast</h1>
-          <p>Know the risk before visible damage spreads.</p>
+          <h1>{t("Risk Forecast")}</h1>
+          <p>{t("Know the risk before visible damage spreads.")}</p>
         </div>
         
         <div className="rf-info-bar">
           <div className="rf-info-item">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2d8a3e" strokeWidth="2">
-              <path d="M12 22C12 22 20 18 20 12C20 6 12 2 12 2C12 2 4 6 4 12C4 18 12 22 12 22Z"/>
-              <path d="M12 22V2"/>
+              <path d="M12 22C12 22 20 18 20 12C20 6 12 2 12 2C12 2 4 6 4 12C4 18 12 22 12 22Z" />
+              <path d="M12 22V2" />
             </svg>
             <div className="rf-info-text">
-              <span className="rf-info-label">Crop</span>
-              <select 
-                className="rf-crop-select" 
-                value={selectedCrop} 
-                onChange={(e) => setSelectedCrop(e.target.value)}
-              >
-                {farmState && farmState.crops && farmState.crops.length > 0 ? (
-                  farmState.crops.map((c) => (
-                    <option key={c.id} value={c.name}>
+              <span className="rf-info-label">{t("Crop")}</span>
+              <select className="rf-crop-select" value={selectedCrop} onChange={e => setSelectedCrop(e.target.value)}>
+                {farmState && farmState.crops && farmState.crops.length > 0 ? farmState.crops.map(c => <option key={c.id} value={c.name}>
                       {c.name} ({c.status})
-                    </option>
-                  ))
-                ) : (
-                  <>
-                    <option value="Cotton">Cotton</option>
-                    <option value="Soybean">Soybean</option>
-                    <option value="Sugarcane">Sugarcane</option>
-                  </>
-                )}
+                    </option>) : <>
+                    <option value="Cotton">{t("Cotton")}</option>
+                    <option value="Soybean">{t("Soybean")}</option>
+                    <option value="Sugarcane">{t("Sugarcane")}</option>
+                  </>}
               </select>
             </div>
           </div>
@@ -178,7 +167,7 @@ export default function RiskForecast({ weatherData, locationData, scanResult }: 
               <path d="M12 8h.01" />
             </svg>
             <div className="rf-info-text">
-              <span className="rf-info-label">Growth Stage</span>
+              <span className="rf-info-label">{t("Growth Stage")}</span>
               <span className="rf-info-value">{currentData.stage}</span>
             </div>
           </div>
@@ -190,7 +179,7 @@ export default function RiskForecast({ weatherData, locationData, scanResult }: 
               <circle cx="12" cy="10" r="3"></circle>
             </svg>
             <div className="rf-info-text">
-              <span className="rf-info-label">Location</span>
+              <span className="rf-info-label">{t("Location")}</span>
               <span className="rf-info-value">{locationData ? `${locationData.district}, ${locationData.state}` : 'Akola, Maharashtra'}</span>
             </div>
           </div>
@@ -204,8 +193,8 @@ export default function RiskForecast({ weatherData, locationData, scanResult }: 
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
             <div className="rf-info-text">
-              <span className="rf-info-label">Last updated</span>
-              <span className="rf-info-value">Just now</span>
+              <span className="rf-info-label">{t("Last updated")}</span>
+              <span className="rf-info-value">{t("Just now")}</span>
             </div>
           </div>
           
@@ -228,9 +217,9 @@ export default function RiskForecast({ weatherData, locationData, scanResult }: 
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2d8a3e" strokeWidth="2">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
               </svg>
-              <h3>Overall Crop Risk</h3>
+              <h3>{t("Overall Crop Risk")}</h3>
             </div>
-            <a href="#" className="rf-link">View Details &rarr;</a>
+            <a href="#" className="rf-link">{t("View Details →")}</a>
           </div>
           <div className="rf-overall-risk-content">
             <div className="rf-overall-icon">
@@ -240,7 +229,7 @@ export default function RiskForecast({ weatherData, locationData, scanResult }: 
             </div>
             <div className="rf-overall-info">
               <div className="rf-risk-level">
-                <span className={`rf-risk-text ${scanResult ? (scanResult.severity === 'High' ? 'high' : scanResult.severity === 'Moderate' ? 'mod' : 'low') : currentData.riskClass}`}>
+                <span className={`rf-risk-text ${scanResult ? scanResult.severity === 'High' ? 'high' : scanResult.severity === 'Moderate' ? 'mod' : 'low' : currentData.riskClass}`}>
                   {scanResult ? scanResult.severity : currentData.overallRisk}
                 </span>
                 <span className="rf-risk-trend">{currentData.trend}</span>
@@ -251,9 +240,12 @@ export default function RiskForecast({ weatherData, locationData, scanResult }: 
             </div>
           </div>
           <div className="rf-confidence">
-            <div className="rf-confidence-text">{scanResult ? Math.round(scanResult.score) : currentData.confidence}% Confidence</div>
+            <div className="rf-confidence-text">{scanResult ? Math.round(scanResult.score) : currentData.confidence}{t("% Confidence")}</div>
             <div className="rf-progress-bar">
-              <div className="rf-progress-fill" style={{ width: `${scanResult ? scanResult.score : currentData.confidence}%`, backgroundColor: '#4caf50' }}></div>
+              <div className="rf-progress-fill" style={{
+              width: `${scanResult ? scanResult.score : currentData.confidence}%`,
+              backgroundColor: '#4caf50'
+            }}></div>
             </div>
           </div>
         </div>
@@ -265,7 +257,7 @@ export default function RiskForecast({ weatherData, locationData, scanResult }: 
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2d8a3e" strokeWidth="2">
                 <path d="M18 20V10M12 20V4M6 20v-6"></path>
               </svg>
-              <h3>7-Day Risk Forecast</h3>
+              <h3>{t("7-Day Risk Forecast")}</h3>
             </div>
           </div>
           <div className="rf-chart-container">
@@ -295,18 +287,18 @@ export default function RiskForecast({ weatherData, locationData, scanResult }: 
               <circle cx="500" cy="110" r="5" fill="#ffca28" />
             </svg>
             <div className="rf-chart-labels">
-              <div className="rf-label"><span>Today</span><br/>7 Sep</div>
-              <div className="rf-label"><span>+1 Day</span><br/>8 Sep</div>
-              <div className="rf-label"><span>+2 Days</span><br/>9 Sep</div>
-              <div className="rf-label"><span>+3 Days</span><br/>10 Sep</div>
-              <div className="rf-label"><span>+4 Days</span><br/>11 Sep</div>
-              <div className="rf-label"><span>+5 Days</span><br/>12 Sep</div>
-              <div className="rf-label"><span>+7 Days</span><br/>14 Sep</div>
+              <div className="rf-label"><span>{t("Today")}</span><br />{t("7 Sep")}</div>
+              <div className="rf-label"><span>{t("+1 Day")}</span><br />{t("8 Sep")}</div>
+              <div className="rf-label"><span>{t("+2 Days")}</span><br />{t("9 Sep")}</div>
+              <div className="rf-label"><span>{t("+3 Days")}</span><br />{t("10 Sep")}</div>
+              <div className="rf-label"><span>{t("+4 Days")}</span><br />{t("11 Sep")}</div>
+              <div className="rf-label"><span>{t("+5 Days")}</span><br />{t("12 Sep")}</div>
+              <div className="rf-label"><span>{t("+7 Days")}</span><br />{t("14 Sep")}</div>
             </div>
             <div className="rf-chart-legend">
-              <span className="legend-item"><span className="dot low"></span> Low Risk</span>
-              <span className="legend-item"><span className="dot mod"></span> Moderate Risk</span>
-              <span className="legend-item"><span className="dot high"></span> High Risk</span>
+              <span className="legend-item"><span className="dot low"></span>{t("Low Risk")}</span>
+              <span className="legend-item"><span className="dot mod"></span>{t("Moderate Risk")}</span>
+              <span className="legend-item"><span className="dot high"></span>{t("High Risk")}</span>
             </div>
           </div>
         </div>
@@ -318,28 +310,29 @@ export default function RiskForecast({ weatherData, locationData, scanResult }: 
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2d8a3e" strokeWidth="2">
                 <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
               </svg>
-              <h3>Risk by Issue Type</h3>
+              <h3>{t("Risk by Issue Type")}</h3>
             </div>
-            <a href="#" className="rf-link">View Details &rarr;</a>
+            <a href="#" className="rf-link">{t("View Details →")}</a>
           </div>
           <div className="rf-issue-list">
             {/* Dynamic Issue from Scan */}
-            {scanResult && scanResult.disease && scanResult.disease.toLowerCase() !== 'healthy plant' ? (
-              <div className="rf-issue-item">
+            {scanResult && scanResult.disease && scanResult.disease.toLowerCase() !== 'healthy plant' ? <div className="rf-issue-item">
                 <div className="rf-issue-name">
                   <div className="bug-icon">⚠️</div>
                   <span>{scanResult.disease}</span>
                 </div>
                 <div className={`rf-issue-level ${scanResult.severity === 'High' ? 'high' : scanResult.severity === 'Moderate' ? 'mod' : 'low'}`}>{scanResult.severity}</div>
-                <div className="rf-issue-bar"><div className={`fill ${scanResult.severity === 'High' ? 'high' : scanResult.severity === 'Moderate' ? 'mod' : 'low'}`} style={{width: scanResult.severity === 'High' ? '90%' : scanResult.severity === 'Moderate' ? '60%' : '30%'}}></div></div>
-              </div>
-            ) : (
-              <div style={{ padding: '20px', textAlign: 'center', color: '#666', fontSize: '14px' }}>
-                {scanResult && scanResult.disease.toLowerCase() === 'healthy plant' 
-                  ? 'Your scanned crop is completely healthy!'
-                  : 'Scan a crop to see potential issues.'}
-              </div>
-            )}
+                <div className="rf-issue-bar"><div className={`fill ${scanResult.severity === 'High' ? 'high' : scanResult.severity === 'Moderate' ? 'mod' : 'low'}`} style={{
+                width: scanResult.severity === 'High' ? '90%' : scanResult.severity === 'Moderate' ? '60%' : '30%'
+              }}></div></div>
+              </div> : <div style={{
+            padding: '20px',
+            textAlign: 'center',
+            color: '#666',
+            fontSize: '14px'
+          }}>
+                {scanResult && scanResult.disease.toLowerCase() === 'healthy plant' ? 'Your scanned crop is completely healthy!' : 'Scan a crop to see potential issues.'}
+              </div>}
           </div>
         </div>
 
@@ -350,33 +343,33 @@ export default function RiskForecast({ weatherData, locationData, scanResult }: 
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2d8a3e" strokeWidth="2">
                 <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
               </svg>
-              <h3>Key Risk Factors</h3>
+              <h3>{t("Key Risk Factors")}</h3>
             </div>
           </div>
           <div className="rf-factors-grid">
             <div className="rf-factor">
               <div className="rf-factor-icon weather">🌧️</div>
-              <h4>Weather</h4>
+              <h4>{t("Weather")}</h4>
               <span className={`badge ${weatherRiskClass}`}>{weatherRiskLevel}</span>
               <p>{weatherRiskText}</p>
             </div>
             <div className="rf-factor">
               <div className="rf-factor-icon stage">🌱</div>
-              <h4>Crop Stage</h4>
-              <span className="badge mod">Moderate</span>
-              <p>Flowering stage is more susceptible</p>
+              <h4>{t("Crop Stage")}</h4>
+              <span className="badge mod">{t("Moderate")}</span>
+              <p>{t("Flowering stage is more susceptible")}</p>
             </div>
             <div className="rf-factor">
               <div className="rf-factor-icon cases">👥</div>
-              <h4>Nearby Cases</h4>
-              <span className="badge high">High</span>
-              <p>Increasing reports from nearby farms</p>
+              <h4>{t("Nearby Cases")}</h4>
+              <span className="badge high">{t("High")}</span>
+              <p>{t("Increasing reports from nearby farms")}</p>
             </div>
             <div className="rf-factor">
               <div className="rf-factor-icon history">📊</div>
-              <h4>Historical Data</h4>
-              <span className="badge mod">Moderate</span>
-              <p>Bollworm common in this period</p>
+              <h4>{t("Historical Data")}</h4>
+              <span className="badge mod">{t("Moderate")}</span>
+              <p>{t("Bollworm common in this period")}</p>
             </div>
           </div>
         </div>
@@ -388,9 +381,9 @@ export default function RiskForecast({ weatherData, locationData, scanResult }: 
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2d8a3e" strokeWidth="2">
                 <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
               </svg>
-              <h3>Weather Forecast <span>(Next 7 Days)</span></h3>
+              <h3>{t("Weather Forecast")}<span>{t("(Next 7 Days)")}</span></h3>
             </div>
-            <a href="#" className="rf-link">View Forecast &rarr;</a>
+            <a href="#" className="rf-link">{t("View Forecast →")}</a>
           </div>
           <div className="rf-weather-content">
             <div className="rf-weather-stats">
@@ -398,64 +391,83 @@ export default function RiskForecast({ weatherData, locationData, scanResult }: 
                 <div className="icon">🌡️</div>
                 <div className="data">
                   <span className="val">{weatherData ? `${weatherData.temperature}°C` : '28°C'}</span>
-                  <span className="lbl">Avg. Temp.</span>
+                  <span className="lbl">{t("Avg. Temp.")}</span>
                 </div>
               </div>
               <div className="rf-weather-stat">
                 <div className="icon">💧</div>
                 <div className="data">
                   <span className="val">{weatherData ? `${weatherData.humidity}%` : '72%'}</span>
-                  <span className="lbl">Avg. Humidity</span>
+                  <span className="lbl">{t("Avg. Humidity")}</span>
                 </div>
               </div>
               <div className="rf-weather-stat">
                 <div className="icon">🌧️</div>
                 <div className="data">
                   <span className="val">{weatherData ? `${weatherData.precipitation} mm` : '12 mm'}</span>
-                  <span className="lbl">Total Rainfall</span>
+                  <span className="lbl">{t("Total Rainfall")}</span>
                 </div>
               </div>
               <div className="rf-weather-stat">
                 <div className="icon">💨</div>
                 <div className="data">
                   <span className="val">{weatherData ? `${weatherData.windSpeed} km/h` : '12 km/h'}</span>
-                  <span className="lbl">Avg. Wind</span>
+                  <span className="lbl">{t("Avg. Wind")}</span>
                 </div>
               </div>
             </div>
 
             {/* 7-Day Scrollable Row */}
-            {weatherData?.daily && (
-              <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '16px', marginTop: '16px' }}>
+            {weatherData?.daily && <div style={{
+            display: 'flex',
+            gap: '12px',
+            overflowX: 'auto',
+            paddingBottom: '8px',
+            marginBottom: '16px',
+            marginTop: '16px'
+          }}>
                 {weatherData.daily.map((day, i) => {
-                  const date = new Date(day.time);
-                  const dayName = i === 0 ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'short' });
-                  
-                  let icon = '☁️';
-                  if (day.weatherCode === 0 || day.weatherCode === 1) icon = '☀️';
-                  else if (day.weatherCode === 2 || day.weatherCode === 3) icon = '⛅';
-                  else if (day.weatherCode >= 45 && day.weatherCode <= 48) icon = '🌫️';
-                  else if (day.weatherCode >= 51 && day.weatherCode <= 65) icon = '🌧️';
-                  else if (day.weatherCode >= 71 && day.weatherCode <= 75) icon = '❄️';
-                  else if (day.weatherCode >= 95 && day.weatherCode <= 99) icon = '⛈️';
-
-                  return (
-                    <div key={day.time} style={{ minWidth: '65px', padding: '12px 8px', background: i === 0 ? '#e8f5e9' : '#f8f9fa', borderRadius: '8px', textAlign: 'center', border: i === 0 ? '1px solid #81c784' : '1px solid #e0e0e0' }}>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: i === 0 ? '#2e7d32' : '#333' }}>{dayName}</div>
-                      <div style={{ fontSize: '1.5rem', margin: '4px 0' }}>{icon}</div>
-                      <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#333' }}>{day.tempMax}°</div>
-                      <div style={{ fontSize: '0.75rem', color: '#666' }}>{day.tempMin}°</div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+              const date = new Date(day.time);
+              const dayName = i === 0 ? 'Today' : date.toLocaleDateString('en-US', {
+                weekday: 'short'
+              });
+              let icon = '☁️';
+              if (day.weatherCode === 0 || day.weatherCode === 1) icon = '☀️';else if (day.weatherCode === 2 || day.weatherCode === 3) icon = '⛅';else if (day.weatherCode >= 45 && day.weatherCode <= 48) icon = '🌫️';else if (day.weatherCode >= 51 && day.weatherCode <= 65) icon = '🌧️';else if (day.weatherCode >= 71 && day.weatherCode <= 75) icon = '❄️';else if (day.weatherCode >= 95 && day.weatherCode <= 99) icon = '⛈️';
+              return <div key={day.time} style={{
+                minWidth: '65px',
+                padding: '12px 8px',
+                background: i === 0 ? '#e8f5e9' : '#f8f9fa',
+                borderRadius: '8px',
+                textAlign: 'center',
+                border: i === 0 ? '1px solid #81c784' : '1px solid #e0e0e0'
+              }}>
+                      <div style={{
+                  fontSize: '0.85rem',
+                  fontWeight: 'bold',
+                  color: i === 0 ? '#2e7d32' : '#333'
+                }}>{dayName}</div>
+                      <div style={{
+                  fontSize: '1.5rem',
+                  margin: '4px 0'
+                }}>{icon}</div>
+                      <div style={{
+                  fontSize: '0.9rem',
+                  fontWeight: 'bold',
+                  color: '#333'
+                }}>{day.tempMax}°</div>
+                      <div style={{
+                  fontSize: '0.75rem',
+                  color: '#666'
+                }}>{day.tempMin}°</div>
+                    </div>;
+            })}
+              </div>}
 
             <div className="rf-weather-impact">
               <div className="icon">🌱</div>
               <div className="impact-text">
                 <h4>{currentData.weatherImpact}</h4>
-                <p>High humidity and moderate rainfall may increase pest reproduction risk.</p>
+                <p>{t("High humidity and moderate rainfall may increase pest reproduction risk.")}</p>
               </div>
               <div className={`impact-badge ${currentData.riskClass}`}>{currentData.overallRisk}</div>
             </div>
@@ -463,6 +475,5 @@ export default function RiskForecast({ weatherData, locationData, scanResult }: 
         </div>
 
       </div>
-    </div>
-  );
+    </div>;
 }

@@ -10,9 +10,9 @@ const HF_API_URL = 'https://api-inference.huggingface.co/models';
 
 // Model mapping for each language pair
 const MODEL_MAP: Record<string, string> = {
-  'en-hi': 'Helsinki-NLP/opus-mt-en-hi',
+  'en-hi': 'facebook/nllb-200-distilled-600M',
   'en-mr': 'facebook/nllb-200-distilled-600M',
-  'hi-en': 'Helsinki-NLP/opus-mt-hi-en',
+  'hi-en': 'facebook/nllb-200-distilled-600M',
   'mr-en': 'facebook/nllb-200-distilled-600M',
   'hi-mr': 'facebook/nllb-200-distilled-600M',
   'mr-hi': 'facebook/nllb-200-distilled-600M',
