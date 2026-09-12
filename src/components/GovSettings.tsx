@@ -1,7 +1,30 @@
-import { useState } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import './GovSettings.css';
+import { AuthContext } from '../auth/AuthContext';
+
+import {
+  type GovOfficerProfile,
+  type GovOfficerJurisdiction,
+  type GovOfficerNotifications,
+  type GovOfficerAiPreferences,
+  type GovOfficerSecurity,
+  fetchOfficerSettings,
+  patchOfficerProfile,
+  patchOfficerNotifications,
+  patchOfficerAiPreferences,
+  getStoredUser,
+  getAdministrativeDivision,
+  getAgroClimaticZone,
+} from '../services/govOfficerApi';
 
 export default function GovSettings() {
+  const { user } = useContext(AuthContext);
+
+  // Synchronously resolve session on initial render to prevent undefined userId on page refresh
+  const storedUser = getStoredUser();
+  const activeUser = user || storedUser;
+  const activeUserId = activeUser?.id;
+
   // Accordion state: Section 1 expanded by default, others collapsed
   const [openSections, setOpenSections] = useState<Record<number, boolean>>({
     1: true,
@@ -9,7 +32,6 @@ export default function GovSettings() {
     3: false,
     4: false,
     5: false,
-    6: false,
   });
 
   const toggleSection = (id: number) => {
@@ -19,24 +41,45 @@ export default function GovSettings() {
     }));
   };
 
-  // Profile data
-  const [profile, setProfile] = useState({
-    name: 'Dr. A. Deshmukh',
-    designation: 'Agriculture Officer',
-    department: 'Agriculture Department',
-    stateDepartment: 'Maharashtra Agriculture Department',
-    employeeId: 'AGRO-2457',
-    email: 'deshmukh@mahagov.in',
-    district: 'Yavatmal',
-    phone: '+91 98765 43210',
+  // Profile data state initialized with user context or stored session baseline
+  const [profile, setProfile] = useState<GovOfficerProfile>(() => {
+    const u = user || getStoredUser();
+    return {
+      name: u?.fullName || 'Dr. A. Deshmukh',
+      designation: 'Agriculture Officer',
+      department: 'Agriculture Department',
+      stateDepartment: 'Maharashtra Agriculture Department',
+      employeeId: 'AGRO-2457',
+      email: null,
+      district: u?.location || 'Yavatmal',
+      phone: u?.phone || '+91 98765 43210',
+      avatarInitials: u?.fullName ? u.fullName.replace(/^Dr\.\s*/i, '').slice(0, 2).toUpperCase() : 'AD',
+    };
   });
 
-  // Edit Profile Modal
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editForm, setEditForm] = useState({ ...profile });
+  // Jurisdiction data state matching the assigned district's administrative division
+  const [jurisdiction, setJurisdiction] = useState<GovOfficerJurisdiction>(() => {
+    const u = user || getStoredUser();
+    const dist = u?.location || 'Yavatmal';
+    const div = getAdministrativeDivision(dist);
+    const zone = getAgroClimaticZone(dist);
+    return {
+      assignedState: 'Maharashtra',
+      stateCode: 'MH (27)',
+      administrativeDivision: div,
+      agroClimaticZone: zone,
+      assignedDistrict: `${dist} District`,
+      districtHq: `DSAO ${dist} HQ`,
+      jurisdictionCode: 'MH-YTL-AGRI-02',
+      coveredTalukas: `${dist} & Surrounding`,
+      agriculturalCircles: '12 Agricultural Circles',
+      reportingAuthority: 'Divisional Joint Director',
+      regionalDirectorate: `${div} Regional Directorate`,
+    };
+  });
 
   // Notifications state
-  const [notifications, setNotifications] = useState({
+  const [notifications, setNotifications] = useState<GovOfficerNotifications>({
     highRiskOutbreaks: true,
     farmerSubmissions: true,
     weeklySurveillance: true,
@@ -46,7 +89,7 @@ export default function GovSettings() {
   });
 
   // AI Preferences state
-  const [aiPrefs, setAiPrefs] = useState({
+  const [aiPrefs, setAiPrefs] = useState<GovOfficerAiPreferences>({
     autoPreFilter: true,
     gradCamHeatmap: true,
     icarRemedies: true,
@@ -55,33 +98,205 @@ export default function GovSettings() {
     invasiveAnomalyFlagging: true,
   });
 
+  // Security data state
+  const [security, setSecurity] = useState<GovOfficerSecurity>({
+    twoFactorAuth: 'Active (MahaGov SSO)',
+    twoFactorMethod: 'Secured via OTP & Gov Domain',
+    accessClearanceLevel: 'Level 3 Officer',
+    accessScope: 'District-wide approval authority',
+    farmerDataScope: `${user?.location || 'Yavatmal'} Jurisdiction`,
+    farmerDataScopeDesc: 'Full crop scan and land parcel telemetry',
+    lastPasswordChange: '38 days ago',
+    passwordPolicy: 'Mandatory policy cycle: 90 days',
+    activeWorkstationSession: 'MahaGov Intranet (10.52.18.44)',
+    sessionSecurity: 'SSL TLS 1.3 encrypted tunnel',
+    dataRetentionCompliance: 'DPDP Act & MahaState 2023',
+    retentionDescription: 'Certified agricultural data repository',
+  });
+
+  // Edit Profile Modal state
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState({
+    email: profile.email || '',
+    phone: profile.phone,
+    district: profile.district,
+  });
+  const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
+
+  // Synchronize editForm with current profile whenever the modal opens
+  const handleOpenEditModal = () => {
+    setEditForm({
+      email: profile.email || '',
+      phone: profile.phone,
+      district: profile.district,
+    });
+    setShowEditModal(true);
+  };
+
   // Save changes tracking & toast
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
-  const triggerToast = (msg: string) => {
+  const triggerToast = useCallback((msg: string) => {
     setToastMessage(msg);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3200);
+  }, []);
+
+  // ── Sync Settings with Backend API on Mount or when User changes ──
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadSettings() {
+      const targetUserId = user?.id || getStoredUser()?.id;
+      try {
+        const data = await fetchOfficerSettings(targetUserId);
+        if (!isMounted) return;
+
+        if (data.profile) {
+          setProfile(data.profile);
+          setEditForm({
+            email: data.profile.email || '',
+            phone: data.profile.phone,
+            district: data.profile.district,
+          });
+        }
+        if (data.jurisdiction) {
+          setJurisdiction(data.jurisdiction);
+        }
+        if (data.notifications) {
+          setNotifications(data.notifications);
+        }
+        if (data.aiPreferences) {
+          setAiPrefs(data.aiPreferences);
+        }
+        if (data.security) {
+          setSecurity(data.security);
+        }
+      } catch (err) {
+        console.warn('Could not load officer settings from API, using defaults:', err);
+      }
+    }
+
+    loadSettings();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id, activeUserId]);
+
+  // ── Notification Toggle Handler (Persisted to PostgreSQL) ──
+  const handleNotificationToggle = async (key: keyof GovOfficerNotifications) => {
+    const prevVal = notifications[key];
+    const nextVal = !prevVal;
+    const targetUserId = user?.id || getStoredUser()?.id;
+
+    // Optimistic UI update
+    setNotifications((prev) => ({ ...prev, [key]: nextVal }));
+
+    try {
+      await patchOfficerNotifications({ [key]: nextVal }, targetUserId);
+      triggerToast('✓ Notification preferences updated!');
+    } catch (err) {
+      console.error('Failed to update notification in PostgreSQL:', err);
+      // Revert on failure
+      setNotifications((prev) => ({ ...prev, [key]: prevVal }));
+      triggerToast('✕ Failed to update notification setting');
+    }
   };
 
-  const handleNotificationToggle = (key: keyof typeof notifications) => {
-    setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
+  // ── AI Preferences Toggle Handler (Persisted to PostgreSQL) ──
+  const handleAiToggle = async (key: keyof GovOfficerAiPreferences) => {
+    const prevVal = aiPrefs[key];
+    const nextVal = !prevVal;
+    const targetUserId = user?.id || getStoredUser()?.id;
+
+    // Optimistic UI update
+    setAiPrefs((prev) => ({ ...prev, [key]: nextVal }));
+
+    try {
+      await patchOfficerAiPreferences({ [key]: nextVal }, targetUserId);
+      triggerToast('✓ AI preferences updated!');
+    } catch (err) {
+      console.error('Failed to update AI preference in PostgreSQL:', err);
+      // Revert on failure
+      setAiPrefs((prev) => ({ ...prev, [key]: prevVal }));
+      triggerToast('✕ Failed to update AI preference');
+    }
   };
 
-  const handleAiToggle = (key: keyof typeof aiPrefs) => {
-    setAiPrefs((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const handleSaveChanges = () => {
-    triggerToast('✓ Settings & preferences saved successfully to government profile!');
-  };
-
-  const handleSaveModal = (e: React.FormEvent) => {
+  // ── Profile Save Handler (Persisted to PostgreSQL) ──
+  const handleSaveModal = async (e: React.FormEvent) => {
     e.preventDefault();
-    setProfile({ ...editForm });
-    setShowEditModal(false);
-    triggerToast('✓ Profile contact details updated!');
+    if (isSubmittingProfile) return;
+
+    setIsSubmittingProfile(true);
+    const targetUserId = user?.id || getStoredUser()?.id;
+
+    try {
+      const updatedProfile = await patchOfficerProfile(
+        {
+          email: editForm.email.trim() ? editForm.email.trim() : null,
+          phone: editForm.phone.trim(),
+          district: editForm.district.trim(),
+        },
+        targetUserId
+      );
+
+      setProfile((prev) => ({ ...prev, ...updatedProfile }));
+      setEditForm({
+        email: updatedProfile.email || '',
+        phone: updatedProfile.phone,
+        district: updatedProfile.district,
+      });
+
+      // Keep jurisdiction and security synced with the district update
+      const newDiv = getAdministrativeDivision(updatedProfile.district);
+      const newZone = getAgroClimaticZone(updatedProfile.district);
+      setJurisdiction((prev) => ({
+        ...prev,
+        administrativeDivision: newDiv,
+        agroClimaticZone: newZone,
+        assignedDistrict: `${updatedProfile.district} District`,
+        districtHq: `DSAO ${updatedProfile.district} HQ`,
+        regionalDirectorate: `${newDiv} Regional Directorate`,
+      }));
+      setSecurity((prev) => ({
+        ...prev,
+        farmerDataScope: `${updatedProfile.district} Jurisdiction`,
+      }));
+
+      // Keep local session and stored users in sync so on page refresh, session matches PostgreSQL
+      try {
+        const sessionStr = localStorage.getItem('cropguard_session');
+        if (sessionStr) {
+          const sessionObj = JSON.parse(sessionStr);
+          sessionObj.phone = updatedProfile.phone;
+          sessionObj.location = updatedProfile.district;
+          localStorage.setItem('cropguard_session', JSON.stringify(sessionObj));
+        }
+        const usersStr = localStorage.getItem('cropguard_users');
+        if (usersStr) {
+          const usersArr = JSON.parse(usersStr);
+          const uIdx = usersArr.findIndex((u: any) => u.id === targetUserId);
+          if (uIdx !== -1) {
+            usersArr[uIdx].phone = updatedProfile.phone;
+            usersArr[uIdx].location = updatedProfile.district;
+            localStorage.setItem('cropguard_users', JSON.stringify(usersArr));
+          }
+        }
+      } catch (storageErr) {
+        console.warn('Could not update local session storage:', storageErr);
+      }
+
+      setShowEditModal(false);
+      triggerToast('✓ Profile contact details updated!');
+    } catch (err: any) {
+      console.error('Failed to update officer profile in PostgreSQL:', err);
+      triggerToast(`✕ ${err?.message || 'Failed to update profile details'}`);
+    } finally {
+      setIsSubmittingProfile(false);
+    }
   };
 
   return (
@@ -111,7 +326,7 @@ export default function GovSettings() {
                     className="gov-modal-input"
                     value={editForm.email}
                     onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                    required
+                    placeholder="e.g. officer@mahagov.in"
                   />
                 </div>
                 <div className="gov-modal-form-group">
@@ -136,11 +351,11 @@ export default function GovSettings() {
                 </div>
               </div>
               <div className="gov-modal-footer">
-                <button type="button" className="gov-btn-cancel" onClick={() => setShowEditModal(false)}>
+                <button type="button" className="gov-btn-cancel" onClick={() => setShowEditModal(false)} disabled={isSubmittingProfile}>
                   Cancel
                 </button>
-                <button type="submit" className="gov-btn-apply">
-                  Save Changes
+                <button type="submit" className="gov-btn-apply" disabled={isSubmittingProfile}>
+                  {isSubmittingProfile ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>
@@ -161,32 +376,6 @@ export default function GovSettings() {
             <h1>Settings</h1>
             <p>Manage your CropGuard account, government role, notifications, AI preferences and data access.</p>
           </div>
-        </div>
-
-        {/* Agricultural silhouette watermark behind header right */}
-        <div className="gov-header-watermark">
-          <svg viewBox="0 0 240 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 45 C 50 38, 110 44, 160 38 C 200 32, 220 40, 240 42 L 240 50 L 0 50 Z" fill="#2d8a4e" opacity="0.3" />
-            <path d="M120 46 L 120 28" stroke="#2d8a4e" strokeWidth="1.2" strokeLinecap="round" />
-            <circle cx="120" cy="24" r="5" fill="#2d8a4e" opacity="0.4" />
-            <circle cx="126" cy="26" r="4" fill="#1b5e20" opacity="0.4" />
-            <g transform="translate(175, 26) scale(0.5)">
-              <rect x="8" y="6" width="12" height="10" rx="2" fill="#2d8a4e" />
-              <circle cx="18" cy="18" r="6" fill="#1b5e20" />
-              <circle cx="6" cy="18" r="4" fill="#1b5e20" />
-            </g>
-          </svg>
-        </div>
-
-        <div className="gov-settings-actions">
-          <button className="gov-save-btn" onClick={handleSaveChanges}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-              <polyline points="17 21 17 13 7 13 7 21" />
-              <polyline points="7 3 7 8 15 8" />
-            </svg>
-            <span>Save Changes</span>
-          </button>
         </div>
       </div>
 
@@ -232,8 +421,10 @@ export default function GovSettings() {
               <div className="gov-profile-row">
                 <div className="gov-profile-identity">
                   <div className="gov-avatar-wrapper">
-                    <div className="gov-profile-avatar-circle">SD</div>
-                    <button className="gov-avatar-camera-btn" title="Change photo" onClick={() => setShowEditModal(true)}>
+                    <div className="gov-profile-avatar-circle">
+                      {profile.avatarInitials || (profile.name ? profile.name.slice(0, 2).toUpperCase() : 'AD')}
+                    </div>
+                    <button className="gov-avatar-camera-btn" title="Change photo" onClick={handleOpenEditModal}>
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
                         <circle cx="12" cy="13" r="4" />
@@ -247,7 +438,7 @@ export default function GovSettings() {
                   </div>
                 </div>
 
-                <button className="gov-edit-profile-btn" onClick={() => setShowEditModal(true)}>
+                <button className="gov-edit-profile-btn" onClick={handleOpenEditModal}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
                   </svg>
@@ -303,7 +494,7 @@ export default function GovSettings() {
                     </div>
                     <div className="gov-item-content">
                       <span className="gov-item-label">Email</span>
-                      <span className="gov-item-value">{profile.email}</span>
+                      <span className="gov-item-value">{profile.email || 'Not configured'}</span>
                     </div>
                   </div>
 
@@ -396,33 +587,33 @@ export default function GovSettings() {
               <div className="gov-details-grid">
                 <div className="gov-detail-box">
                   <div className="gov-detail-label">Assigned State</div>
-                  <div className="gov-detail-val">Maharashtra</div>
-                  <div className="gov-detail-sub">State Code: MH (27)</div>
+                  <div className="gov-detail-val">{jurisdiction.assignedState}</div>
+                  <div className="gov-detail-sub">State Code: {jurisdiction.stateCode}</div>
                 </div>
                 <div className="gov-detail-box">
                   <div className="gov-detail-label">Administrative Division</div>
-                  <div className="gov-detail-val">Amravati Division</div>
-                  <div className="gov-detail-sub">Vidarbha Agro-Climatic Zone</div>
+                  <div className="gov-detail-val">{jurisdiction.administrativeDivision}</div>
+                  <div className="gov-detail-sub">{jurisdiction.agroClimaticZone}</div>
                 </div>
                 <div className="gov-detail-box">
                   <div className="gov-detail-label">Assigned District</div>
-                  <div className="gov-detail-val">{profile.district} District</div>
-                  <div className="gov-detail-sub">DSAO Yavatmal HQ</div>
+                  <div className="gov-detail-val">{jurisdiction.assignedDistrict}</div>
+                  <div className="gov-detail-sub">{jurisdiction.districtHq}</div>
                 </div>
                 <div className="gov-detail-box">
                   <div className="gov-detail-label">Jurisdiction Code</div>
-                  <div className="gov-detail-val">MH-YTL-AGRI-02</div>
+                  <div className="gov-detail-val">{jurisdiction.jurisdictionCode}</div>
                   <div className="gov-detail-sub">Official Registry ID</div>
                 </div>
                 <div className="gov-detail-box">
                   <div className="gov-detail-label">Covered Talukas</div>
-                  <div className="gov-detail-val">Yavatmal &amp; Kalamb</div>
-                  <div className="gov-detail-sub">12 Agricultural Circles</div>
+                  <div className="gov-detail-val">{jurisdiction.coveredTalukas}</div>
+                  <div className="gov-detail-sub">{jurisdiction.agriculturalCircles}</div>
                 </div>
                 <div className="gov-detail-box">
                   <div className="gov-detail-label">Reporting Authority</div>
-                  <div className="gov-detail-val">Divisional Joint Director</div>
-                  <div className="gov-detail-sub">Amravati Regional Directorate</div>
+                  <div className="gov-detail-val">{jurisdiction.reportingAuthority}</div>
+                  <div className="gov-detail-sub">{jurisdiction.regionalDirectorate}</div>
                 </div>
               </div>
             </div>
@@ -700,158 +891,44 @@ export default function GovSettings() {
               <div className="gov-details-grid">
                 <div className="gov-detail-box">
                   <div className="gov-detail-label">Two-Factor Authentication</div>
-                  <div className="gov-detail-val" style={{ color: '#0b5c2d' }}>Active (MahaGov SSO)</div>
-                  <div className="gov-detail-sub">Secured via OTP &amp; Gov Domain</div>
+                  <div className="gov-detail-val" style={{ color: '#0b5c2d' }}>{security.twoFactorAuth}</div>
+                  <div className="gov-detail-sub">{security.twoFactorMethod}</div>
                 </div>
                 <div className="gov-detail-box">
                   <div className="gov-detail-label">Access Clearance Level</div>
-                  <div className="gov-detail-val">Level 3 Officer</div>
-                  <div className="gov-detail-sub">District-wide approval authority</div>
+                  <div className="gov-detail-val">{security.accessClearanceLevel}</div>
+                  <div className="gov-detail-sub">{security.accessScope}</div>
                 </div>
                 <div className="gov-detail-box">
                   <div className="gov-detail-label">Farmer Data Scope</div>
-                  <div className="gov-detail-val">{profile.district} Jurisdiction</div>
-                  <div className="gov-detail-sub">Full crop scan and land parcel telemetry</div>
+                  <div className="gov-detail-val">{security.farmerDataScope}</div>
+                  <div className="gov-detail-sub">{security.farmerDataScopeDesc}</div>
                 </div>
                 <div className="gov-detail-box">
                   <div className="gov-detail-label">Last Password Change</div>
-                  <div className="gov-detail-val">38 days ago</div>
-                  <div className="gov-detail-sub">Mandatory policy cycle: 90 days</div>
+                  <div className="gov-detail-val">{security.lastPasswordChange}</div>
+                  <div className="gov-detail-sub">{security.passwordPolicy}</div>
                 </div>
                 <div className="gov-detail-box">
                   <div className="gov-detail-label">Active Workstation Session</div>
-                  <div className="gov-detail-val">MahaGov Intranet (10.52.18.44)</div>
-                  <div className="gov-detail-sub">SSL TLS 1.3 encrypted tunnel</div>
+                  <div className="gov-detail-val">{security.activeWorkstationSession}</div>
+                  <div className="gov-detail-sub">{security.sessionSecurity}</div>
                 </div>
                 <div className="gov-detail-box">
                   <div className="gov-detail-label">Data Retention Compliance</div>
-                  <div className="gov-detail-val">DPDP Act &amp; MahaState 2023</div>
-                  <div className="gov-detail-sub">Certified agricultural data repository</div>
+                  <div className="gov-detail-val">{security.dataRetentionCompliance}</div>
+                  <div className="gov-detail-sub">{security.retentionDescription}</div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-
-        {/* ============================================================
-            6. Audit Trail (Collapsed)
-            ============================================================ */}
-        <div className={`gov-section-card ${openSections[6] ? 'expanded' : ''}`}>
-          <div className="gov-section-header" onClick={() => toggleSection(6)}>
-            <div className="gov-section-header-left">
-              <div className="gov-section-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <line x1="16" y1="13" x2="8" y2="13" />
-                  <line x1="16" y1="17" x2="8" y2="17" />
-                  <polyline points="10 9 9 9 8 9" />
-                </svg>
-              </div>
-              <div className="gov-section-title-text">
-                <h3>Audit Trail</h3>
-                <p>View important officer actions and system activity.</p>
-              </div>
-            </div>
-            <div className="gov-section-header-right">
-              <button className="gov-chevron-btn" aria-label="Toggle section">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  style={{ transform: openSections[6] ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
-                >
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {openSections[6] && (
-            <div className="gov-section-body">
-              <table className="gov-audit-table">
-                <thead>
-                  <tr>
-                    <th>Timestamp</th>
-                    <th>Action Taken</th>
-                    <th>Target Area / Module</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Today, 14:32</td>
-                    <td>Approved localized agronomic advisory for 18 Cotton farmers</td>
-                    <td>Yavatmal Circle 3</td>
-                    <td><span className="gov-audit-badge success">Approved</span></td>
-                  </tr>
-                  <tr>
-                    <td>Today, 11:15</td>
-                    <td>Flagged suspected Spodoptera frugiperda outbreak notification</td>
-                    <td>Kalamb Sub-Division</td>
-                    <td><span className="gov-audit-badge info">Flagged</span></td>
-                  </tr>
-                  <tr>
-                    <td>Yesterday, 16:45</td>
-                    <td>Reviewed and resolved 6 AI Unidentified disease submissions</td>
-                    <td>AI Triage Queue</td>
-                    <td><span className="gov-audit-badge success">Resolved</span></td>
-                  </tr>
-                  <tr>
-                    <td>Yesterday, 09:20</td>
-                    <td>Calibrated regional soil test dataset parameters</td>
-                    <td>Soil Testing Portal</td>
-                    <td><span className="gov-audit-badge success">Verified</span></td>
-                  </tr>
-                  <tr>
-                    <td>09 Sep 2026, 08:30</td>
-                    <td>MahaGov SSO Session authenticated via biometric token</td>
-                    <td>Secure Gateway</td>
-                    <td><span className="gov-audit-badge info">Authenticated</span></td>
-                  </tr>
-                </tbody>
-              </table>
             </div>
           )}
         </div>
       </div>
 
-      {/* ── Government Footer with Silhouette Watermark ── */}
+      {/* ── Government Footer ── */}
       <footer className="gov-footer">
         <div className="gov-footer-left">
           © 2025 CropGuard | Maharashtra Agriculture Department | Government of Maharashtra
-        </div>
-
-        {/* Agricultural Silhouette Watermark on Bottom Right */}
-        <div className="gov-footer-watermark">
-          <svg viewBox="0 0 340 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 55 C 60 46, 120 52, 180 44 C 240 38, 290 48, 340 50 L 340 60 L 0 60 Z" fill="#2d8a4e" opacity="0.3" />
-            <path d="M40 50 C 110 40, 190 48, 250 40 C 300 35, 320 45, 340 48 L 340 60 L 40 60 Z" fill="#1b5e20" opacity="0.25" />
-            
-            {/* Wind turbine */}
-            <path d="M280 52 L 280 26 M 275 26 L 285 26" stroke="#2d8a4e" strokeWidth="1.5" strokeLinecap="round" />
-            <line x1="280" y1="26" x2="272" y2="18" stroke="#2d8a4e" strokeWidth="1.5" strokeLinecap="round" />
-            <line x1="280" y1="26" x2="288" y2="18" stroke="#2d8a4e" strokeWidth="1.5" strokeLinecap="round" />
-
-            {/* Trees */}
-            <circle cx="230" cy="40" r="8" fill="#2d8a4e" opacity="0.6" />
-            <circle cx="244" cy="38" r="9" fill="#1b5e20" opacity="0.7" />
-            <circle cx="256" cy="42" r="7" fill="#0f3d14" opacity="0.6" />
-
-            {/* Tractor */}
-            <g transform="translate(296, 32) scale(0.65)">
-              <rect x="10" y="8" width="14" height="12" rx="2" fill="#1b5e20" />
-              <rect x="4" y="14" width="10" height="6" rx="1" fill="#2d8a4e" />
-              <line x1="14" y1="3" x2="14" y2="8" stroke="#1b5e20" strokeWidth="2" strokeLinecap="round" />
-              <circle cx="22" cy="22" r="7" fill="#0f3d14" />
-              <circle cx="22" cy="22" r="3" fill="#a8d5ba" />
-              <circle cx="7" cy="22" r="5" fill="#0f3d14" />
-              <circle cx="7" cy="22" r="2" fill="#a8d5ba" />
-            </g>
-          </svg>
         </div>
 
         <div className="gov-footer-right">
