@@ -693,6 +693,26 @@ export function scheduleFieldVisit(
   };
 
   saveFarmState(farmerId, updatedState);
+
+  // Sync to government portal
+  try {
+    const govCases = JSON.parse(localStorage.getItem('gov_portal_needs_visit') || '[]');
+    const newGovCase = {
+      id: `FV-${Date.now().toString().slice(-5)}`,
+      name: currentState.farmDetails.name,
+      location: currentState.farmDetails.location,
+      district: currentState.farmDetails.location.split(',')[0],
+      status: 'Pending Visit',
+      priority: 'High',
+      date: new Date(visit.date).toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+      assignedOfficer: visit.officerVillage || 'Unassigned',
+      crop: visit.crop
+    };
+    localStorage.setItem('gov_portal_needs_visit', JSON.stringify([newGovCase, ...govCases]));
+  } catch (e) {
+    console.error('Failed to sync field visit to gov portal', e);
+  }
+
   return updatedState;
 }
 

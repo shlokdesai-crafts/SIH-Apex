@@ -1,24 +1,29 @@
+import { useTranslation } from '../i18n/useTranslation';
 import { useContext } from 'react';
 import { Navigate } from 'react-router-dom';
 import { AuthContext } from '../auth/AuthContext';
-
 interface ProtectedRouteProps {
   children: React.ReactNode;
   allowedRoles?: string[];
 }
-
-export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { user, isAuthenticated, isLoading } = useContext(AuthContext);
-
+export default function ProtectedRoute({
+  children,
+  allowedRoles
+}: ProtectedRouteProps) {
+  const {
+    t
+  } = useTranslation();
+  const {
+    user,
+    isAuthenticated,
+    isLoading
+  } = useContext(AuthContext);
   if (isLoading) {
-    return (
-      <div className="auth-loading-screen">
+    return <div className="auth-loading-screen">
         <div className="auth-loading-spinner"></div>
-        <p>Loading...</p>
-      </div>
-    );
+        <p>{t("Loading...")}</p>
+      </div>;
   }
-
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
@@ -31,6 +36,5 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
       return <Navigate to="/" replace />;
     }
   }
-
   return <>{children}</>;
 }

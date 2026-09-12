@@ -1,0 +1,64 @@
+.district-insights-page {
+  padding: 20px;
+}
+
+.insights-overview-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  padding: 24px;
+  text-align: center;
+}
+
+.stat-card h3 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  color: #666;
+}
+
+.stat-value {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.stat-card.primary .stat-value { color: var(--primary-color, #1976d2); }
+.stat-card.success .stat-value { color: #2e7d32; }
+.stat-card.warning .stat-value { color: #ed6c02; }
+.stat-card.danger .stat-value { color: #d32f2f; }
+
+.table-actions {
+  display: flex;
+  align-items: center;
+}
+
+.progress-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.progress-cell span {
+  width: 45px;
+  text-align: right;
+  font-size: 13px;
+}
+
+.progress-bar-bg {
+  width: 100px;
+  height: 8px;
+  background-color: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: var(--primary-color, #4CAF50);
+  border-radius: 4px;
+}

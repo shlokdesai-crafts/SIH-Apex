@@ -24,6 +24,22 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/operations-hub"
+        element={
+          <ProtectedRoute allowedRoles={['government']}>
+            <GovernmentDashboard initialTab="operations-hub" />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/team-management"
+        element={
+          <ProtectedRoute allowedRoles={['government']}>
+            <GovernmentDashboard initialTab="team-management" />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/*"
         element={
           user?.role === 'government' ? (

@@ -13,6 +13,9 @@ import UnidentifiedCasesTable from './UnidentifiedCasesTable';
 import DistrictAnalyticsTable from './DistrictAnalyticsTable';
 import CropHealth from './CropHealth/CropHealth';
 
+import OperationsHubPage from './OperationsHubPage';
+import TeamManagementPage from './TeamManagementPage';
+
 interface GovernmentDashboardProps {
   initialTab?: string;
 }
@@ -23,6 +26,8 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
 
   const [activeTab, setActiveTab] = useState(() => {
     if (location.pathname === '/crop-health') return 'crop-health';
+    if (location.pathname === '/operations-hub') return 'operations-hub';
+    if (location.pathname === '/team-management') return 'team-management';
     return initialTab;
   });
 
@@ -45,6 +50,10 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
   useEffect(() => {
     if (location.pathname === '/crop-health') {
       setActiveTab('crop-health');
+    } else if (location.pathname === '/operations-hub') {
+      setActiveTab('operations-hub');
+    } else if (location.pathname === '/team-management') {
+      setActiveTab('team-management');
     } else if (location.pathname === '/' || location.pathname === '/dashboard') {
       setActiveTab('dashboard');
     }
@@ -54,6 +63,10 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
     setActiveTab(tab);
     if (tab === 'crop-health') {
       navigate('/crop-health');
+    } else if (tab === 'operations-hub') {
+      navigate('/operations-hub');
+    } else if (tab === 'team-management') {
+      navigate('/team-management');
     } else {
       navigate('/');
     }
@@ -67,6 +80,10 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
         <div className={`gov-dashboard-content ${isSidebarOpen ? 'sidebar-open' : ''}`}>
           {activeTab === 'crop-health' ? (
             <CropHealth />
+          ) : activeTab === 'operations-hub' ? (
+            <OperationsHubPage />
+          ) : activeTab === 'team-management' ? (
+            <TeamManagementPage />
           ) : (
             <>
               <GovHero />
