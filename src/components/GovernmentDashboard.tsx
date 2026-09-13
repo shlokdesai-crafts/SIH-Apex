@@ -8,11 +8,10 @@ import GovHero from './GovHero';
 import GovStatsRow from './GovStatsRow';
 import RecentSubmissions from './RecentSubmissions';
 import MaharashtraMap from './MaharashtraMap';
-
 import UnidentifiedCasesTable from './UnidentifiedCasesTable';
 import DistrictAnalyticsTable from './DistrictAnalyticsTable';
+import GovSettings from './GovSettings';
 import CropHealth from './CropHealth/CropHealth';
-
 import OperationsHubPage from './OperationsHubPage';
 import TeamManagementPage from './TeamManagementPage';
 
@@ -35,17 +34,16 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth > 1200) {
-        setIsSidebarOpen(true);
-      } else {
-        setIsSidebarOpen(false);
-      }
+      setIsSidebarOpen(window.innerWidth > 1200);
     };
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  const toggleSidebar = () => {
+    setIsSidebarOpen(prev => !prev);
+  };
 
   useEffect(() => {
     if (location.pathname === '/crop-health') {
@@ -61,12 +59,15 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
+
     if (tab === 'crop-health') {
       navigate('/crop-health');
     } else if (tab === 'operations-hub') {
       navigate('/operations-hub');
     } else if (tab === 'team-management') {
       navigate('/team-management');
+    } else if (tab === 'settings') {
+      navigate('/settings');
     } else {
       navigate('/');
     }
@@ -74,11 +75,25 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
 
   return (
     <div className="gov-dashboard-container">
-      <GovHeader activeTab={activeTab} onSelectTab={handleTabChange} onToggleSidebar={toggleSidebar} />
+      <GovHeader
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        onSelectTab={handleTabChange}
+        onToggleSidebar={toggleSidebar}
+      />
+
       <div className="gov-dashboard-main">
-        <GovSidebar activeTab={activeTab} onSelectTab={handleTabChange} isOpen={isSidebarOpen} />
+        <GovSidebar
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          onSelectTab={handleTabChange}
+          isOpen={isSidebarOpen}
+        />
+
         <div className={`gov-dashboard-content ${isSidebarOpen ? 'sidebar-open' : ''}`}>
-          {activeTab === 'crop-health' ? (
+          {activeTab === 'settings' ? (
+            <GovSettings />
+          ) : activeTab === 'crop-health' ? (
             <CropHealth />
           ) : activeTab === 'operations-hub' ? (
             <OperationsHubPage />
@@ -88,7 +103,7 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
             <>
               <GovHero />
               <GovStatsRow />
-              
+
               <div className="gov-dashboard-grid-row-1">
                 <RecentSubmissions />
                 <MaharashtraMap />
@@ -107,3 +122,4 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
 };
 
 export default GovernmentDashboard;
+

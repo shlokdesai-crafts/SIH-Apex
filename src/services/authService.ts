@@ -120,6 +120,41 @@ export function getPasswordStrength(password: string): 'weak' | 'medium' | 'stro
   return 'strong';
 }
 
+// ─── Government Officer PostgreSQL Sync ──────────────────────
+
+export interface GovSyncData {
+  userId: string;
+  name: string;
+  phone: string;
+  location?: string;
+  district?: string;
+}
+
+export async function syncGovernmentOfficer(data: GovSyncData): Promise<void> {
+  try {
+    let res: Response;
+    try {
+      res = await fetch('/api/officer/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+    } catch {
+      res = await fetch('http://localhost:5000/api/officer/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+    }
+
+    if (!res.ok) {
+      console.warn(`Officer sync returned status ${res.status}`);
+    }
+  } catch (err) {
+    console.warn('Network error syncing government officer to PostgreSQL:', err);
+  }
+}
+
 // ─── Auth Operations ─────────────────────────────────────────
 
 export async function signup(data: SignupData): Promise<AuthResult> {
@@ -164,6 +199,16 @@ export async function signup(data: SignupData): Promise<AuthResult> {
   const publicUser = toPublicUser(user);
   localStorage.setItem(SESSION_KEY, JSON.stringify(publicUser));
 
+  // If registering as Government Officer, sync record to PostgreSQL
+  if (user.role === 'government') {
+    await syncGovernmentOfficer({
+      userId: user.id,
+      name: user.fullName,
+      phone: user.phone,
+      location: user.location,
+    });
+  }
+
   return { success: true, user: publicUser };
 }
 
@@ -193,6 +238,16 @@ export async function login(phone: string, password: string, role: string): Prom
   // Create session
   const publicUser = toPublicUser(user);
   localStorage.setItem(SESSION_KEY, JSON.stringify(publicUser));
+
+  // If logging in as Government Officer, ensure record is synced in PostgreSQL
+  if (userRole === 'government') {
+    syncGovernmentOfficer({
+      userId: user.id,
+      name: user.fullName,
+      phone: user.phone,
+      location: user.location,
+    }).catch((e) => console.warn('Background sync error on login:', e));
+  }
 
   return { success: true, user: publicUser };
 }

@@ -2,13 +2,15 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #f4f7f4; /* Light green-grey background */
+  background-color: #f7faf7;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  width: 100%;
 }
 
 .gov-dashboard-main {
   display: flex;
   flex: 1;
+  overflow: hidden;
   width: 100vw;
   max-width: 100vw;
   overflow-x: hidden;
@@ -17,20 +19,21 @@
 
 .gov-dashboard-content {
   flex: 1;
+  min-width: 0;
   width: 100%;
   padding: 24px;
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
   box-sizing: border-box;
   transition: padding-left 0.3s ease-in-out;
 }
 
 @media (min-width: 1201px) {
   .gov-dashboard-content.sidebar-open {
-    padding-left: 264px; /* 240px sidebar + 24px default padding */
+    padding-left: 274px;
   }
 }
 
@@ -52,6 +55,7 @@
   .gov-dashboard-grid-row-1 {
     grid-template-columns: 1fr 1fr;
   }
+
   .gov-dashboard-grid-row-2 {
     grid-template-columns: 1fr 1fr;
   }

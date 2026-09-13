@@ -79,7 +79,7 @@ const getMarkerColor = (severity: string) => {
   if (lowerSev.includes('unident') || lowerSev.includes('unable')) return '#805ad5';
   return '#3182ce';
 };
-const API = 'http://localhost:8000/api';
+const API = '/api';
 const MaharashtraMap = () => {
   const {
     t

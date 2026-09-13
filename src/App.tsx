@@ -15,6 +15,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
+      <Route path="/government" element={<GovernmentDashboard />} />
       <Route
         path="/crop-health"
         element={
@@ -31,6 +32,15 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute allowedRoles={['government']}>
+            <GovernmentDashboard initialTab="settings" />
+          </ProtectedRoute>
+        }
+      />
+      
       <Route
         path="/team-management"
         element={
@@ -68,3 +78,6 @@ function App() {
 }
 
 export default App;
+
+
+
