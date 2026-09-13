@@ -1,5 +1,5 @@
-import { createContext, useState, useCallback, type ReactNode } from 'react';
-import { getTranslation, type Language } from './translations';
+import { createContext, useState, useCallback, useRef, type ReactNode } from 'react';
+import { getTranslation, translations, type Language } from './translations';
 import { translateText, translateBatch } from '../services/translationService';
 
 interface LanguageContextType {
@@ -37,6 +37,8 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     return (stored as Language) || 'en';
   });
   const [isTranslating, setIsTranslating] = useState(false);
+  const [dynamicCache, setDynamicCache] = useState<Record<string, string>>({});
+  const inFlightTranslations = useRef<Set<string>>(new Set());
 
   const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
@@ -45,12 +47,48 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     document.documentElement.lang = lang;
   }, []);
 
-  // Static translation (instant, from dictionary)
+  // Enhanced static translation (instant from dictionary, falls back to HF API)
   const t = useCallback(
     (key: string): string => {
-      return getTranslation(key, language);
+      // 1. If English, just use the static dictionary (or return key)
+      if (language === 'en') {
+        return getTranslation(key, language);
+      }
+
+      // 2. Try static dictionary for target language
+      const staticTrans = translations[language]?.[key];
+      if (staticTrans) {
+        return staticTrans;
+      }
+
+      // 3. Not in static dictionary. Determine English text to translate
+      const enFallback = translations.en[key] || key;
+
+      // 4. Check dynamic state cache
+      const cacheKey = `${language}:${enFallback}`;
+      if (dynamicCache[cacheKey]) {
+        return dynamicCache[cacheKey];
+      }
+
+      // 5. Trigger background dynamic translation
+      if (!inFlightTranslations.current.has(cacheKey)) {
+        inFlightTranslations.current.add(cacheKey);
+        
+        translateText(enFallback, language, 'en')
+          .then((translated) => {
+            setDynamicCache((prev) => ({ ...prev, [cacheKey]: translated }));
+          })
+          .catch((error) => {
+            console.error('[LanguageContext] Dynamic translation failed for', enFallback, error);
+            // On failure, don't keep it in flight so it could potentially retry, 
+            // or just leave it to prevent spamming. We'll leave it in flight to prevent spam.
+          });
+      }
+
+      // Return English fallback immediately while translation is loading
+      return enFallback;
     },
-    [language]
+    [language, dynamicCache]
   );
 
   // Dynamic translation (async, via HF API)
@@ -98,3 +136,4 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     </LanguageContext.Provider>
   );
 }
+

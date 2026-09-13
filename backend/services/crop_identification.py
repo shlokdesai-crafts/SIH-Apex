@@ -46,6 +46,8 @@ CROP_PROMPT_ENSEMBLES: Dict[str, List[str]] = {
         "close up of paddy leaf and rice tillers",
         "rice crop foliage in flooded field",
         "rice plant with green leaves and panicles",
+        "close up of rice grains and panicles",
+        "harvested rice paddy grains",
     ],
     "Wheat": [
         "a photo of a wheat crop",
@@ -53,6 +55,8 @@ CROP_PROMPT_ENSEMBLES: Dict[str, List[str]] = {
         "wheat plant leaf blade and stalk",
         "close up of wheat leaves and grain head",
         "wheat crop foliage in farm field",
+        "close up of wheat grains",
+        "harvested golden wheat grains",
     ],
     "Maize": [
         "a photo of a maize crop",
@@ -60,6 +64,9 @@ CROP_PROMPT_ENSEMBLES: Dict[str, List[str]] = {
         "broad maize corn leaf blade",
         "maize foliage in agricultural field",
         "close up of maize leaf",
+        "a photo of a maize cob",
+        "yellow corn cob with kernels",
+        "close up of maize ear and corn fruit",
     ],
     "Cotton": [
         "a photo of a cotton plant",
@@ -68,6 +75,7 @@ CROP_PROMPT_ENSEMBLES: Dict[str, List[str]] = {
         "close up of a cotton leaf blade",
         "cotton bolls and green leaves",
         "cotton crop foliage",
+        "fluffy white cotton bolls ready for harvest",
     ],
     "Soybean": [
         "a photo of a soybean plant",
@@ -75,6 +83,8 @@ CROP_PROMPT_ENSEMBLES: Dict[str, List[str]] = {
         "soybean plant with trifoliate leaves",
         "close up of a soybean leaf",
         "soybean crop foliage",
+        "soybean plant with green pods",
+        "close up of soybean pods and seeds",
     ],
     "Sugarcane": [
         "a photo of a sugarcane crop",
@@ -84,18 +94,24 @@ CROP_PROMPT_ENSEMBLES: Dict[str, List[str]] = {
         "sugarcane foliage in an agricultural field",
         "sugarcane stalk and green leaves",
         "sugarcane leaf showing veins",
+        "harvested sugarcane stalks cut",
     ],
     "Tomato": [
         "a photo of a tomato plant",
         "compound serrated tomato leaf",
         "tomato plant foliage",
         "green tomato leaf in field",
+        "red tomato fruit hanging on vine",
+        "close up of a ripe tomato",
+        "green and red tomatoes growing on a plant",
     ],
     "Chickpea": [
         "a photo of a chickpea plant",
         "small pinnate chickpea leaflets",
         "chickpea crop foliage",
         "gram plant leaves in field",
+        "chickpea pods growing on a plant",
+        "close up of green chickpea garbanzo beans in pods",
     ],
 }
 
@@ -104,7 +120,7 @@ NULL_PROMPTS = [
     "a photo of another unspecified plant or object",
 ]
 
-SIMILARITY_THRESHOLD = 0.285  # Calibrated minimum cosine similarity for genuine crop match
+SIMILARITY_THRESHOLD = 0.26  # Calibrated minimum cosine similarity for genuine crop match
 SIMILARITY_MARGIN_THRESHOLD = 0.015  # Minimum margin between top-1 and top-2 candidate crops to avoid ambiguous misclassification
 
 # ── Lazy Singleton Model Cache ────────────────────────────────────────────────
@@ -152,14 +168,14 @@ def _get_crop_id_model():
         with torch.no_grad():
             for crop in TARGET_CROPS:
                 prompts = CROP_PROMPT_ENSEMBLES[crop]
-                inputs = _processor(text=prompts, padding=True, return_tensors="pt")
+                inputs = _processor(text=prompts, padding=True, return_tensors="pt")  # type: ignore
                 norm_embeds = _extract_text_features(_model, inputs)
                 avg_embed = norm_embeds.mean(dim=0, keepdim=True)
                 avg_embed = avg_embed / avg_embed.norm(dim=-1, keepdim=True)
                 text_embeds_list.append(avg_embed)
 
             # Null / OOD negative prompts
-            null_inputs = _processor(text=NULL_PROMPTS, padding=True, return_tensors="pt")
+            null_inputs = _processor(text=NULL_PROMPTS, padding=True, return_tensors="pt")  # type: ignore
             null_embeds = _extract_text_features(_model, null_inputs)
             for i in range(null_embeds.size(0)):
                 text_embeds_list.append(null_embeds[i:i+1])
@@ -192,14 +208,14 @@ def _get_crop_id_model():
                         if data_fp.exists():
                             for sample_p in data_fp.rglob("*.jpg"):
                                 img = Image.open(sample_p).convert("RGB")
-                                inputs = _processor(images=img, return_tensors="pt")
+                                inputs = _processor(images=img, return_tensors="pt")  # type: ignore
                                 f = _extract_image_features(_model, inputs)
                                 feats_list.append(f)
                                 if len(feats_list) >= 5:
                                     break
                         continue
                     img = Image.open(fp).convert("RGB")
-                    inputs = _processor(images=img, return_tensors="pt")
+                    inputs = _processor(images=img, return_tensors="pt")  # type: ignore
                     f = _extract_image_features(_model, inputs)
                     feats_list.append(f)
 
@@ -229,14 +245,14 @@ def identify_crop(image_bytes: bytes) -> CropIdentification:
         model, processor, text_embeds, vis_embeds = _get_crop_id_model()
 
         img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-        inputs = processor(images=img, return_tensors="pt")
+        inputs = processor(images=img, return_tensors="pt")  # type: ignore
 
         with torch.no_grad():
             img_embed = _extract_image_features(model, inputs)
 
             # Cosine similarity to text prompts & visual prototypes
-            text_sims = (img_embed @ text_embeds[:8].T)[0]
-            vis_sims = (img_embed @ vis_embeds.T)[0]
+            text_sims = (img_embed @ text_embeds[:8].T)[0]  # type: ignore
+            vis_sims = (img_embed @ vis_embeds.T)[0]  # type: ignore
 
             # Multimodal similarity score: 30% text semantics + 70% visual feature prototypes
             cosine_sims = 0.3 * text_sims + 0.7 * vis_sims
@@ -260,7 +276,7 @@ def identify_crop(image_bytes: bytes) -> CropIdentification:
         # 2. Text crop similarity must strictly exceed open-set negative null prompts
         # 3. Top candidate similarity must exceed 2nd candidate by margin (0.015)
         max_crop_text_sim = float(torch.max(text_sims).item())
-        null_sims = (img_embed @ text_embeds[8:].T)[0]
+        null_sims = (img_embed @ text_embeds[8:].T)[0]  # type: ignore
         max_null_text_sim = float(torch.max(null_sims).item())
 
         is_valid_crop = (
@@ -287,9 +303,19 @@ def identify_crop(image_bytes: bytes) -> CropIdentification:
 
     except Exception as exc:
         logger.error(f"Error in identify_crop: {exc}")
+        import traceback
+        with open("backend_error.log", "w") as f:
+            f.write(traceback.format_exc())
+
         return CropIdentification(
             crop_name="Unknown",
             confidence=0.0,
             is_identified=False,
-            message="Unable to identify crop due to processing error.",
+            message=f"Unable to identify crop due to processing error: {exc}",
         )
+
+
+
+
+
+# test patch

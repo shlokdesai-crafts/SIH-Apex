@@ -1,20 +1,27 @@
 .gov-sidebar {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  bottom: 0;
+  z-index: 1000;
   width: 250px;
   min-width: 250px;
   max-width: 250px;
-  flex: 0 0 250px;
-  flex-basis: 250px;
-  flex-shrink: 0;
-  flex-grow: 0;
   background-color: #ffffff;
   border-right: 1px solid #e2e8f0;
   padding: 16px 0 0 0;
-  height: 100%;
+  height: auto;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   overflow-y: auto;
   box-sizing: border-box;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out;
+}
+
+.gov-sidebar.open {
+  transform: translateX(0);
 }
 
 .gov-sidebar-nav {
@@ -92,12 +99,12 @@
   color: #b91c1c;
 }
 
-/* Sustainability Banner matching UI Reference */
+/* Sustainability Banner */
 .gov-sidebar-footer-card {
   margin: 18px 12px 20px;
   background: #eaf5ee;
   border-radius: 12px;
-  padding: 14px 14px;
+  padding: 14px;
   display: flex;
   align-items: center;
   gap: 12px;

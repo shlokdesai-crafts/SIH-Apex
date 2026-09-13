@@ -109,7 +109,7 @@ def validate_crop_relevance(image_bytes: bytes) -> CropAnalysis:
 
         # Open image and convert to RGB
         img = Image.open(io.BytesIO(image_bytes)).convert('RGB')
-        tensor = preprocess(img).unsqueeze(0)
+        tensor = preprocess(img).unsqueeze(0)  # type: ignore
 
         # Run inference
         with torch.no_grad():
@@ -118,7 +118,7 @@ def validate_crop_relevance(image_bytes: bytes) -> CropAnalysis:
             top20_prob, top20_catid = torch.topk(probabilities, 20)
 
         top_idx = top20_catid[0].item()
-        top_label = categories[top_idx]
+        top_label = categories[top_idx]  # type: ignore
         top_conf = float(top20_prob[0].item())
 
         # Aggregate evidence scores per category bucket across top 20 predictions
@@ -134,7 +134,7 @@ def validate_crop_relevance(image_bytes: bytes) -> CropAnalysis:
 
         for i in range(20):
             idx = top20_catid[i].item()
-            label = categories[idx]
+            label = categories[idx]  # type: ignore
             p = float(top20_prob[i].item())
             lbl_lower = label.lower()
 
@@ -207,3 +207,7 @@ def validate_crop_relevance(image_bytes: bytes) -> CropAnalysis:
             label="Error",
             rejection_reason="Unable to verify crop/plant image due to processing error.",
         )
+
+
+
+

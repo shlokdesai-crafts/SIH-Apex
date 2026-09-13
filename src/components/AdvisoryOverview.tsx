@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import './AdvisoryOverview.css';
 import { getOrganicPreparationDetails } from '../utils/organicGuides';
+import { useTranslation } from '../i18n/useTranslation';
 import { 
   calculateAdvisory, 
   fetchFarmerAdvisoryContext, 
@@ -807,6 +808,7 @@ const ADVISORY_DATA: Record<string, CropAdvisoryData> = {
 };
 
 export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryOverviewProps) {
+  const { t } = useTranslation();
   const [selectedCropId, setSelectedCropId] = useState<string>('tomato');
   const [activeSubTab, setActiveSubTab] = useState<string>('nutrient-status');
   const [fieldSize, setFieldSize] = useState<number>(3.5);
@@ -1270,7 +1272,7 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
-          <span>Back to Dashboard</span>
+          <span>{t('Back to Dashboard')}</span>
         </button>
 
         <div className="fert-top-tags">
@@ -1330,13 +1332,13 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
               <span className="fert-season-badge">Soil Health &amp; Crop Intelligence</span>
             </div>
 
-            <h1 className="fert-banner-title">Crop Advisory &amp; Nutrient Intelligence</h1>
+            <h1 className="fert-banner-title">{t('Crop Advisory & Nutrient Intelligence')}</h1>
             <p className="fert-banner-subtitle">
-              Get the right nutrients, in the right quantity, at the right time for higher yield and healthier crops.
+              {t('Get the right nutrients, in the right quantity, at the right time for higher yield and healthier crops.')}
             </p>
 
             <div className="fert-tagline-wrap">
-              <span className="fert-tagline-text">"Right Nutrition, Brighter Yields"</span>
+              <span className="fert-tagline-text">{t('"Right Nutrition, Brighter Yields"')}</span>
               <span className="fert-tagline-leaf">🍃</span>
             </div>
           </div>
@@ -1347,7 +1349,7 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
               <div className="fert-crop-card-header">
                 <div className="fert-monitored-status">
                   <span className="crop-live-dot"></span>
-                  <span className="crop-monitored-label">MONITORED CROP</span>
+                  <span className="crop-monitored-label">{t('MONITORED CROP')}</span>
                 </div>
                 <span className="crop-field-chip">{farmerContext?.farm?.farmName || crop.field}</span>
               </div>
@@ -1388,7 +1390,7 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
                   aria-label="Change Crop"
                 >
                   <span className="dash-minus">−</span>
-                  <span>Change Crop</span>
+                  <span>{t('Change Crop')}</span>
                   <span className="btn-arrow">→</span>
                 </button>
               </div>
@@ -1407,7 +1409,7 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
           id="tab-nutrient-status"
         >
           <span className="pill-emoji">🌱</span>
-          <span>Nutrient Status</span>
+          <span>{t('Nutrient Status')}</span>
         </button>
 
         <button
@@ -1416,7 +1418,7 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
           id="tab-recommended-fert"
         >
           <span className="pill-emoji">🛍️</span>
-          <span>Recommended Fertilizer</span>
+          <span>{t('Recommended Fertilizer')}</span>
         </button>
 
         <button
@@ -1425,7 +1427,7 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
           id="tab-app-guide"
         >
           <span className="pill-emoji">📄</span>
-          <span>Application Guide</span>
+          <span>{t('Application Guide')}</span>
         </button>
 
         <button
@@ -1434,7 +1436,7 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
           id="tab-calculator"
         >
           <span className="pill-emoji">🧮</span>
-          <span>Fertilizer Calculator</span>
+          <span>{t('Fertilizer Calculator')}</span>
         </button>
 
         <button
@@ -1443,7 +1445,7 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
           id="tab-organic-alt"
         >
           <span className="pill-emoji">🛡️</span>
-          <span>Organic Alternatives</span>
+          <span>{t('Organic Alternatives')}</span>
         </button>
 
         <button
@@ -1452,7 +1454,7 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
           id="tab-nearby-risks"
         >
           <span className="pill-emoji">🚨</span>
-          <span>Nearby Crop Risks</span>
+          <span>{t('Nearby Crop Risks')}</span>
         </button>
       </nav>
 
@@ -1465,13 +1467,13 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
           <div className="advice-focal-header">
             <div className="advice-badge-group">
               <span className="advice-pulse-dot"></span>
-              <strong className="advice-badge-title">TODAY'S ACTIONABLE ADVICE</strong>
+              <strong className="advice-badge-title">{t("TODAY'S ACTIONABLE ADVICE")}</strong>
               <span className="advice-badge-sep">•</span>
               <span className="advice-badge-date">{new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
             </div>
             <div className="advice-priority-pill">
               <span>★</span>
-              <span>HIGH AGRONOMIC PRIORITY</span>
+              <span>{t('HIGH AGRONOMIC PRIORITY')}</span>
             </div>
           </div>
 
@@ -1492,7 +1494,7 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
                   <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
                   <line x1="12" y1="17" x2="12.01" y2="17" />
                 </svg>
-                <span>Why This Advice?</span>
+                <span>{t('Why This Advice?')}</span>
               </button>
 
               <button 
@@ -1504,7 +1506,7 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
                   <path d="M9 11l3 3L22 4" />
                   <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
                 </svg>
-                <span>View Action Plan</span>
+                <span>{t('View Action Plan')}</span>
               </button>
             </div>
           </div>

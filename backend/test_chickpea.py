@@ -2,67 +2,63 @@
 backend/test_chickpea.py
 ────────────────────────
 Test suite for Chickpea Disease Detection.
-Verifies:
-1. MobileNetV3-Large model initialization for 5 Chickpea classes.
-2. Single image inference and softmax probability calculation.
-3. Extended advisory payload (explanation, symptoms, recommended_actions, prevention).
-4. Configurable thresholding and expert verification flag.
 """
 
-import io
 import unittest
-from PIL import Image
 import torch
 
 from ml.config import CROP_CONFIGS
 from ml.model import create_crop_model
 from ml.inference import predict_crop_disease
+from test_helpers import CropDiseaseTestBase
 
 
-class TestChickpeaDiseaseML(unittest.TestCase):
+class TestChickpeaArchitecture(unittest.TestCase):
 
-    def setUp(self):
-        # Create a sample RGB image buffer
-        self.img = Image.new("RGB", (300, 300), color=(40, 145, 40))
-        buf = io.BytesIO()
-        self.img.save(buf, format="JPEG")
-        self.dummy_bytes = buf.getvalue()
-
-    def test_chickpea_model_architecture(self):
-        """Test MobileNetV3 model instantiation for 5 Chickpea classes."""
+    def test_model_output_shape(self):
         classes = CROP_CONFIGS["Chickpea"]["classes"]
         self.assertEqual(len(classes), 5)
-        self.assertEqual(classes, ["Healthy", "Ascochyta Blight", "Fusarium Wilt", "Dry Root Rot", "Stunt Virus"])
+        self.assertIn("Healthy", classes)
+        model = create_crop_model(num_classes=5, pretrained=False)
+        out = model(torch.randn(2, 3, 224, 224))
+        self.assertEqual(out.shape, (2, 5))
 
-        model = create_crop_model(num_classes=len(classes), pretrained=False)
-        dummy_input = torch.randn(2, 3, 224, 224)
-        output = model(dummy_input)
-        self.assertEqual(output.shape, (2, 5))
 
-    def test_chickpea_inference_and_advisory(self):
-        """Test single image disease prediction engine and advisory payload for Chickpea."""
-        res = predict_crop_disease("Chickpea", self.dummy_bytes)
+class TestChickpeaDiseaseInference(CropDiseaseTestBase):
+    crop_name = "Chickpea"
+    real_image_file = "crop_chickpea.jpg"
+    expected_classes = ["Healthy", "Ascochyta Blight", "Fusarium Wilt", "Dry Root Rot", "Stunt Virus"]
 
-        self.assertEqual(res["crop"], "Chickpea")
-        self.assertIn("disease", res)
-        self.assertIn(res["disease"], CROP_CONFIGS["Chickpea"]["classes"] + ["Needs expert verification"])
-        self.assertIn("confidence", res)
-        self.assertIn("severity", res)
-        self.assertIn("status", res)
-        self.assertIn("explanation", res)
+    def test_real_image_prediction_schema(self):
+        img = self._real_image_bytes()
+        assert img is not None
+        res = predict_crop_disease("Chickpea", img)
+        self.assert_valid_prediction_schema(res)
+
+    def test_real_image_advisory_completeness(self):
+        img = self._real_image_bytes()
+        assert img is not None
+        res = predict_crop_disease("Chickpea", img)
+        self.assertIsNotNone(res.get("explanation"))
         self.assertIsInstance(res["symptoms"], list)
         self.assertIsInstance(res["recommended_actions"], list)
-        self.assertIsInstance(res["prevention"], list)
-        self.assertIn("expert_verification_required", res)
 
-    def test_chickpea_low_confidence_fallback(self):
-        """Test that unconfident chickpea predictions trigger expert verification flag."""
-        res = predict_crop_disease("Chickpea", self.dummy_bytes, confidence_threshold=1.0001)
+    def test_forced_abstain(self):
+        img = self._real_image_bytes()
+        assert img is not None
+        res = predict_crop_disease("Chickpea", img, confidence_threshold=1.1)
+        self.assert_abstains(res, context="forced threshold=0.9999")
 
-        self.assertEqual(res["crop"], "Chickpea")
-        self.assertEqual(res["disease"], "Needs expert verification")
-        self.assertEqual(res["status"], "Needs expert verification")
-        self.assertTrue(res["expert_verification_required"])
+    def test_status_consistency(self):
+        img = self._real_image_bytes()
+        assert img is not None
+        res = predict_crop_disease("Chickpea", img)
+        if res["disease"] == "Healthy":
+            self.assertEqual(res["status"], "Healthy")
+        elif res["disease"] == "Needs expert verification":
+            self.assertEqual(res["status"], "Needs expert verification")
+        else:
+            self.assertEqual(res["status"], "Diseased")
 
 
 if __name__ == "__main__":

@@ -44,6 +44,7 @@ class DiseaseDetectionResult(BaseModel):
     recommended_actions: List[str] = []
     prevention: List[str] = []
     expert_verification_required: bool = False
+    abstain_reason: Optional[str] = None         # Why model abstained (entropy/margin/confidence)
 
 
 class ScanResponse(BaseModel):

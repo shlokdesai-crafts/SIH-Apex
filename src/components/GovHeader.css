@@ -2,7 +2,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #084f27; /* Dark government forest green */
+  background-color: #084f27;
   color: #ffffff;
   padding: 8px 24px;
   height: 60px;
@@ -42,6 +42,7 @@
   font-weight: 500;
   color: #a8d5ba;
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 .gov-logo-text .gov-logo-dept {
@@ -159,7 +160,7 @@
 }
 
 .gov-avatar {
-  background: #f7e8b6; /* Soft warm cream/yellow avatar */
+  background: #f7e8b6;
   color: #1e3a1e;
   width: 34px;
   height: 34px;
@@ -211,4 +212,25 @@
 .gov-switch-portal-btn:hover {
   background: rgba(255, 255, 255, 0.22);
   border-color: #ffffff;
+}
+
+.gov-logout-btn {
+  background-color: rgba(255, 77, 79, 0.1);
+  border: 1px solid rgba(255, 77, 79, 0.3);
+  color: #ff4d4f;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+  transition: all 0.2s;
+}
+
+.gov-logout-btn:hover {
+  background-color: #ff4d4f;
+  color: white;
 }

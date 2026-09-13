@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './GovernmentDashboard.css';
 
 import GovHeader from './GovHeader';
@@ -7,37 +8,108 @@ import GovHero from './GovHero';
 import GovStatsRow from './GovStatsRow';
 import RecentSubmissions from './RecentSubmissions';
 import MaharashtraMap from './MaharashtraMap';
-import AlertsNotifications from './AlertsNotifications';
-import AIAdvisoryPreview from './AIAdvisoryPreview';
 import UnidentifiedCasesTable from './UnidentifiedCasesTable';
 import DistrictAnalyticsTable from './DistrictAnalyticsTable';
 import GovSettings from './GovSettings';
+import CropHealth from './CropHealth/CropHealth';
+import OperationsHubPage from './OperationsHubPage';
+import TeamManagementPage from './TeamManagementPage';
 
-const GovernmentDashboard = () => {
-  // Default to 'settings' to display the Government Officer Settings page matching UI reference
-  const [activeTab, setActiveTab] = useState('settings');
+interface GovernmentDashboardProps {
+  initialTab?: string;
+}
+
+const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardProps) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [activeTab, setActiveTab] = useState(() => {
+    if (location.pathname === '/crop-health') return 'crop-health';
+    if (location.pathname === '/operations-hub') return 'operations-hub';
+    if (location.pathname === '/team-management') return 'team-management';
+    return initialTab;
+  });
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1200);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSidebarOpen(window.innerWidth > 1200);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(prev => !prev);
+  };
+
+  useEffect(() => {
+    if (location.pathname === '/crop-health') {
+      setActiveTab('crop-health');
+    } else if (location.pathname === '/operations-hub') {
+      setActiveTab('operations-hub');
+    } else if (location.pathname === '/team-management') {
+      setActiveTab('team-management');
+    } else if (location.pathname === '/' || location.pathname === '/dashboard') {
+      setActiveTab('dashboard');
+    }
+  }, [location.pathname]);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+
+    if (tab === 'crop-health') {
+      navigate('/crop-health');
+    } else if (tab === 'operations-hub') {
+      navigate('/operations-hub');
+    } else if (tab === 'team-management') {
+      navigate('/team-management');
+    } else if (tab === 'settings') {
+      navigate('/settings');
+    } else {
+      navigate('/');
+    }
+  };
 
   return (
     <div className="gov-dashboard-container">
-      <GovHeader activeTab={activeTab} onTabChange={setActiveTab} />
+      <GovHeader
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        onSelectTab={handleTabChange}
+        onToggleSidebar={toggleSidebar}
+      />
+
       <div className="gov-dashboard-main">
-        <GovSidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        <div className="gov-dashboard-content">
+        <GovSidebar
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          onSelectTab={handleTabChange}
+          isOpen={isSidebarOpen}
+        />
+
+        <div className={\gov-dashboard-content \\}>
           {activeTab === 'settings' ? (
             <GovSettings />
+          ) : activeTab === 'crop-health' ? (
+            <CropHealth />
+          ) : activeTab === 'operations-hub' ? (
+            <OperationsHubPage />
+          ) : activeTab === 'team-management' ? (
+            <TeamManagementPage />
           ) : (
             <>
               <GovHero />
               <GovStatsRow />
-              
+
               <div className="gov-dashboard-grid-row-1">
                 <RecentSubmissions />
                 <MaharashtraMap />
-                <AlertsNotifications />
               </div>
 
               <div className="gov-dashboard-grid-row-2">
-                <AIAdvisoryPreview />
                 <UnidentifiedCasesTable />
                 <DistrictAnalyticsTable />
               </div>

@@ -1,13 +1,13 @@
 import { useTranslation } from '../i18n/useTranslation';
 export default function Hero() {
-  const { t } = useTranslation();
-
-  return (
-    <section className="hero" id="hero-section">
+  const {
+    t
+  } = useTranslation();
+  return <section className="hero" id="hero-section">
       <div className="hero-overlay"></div>
       <div className="hero-left">
         <p className="hero-namaskar">{t('hero.greeting')}</p>
-        <h1 className="hero-name">Ramesh Patil <span className="leaf-emoji">🌿</span></h1>
+        <h1 className="hero-name">{t("Ramesh Patil")}<span className="leaf-emoji">🌿</span></h1>
         <p className="hero-tagline">{t('hero.tagline')}</p>
         <div className="hero-quote-box">
           <div className="quote-mark-col">
@@ -48,6 +48,5 @@ export default function Hero() {
           <div className="hero-right-underline"></div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 }

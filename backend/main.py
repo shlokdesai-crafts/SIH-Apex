@@ -2,10 +2,22 @@
 main.py  –  CropGuard FastAPI application entry point
 """
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from db import init_db
 from routes.scan import router as scan_router
+from routes.gov import router as gov_router
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialise the SQLite database on startup
+    init_db()
+    yield
+
 
 app = FastAPI(
     title="CropGuard API",
@@ -17,6 +29,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
@@ -36,6 +49,7 @@ app.add_middleware(
 
 # ── Routers ───────────────────────────────────────────────────────────────────
 app.include_router(scan_router, prefix="/api", tags=["Scan"])
+app.include_router(gov_router, prefix="/api", tags=["Government Dashboard"])
 
 
 # ── Health endpoints ──────────────────────────────────────────────────────────
@@ -51,4 +65,10 @@ def root():
 
 @app.get("/health", tags=["Health"])
 def health():
+    return {"status": "healthy"}
+
+
+@app.get("/api/health", tags=["Health"])
+def api_health():
+    """Health-check accessible via the Vite /api proxy."""
     return {"status": "healthy"}

@@ -109,3 +109,23 @@
   background: #ebf8ff;
   color: #3182ce;
 }
+
+.gov-action-btn.success {
+  background: #c6f6d5;
+  color: #22543d;
+}
+
+.gov-action-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.gov-status-badge.danger {
+  background-color: #fed7d7;
+  color: #822727;
+}
+
+.gov-status-badge.info {
+  background-color: #bee3f8;
+  color: #2a4365;
+}

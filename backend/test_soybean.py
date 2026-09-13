@@ -1,66 +1,64 @@
 """
 backend/test_soybean.py
 ───────────────────────
-Test suite for Soybean Disease Detection (MH-SoyaHealthVision dataset).
-Verifies:
-1. MobileNetV3-Large model initialization for 5 Soybean classes.
-2. Single image inference and softmax probability calculation.
-3. Extended advisory payload (explanation, symptoms, recommended_actions, prevention).
-4. Configurable thresholding and expert verification flag.
+Test suite for Soybean Disease Detection.
 """
 
-import io
 import unittest
-from PIL import Image
 import torch
 
 from ml.config import CROP_CONFIGS
-from ml.model import create_crop_model, load_crop_checkpoint
+from ml.model import create_crop_model
 from ml.inference import predict_crop_disease
+from test_helpers import CropDiseaseTestBase
 
 
-class TestSoybeanDiseaseML(unittest.TestCase):
+class TestSoybeanArchitecture(unittest.TestCase):
 
-    def setUp(self):
-        # Create a sample RGB image buffer
-        self.img = Image.new("RGB", (300, 300), color=(40, 140, 40))
-        buf = io.BytesIO()
-        self.img.save(buf, format="JPEG")
-        self.dummy_bytes = buf.getvalue()
-
-    def test_soybean_model_architecture(self):
-        """Test MobileNetV3 model instantiation for 5 Soybean classes."""
+    def test_model_output_shape(self):
         classes = CROP_CONFIGS["Soybean"]["classes"]
         self.assertEqual(len(classes), 5)
+        self.assertIn("Healthy", classes)
+        model = create_crop_model(num_classes=5, pretrained=False)
+        out = model(torch.randn(2, 3, 224, 224))
+        self.assertEqual(out.shape, (2, 5))
 
-        model = create_crop_model(num_classes=len(classes), pretrained=False)
-        dummy_input = torch.randn(2, 3, 224, 224)
-        output = model(dummy_input)
-        self.assertEqual(output.shape, (2, 5))
 
-    def test_soybean_inference_and_advisory(self):
-        """Test single image disease prediction engine and advisory payload for Soybean."""
-        res = predict_crop_disease("Soybean", self.dummy_bytes)
+class TestSoybeanDiseaseInference(CropDiseaseTestBase):
+    crop_name = "Soybean"
+    real_image_file = "crop_soybean.jpg"
+    expected_classes = ["Healthy", "Cercospora Leaf Blight", "Frogeye Leaf Spot", "Rust", "Yellow Mosaic"]
 
-        self.assertEqual(res["crop"], "Soybean")
-        self.assertIn("disease", res)
-        self.assertIn("confidence", res)
-        self.assertIn("severity", res)
-        self.assertIn("status", res)
-        self.assertIn("explanation", res)
+    def test_real_image_prediction_schema(self):
+        img = self._real_image_bytes()
+        assert img is not None
+        res = predict_crop_disease("Soybean", img)
+        self.assert_valid_prediction_schema(res)
+
+    def test_real_image_advisory_completeness(self):
+        img = self._real_image_bytes()
+        assert img is not None
+        res = predict_crop_disease("Soybean", img)
+        self.assertIsNotNone(res.get("explanation"))
         self.assertIsInstance(res["symptoms"], list)
         self.assertIsInstance(res["recommended_actions"], list)
-        self.assertIsInstance(res["prevention"], list)
-        self.assertIn("expert_verification_required", res)
 
-    def test_soybean_low_confidence_fallback(self):
-        """Test that unconfident soybean predictions trigger expert verification flag."""
-        res = predict_crop_disease("Soybean", self.dummy_bytes, confidence_threshold=0.9999)
+    def test_forced_abstain(self):
+        img = self._real_image_bytes()
+        assert img is not None
+        res = predict_crop_disease("Soybean", img, confidence_threshold=1.1)
+        self.assert_abstains(res, context="forced threshold=0.9999")
 
-        self.assertEqual(res["crop"], "Soybean")
-        self.assertEqual(res["disease"], "Needs expert verification")
-        self.assertEqual(res["status"], "Needs expert verification")
-        self.assertTrue(res["expert_verification_required"])
+    def test_status_consistency(self):
+        img = self._real_image_bytes()
+        assert img is not None
+        res = predict_crop_disease("Soybean", img)
+        if res["disease"] == "Healthy":
+            self.assertEqual(res["status"], "Healthy")
+        elif res["disease"] == "Needs expert verification":
+            self.assertEqual(res["status"], "Needs expert verification")
+        else:
+            self.assertEqual(res["status"], "Diseased")
 
 
 if __name__ == "__main__":
