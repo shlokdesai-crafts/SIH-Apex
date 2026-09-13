@@ -12,7 +12,7 @@ interface GovHeaderProps {
 }
 
 const GovHeader = ({
-  activeTab = 'dashboard',
+  activeTab: _activeTab = 'dashboard',
   onTabChange,
   onSelectTab,
   onToggleSidebar
@@ -95,15 +95,15 @@ const GovHeader = ({
 
       <div className="gov-header-nav">
         <button
-          className={gov-nav-btn }
+          className="gov-nav-btn"
           onClick={() => handleTabChange('dashboard')}
         >
-          <span className="icon">¦</span>
+          <span className="icon">Â¦</span>
           {t("Dashboard")}
         </button>
 
         <button
-          className={gov-nav-btn }
+          className="gov-nav-btn"
           onClick={() => handleTabChange('crop-health')}
         >
           <span className="icon">??</span>
@@ -111,7 +111,7 @@ const GovHeader = ({
         </button>
 
         <button
-          className={gov-nav-btn }
+          className="gov-nav-btn"
           onClick={() => handleTabChange('submissions')}
         >
           <span className="icon">??</span>
@@ -119,7 +119,7 @@ const GovHeader = ({
         </button>
 
         <button
-          className={gov-nav-btn }
+          className="gov-nav-btn"
           onClick={() => handleTabChange('field-visits')}
         >
           <span className="icon">??</span>
@@ -127,7 +127,7 @@ const GovHeader = ({
         </button>
 
         <button
-          className={gov-nav-btn }
+          className="gov-nav-btn"
           onClick={() => handleTabChange('knowledge')}
         >
           <span className="icon">??</span>
@@ -135,7 +135,7 @@ const GovHeader = ({
         </button>
 
         <button
-          className={gov-nav-btn }
+          className="gov-nav-btn"
           onClick={() => handleTabChange('reports')}
         >
           <span className="icon">??</span>
@@ -143,7 +143,7 @@ const GovHeader = ({
         </button>
 
         <button
-          className={gov-nav-btn }
+          className="gov-nav-btn"
           onClick={() => handleTabChange('schemes')}
         >
           <span className="icon">??</span>
@@ -211,3 +211,5 @@ const GovHeader = ({
 };
 
 export default GovHeader;
+
+

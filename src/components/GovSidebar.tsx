@@ -12,7 +12,7 @@ const GovSidebar = ({
   activeTab = 'dashboard',
   onTabChange,
   onSelectTab,
-  isOpen = false
+  isOpen: _isOpen = false
 }: GovSidebarProps) => {
   const { t } = useTranslation();
 
@@ -22,7 +22,7 @@ const GovSidebar = ({
   };
 
   return (
-    <aside className={gov-sidebar }>
+    <aside className={`gov-sidebar ${_isOpen ? 'open' : ''}`}>
       <ul className="gov-sidebar-nav">
         <li
           className={activeTab === 'dashboard' ? 'active' : ''}
@@ -178,7 +178,7 @@ const GovSidebar = ({
           <span className="icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="sidebar-svg-icon">
               <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              <path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z M19.4 15a1.7 1.7 0 0 0 .34 1.88l.05.05-1.82 1.82-.05-.05a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.04 1.56V22h-2.58v-.08a1.7 1.7 0 0 0-1.04-1.56 1.7 1.7 0 0 0-1.88.34l-.05.05-1.82-1.82.05-.05A1.7 1.7 0 0 0 6.02 17a1.7 1.7 0 0 0-1.56-1.04H4v-2.58h.08A1.7 1.7 0 0 0 5.64 12.3a1.7 1.7 0 0 0-.34-1.88l-.05-.05 1.82-1.82.05.05A1.7 1.7 0 0 0 9 8.94a1.7 1.7 0 0 0 1.04-1.56V7h2.58v.08a1.7 1.7 0 0 0 1.04 1.56 1.7 1.7 0 0 0 1.88-.34l.05-.05 1.82 1.82-.05.05a1.7 1.7 0 0 0-.34 1.88A1.7 1.7 0 0 0 18.58 13H18v2h.02a1.7 1.7 0 0 0 1.38 0Z" />
             </svg>
           </span>
           {t("Settings")}
@@ -207,3 +207,7 @@ const GovSidebar = ({
 };
 
 export default GovSidebar;
+
+
+
+

@@ -15,7 +15,7 @@ const GovStatsRow = () => {
   } = useTranslation();
   const [stats, setStats] = useState<Stats | null>(null);
   const fetchStats = () => {
-    fetch('http://localhost:8000/api/stats').then(r => r.json()).then(data => setStats(data)).catch(() => {/* silently keep previous values */});
+    fetch('/api/stats').then(r => r.json()).then(data => setStats(data)).catch(() => {/* silently keep previous values */});
   };
   useEffect(() => {
     fetchStats();

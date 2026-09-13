@@ -90,7 +90,7 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
           isOpen={isSidebarOpen}
         />
 
-        <div className={\gov-dashboard-content \\}>
+        <div className={`gov-dashboard-content ${isSidebarOpen ? 'sidebar-open' : ''}`}>
           {activeTab === 'settings' ? (
             <GovSettings />
           ) : activeTab === 'crop-health' ? (
@@ -122,3 +122,4 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
 };
 
 export default GovernmentDashboard;
+

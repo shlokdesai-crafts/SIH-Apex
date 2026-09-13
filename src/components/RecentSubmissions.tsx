@@ -14,7 +14,7 @@ interface Submission {
   status: string;
   created_at: string;
 }
-const API = 'http://localhost:8000/api';
+const API = '/api';
 const statusClass = (status: string) => {
   if (status === 'Resolved') return 'success';
   if (status === 'Unidentified') return 'danger';

@@ -33,6 +33,15 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/settings"
+        element={
+          <ProtectedRoute allowedRoles={['government']}>
+            <GovernmentDashboard initialTab="settings" />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
         path="/team-management"
         element={
           <ProtectedRoute allowedRoles={['government']}>
@@ -69,3 +78,6 @@ function App() {
 }
 
 export default App;
+
+
+
