@@ -745,7 +745,8 @@ export async function updateOfficerProfile(
     newStateDepartment = updates.stateDepartment.trim();
   }
 
-  // Update government_officers
+  // Update government_officers (and link user_id if currently unlinked)
+  const bindUserId = userId && userId.trim() ? userId.trim() : null;
   const updateOfficerSql = `
     UPDATE government_officers
     SET email = $1,
@@ -756,8 +757,9 @@ export async function updateOfficerProfile(
         department = $6,
         state_department = $7,
         avatar_initials = $8,
+        user_id = COALESCE(user_id, $9),
         updated_at = NOW()
-    WHERE id = $9
+    WHERE id = $10
     RETURNING *;
   `;
 
@@ -770,6 +772,7 @@ export async function updateOfficerProfile(
     newDepartment,
     newStateDepartment,
     newInitials,
+    bindUserId,
     officerId,
   ]);
 
