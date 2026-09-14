@@ -4,6 +4,7 @@ import {
   signup as authSignup,
   logout as authLogout,
   getCurrentUser,
+  updateStoredUser,
   type UserPublic,
   type SignupData,
   type AuthResult,
@@ -16,6 +17,7 @@ interface AuthContextType {
   login: (phone: string, password: string, role: string) => Promise<AuthResult>;
   signup: (data: SignupData) => Promise<AuthResult>;
   logout: () => void;
+  updateUser: (updates: Partial<UserPublic>) => void;
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -25,6 +27,7 @@ export const AuthContext = createContext<AuthContextType>({
   login: async () => ({ success: false, error: 'Not initialized' }),
   signup: async () => ({ success: false, error: 'Not initialized' }),
   logout: () => {},
+  updateUser: () => {},
 });
 
 interface AuthProviderProps {
@@ -65,6 +68,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null);
   }, []);
 
+  const updateUser = useCallback((updates: Partial<UserPublic>) => {
+    const updated = updateStoredUser(updates);
+    if (updated) {
+      setUser(updated);
+    } else {
+      setUser(prev => prev ? { ...prev, ...updates } : null);
+    }
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -74,6 +86,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         login,
         signup,
         logout,
+        updateUser,
       }}
     >
       {children}

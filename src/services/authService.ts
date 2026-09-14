@@ -18,6 +18,8 @@ export interface User {
   location: string;
   language: Language;
   role?: string;
+  email?: string | null;
+  district?: string;
   createdAt: string;
 }
 
@@ -28,6 +30,8 @@ export interface UserPublic {
   location: string;
   language: Language;
   role?: string;
+  email?: string | null;
+  district?: string;
   createdAt: string;
 }
 
@@ -86,8 +90,30 @@ function toPublicUser(user: User): UserPublic {
     location: user.location,
     language: user.language,
     role: user.role,
+    email: user.email,
+    district: user.district,
     createdAt: user.createdAt,
   };
+}
+
+export function updateStoredUser(updates: Partial<UserPublic>): UserPublic | null {
+  try {
+    const current = getCurrentUser();
+    if (!current) return null;
+    const updatedUser: UserPublic = { ...current, ...updates };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(updatedUser));
+
+    const users = getStoredUsers();
+    const idx = users.findIndex(u => u.id === current.id);
+    if (idx !== -1) {
+      users[idx] = { ...users[idx], ...updates };
+      saveUsers(users);
+    }
+    return updatedUser;
+  } catch (err) {
+    console.error('Failed to update stored user:', err);
+    return null;
+  }
 }
 
 // ─── Validation ──────────────────────────────────────────────

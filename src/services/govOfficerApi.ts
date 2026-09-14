@@ -1,13 +1,13 @@
 /**
- * ─────────────────────────────────────────────────────────────────────────────
+ * -------------------------------------------------------------
  * Government Officer Settings API Client Service
- * ─────────────────────────────────────────────────────────────────────────────
+ * -------------------------------------------------------------
  * Handles all PostgreSQL-backed API communications for Government Officer
  * settings, profile updates, notifications, and jurisdiction mappings.
- * ─────────────────────────────────────────────────────────────────────────────
+ * -------------------------------------------------------------
  */
 
-// ── TypeScript Interfaces ──
+// --- TypeScript Interfaces -----------------------------------
 export interface GovOfficerProfile {
   name: string;
   designation: string;
@@ -81,9 +81,8 @@ export interface GovOfficerSettingsData {
   };
 }
 
-// ── API Configuration ──
+// --- API Configuration ---------------------------------------
 const API_BASE = '/api/officer';
-const API_FALLBACK = 'http://localhost:5000/api/officer';
 
 /**
  * Universal API helper with Vite proxy, localhost fallback, and triple-channel userId propagation
@@ -126,7 +125,7 @@ export async function officerApiCall<T>(
   try {
     res = await fetch(`${API_BASE}${finalPath}`, reqOptions);
   } catch {
-    res = await fetch(`${API_FALLBACK}${finalPath}`, reqOptions);
+    res = await fetch(`http://localhost:5000${API_BASE}${finalPath}`, reqOptions);
   }
 
   if (!res.ok) {
@@ -138,10 +137,14 @@ export async function officerApiCall<T>(
   return (json.data !== undefined ? json.data : json) as T;
 }
 
-// ── Dedicated API Client Functions ──
+// --- Dedicated API Client Functions -------------------------
 
 export async function fetchOfficerSettings(userId?: string): Promise<GovOfficerSettingsData> {
   return officerApiCall<GovOfficerSettingsData>('/settings', {}, userId);
+}
+
+export async function fetchOfficerProfile(userId?: string): Promise<GovOfficerProfile> {
+  return officerApiCall<GovOfficerProfile>('/profile', {}, userId);
 }
 
 export async function patchOfficerProfile(
@@ -213,7 +216,7 @@ export async function resetOfficerSettings(userId?: string): Promise<GovOfficerS
 /**
  * Safely read active user session from localStorage synchronously on mount
  */
-export function getStoredUser(): { id?: string; fullName?: string; location?: string; phone?: string } | null {
+export function getStoredUser(): { id?: string; fullName?: string; location?: string; phone?: string; email?: string | null; district?: string } | null {
   try {
     const session = typeof window !== 'undefined' ? localStorage.getItem('cropguard_session') : null;
     return session ? JSON.parse(session) : null;

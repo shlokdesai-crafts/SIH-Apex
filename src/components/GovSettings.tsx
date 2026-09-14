@@ -18,7 +18,7 @@ import {
 } from '../services/govOfficerApi';
 
 export default function GovSettings() {
-  const { user } = useContext(AuthContext);
+  const { user, updateUser } = useContext(AuthContext);
 
   // Synchronously resolve session on initial render to prevent undefined userId on page refresh
   const storedUser = getStoredUser();
@@ -50,8 +50,8 @@ export default function GovSettings() {
       department: 'Agriculture Department',
       stateDepartment: 'Maharashtra Agriculture Department',
       employeeId: 'AGRO-2457',
-      email: null,
-      district: u?.location || 'Yavatmal',
+      email: u?.email ?? null,
+      district: u?.district || u?.location || 'Yavatmal',
       phone: u?.phone || '+91 98765 43210',
       avatarInitials: u?.fullName ? u.fullName.replace(/^Dr\.\s*/i, '').slice(0, 2).toUpperCase() : 'AD',
     };
@@ -60,7 +60,7 @@ export default function GovSettings() {
   // Jurisdiction data state matching the assigned district's administrative division
   const [jurisdiction, setJurisdiction] = useState<GovOfficerJurisdiction>(() => {
     const u = user || getStoredUser();
-    const dist = u?.location || 'Yavatmal';
+    const dist = u?.district || u?.location || 'Yavatmal';
     const div = getAdministrativeDivision(dist);
     const zone = getAgroClimaticZone(dist);
     return {
@@ -160,6 +160,14 @@ export default function GovSettings() {
             phone: data.profile.phone,
             district: data.profile.district,
           });
+          if (updateUser) {
+            updateUser({
+              email: data.profile.email,
+              phone: data.profile.phone,
+              location: data.profile.district,
+              district: data.profile.district,
+            });
+          }
         }
         if (data.jurisdiction) {
           setJurisdiction(data.jurisdiction);
@@ -266,13 +274,24 @@ export default function GovSettings() {
         farmerDataScope: `${updatedProfile.district} Jurisdiction`,
       }));
 
-      // Keep local session and stored users in sync so on page refresh, session matches PostgreSQL
+      // Keep AuthContext and local session in sync so on page refresh, session matches PostgreSQL
+      if (updateUser) {
+        updateUser({
+          phone: updatedProfile.phone,
+          location: updatedProfile.district,
+          district: updatedProfile.district,
+          email: updatedProfile.email,
+        });
+      }
+
       try {
         const sessionStr = localStorage.getItem('cropguard_session');
         if (sessionStr) {
           const sessionObj = JSON.parse(sessionStr);
           sessionObj.phone = updatedProfile.phone;
           sessionObj.location = updatedProfile.district;
+          sessionObj.district = updatedProfile.district;
+          sessionObj.email = updatedProfile.email;
           localStorage.setItem('cropguard_session', JSON.stringify(sessionObj));
         }
         const usersStr = localStorage.getItem('cropguard_users');
@@ -282,6 +301,8 @@ export default function GovSettings() {
           if (uIdx !== -1) {
             usersArr[uIdx].phone = updatedProfile.phone;
             usersArr[uIdx].location = updatedProfile.district;
+            usersArr[uIdx].district = updatedProfile.district;
+            usersArr[uIdx].email = updatedProfile.email;
             localStorage.setItem('cropguard_users', JSON.stringify(usersArr));
           }
         }
