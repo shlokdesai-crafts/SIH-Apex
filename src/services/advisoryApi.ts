@@ -4,6 +4,8 @@
 
 export interface CalculateAdvisoryParams {
   crop: string;
+  state?: string;
+  district?: string;
   farmArea: number;
   soilN: number;
   soilP: number;
@@ -21,6 +23,14 @@ export interface ApiSoilNutrientStatus {
   deficitVal: number;
   unit: string;
   interpretation: string;
+  chemicalForm?: string;
+  oxideEquivalent?: {
+    name: string;
+    symbol: string;
+    currentVal: number;
+    targetVal: number;
+    unit: string;
+  };
 }
 
 export interface ApiRecommendedFertilizer {
@@ -66,9 +76,19 @@ export interface ApiNutrientRequirement {
   additionalNeededPerAcre: number;
   totalFarmDeficitKg: number;
   unit: string;
+  chemicalForm?: string;
 }
 
 export interface ApiAdvisoryCalculationData {
+  isAvailable?: boolean;
+  sourceMetadata?: {
+    sourceName: string;
+    sourceUrl?: string;
+    sourceType?: string;
+    verificationStatus?: string;
+    sourceNote?: string;
+    lastVerified?: string;
+  };
   inputSummary: {
     crop: string;
     cropDisplayName: string;
@@ -111,7 +131,7 @@ export interface ApiAdvisoryCalculationData {
 }
 
 export interface ApiAdvisoryResponse {
-  status: 'success' | 'error';
+  status: 'success' | 'unavailable' | 'error';
   message?: string;
   data?: ApiAdvisoryCalculationData;
   error?: string;
@@ -147,7 +167,7 @@ export async function calculateAdvisory(
   }
 
   const json: ApiAdvisoryResponse = await response.json();
-  if (json.status !== 'success' || !json.data) {
+  if ((json.status !== 'success' && json.status !== 'unavailable') || !json.data) {
     throw new Error(json.message || 'Advisory API returned unsuccessful status');
   }
 
@@ -258,4 +278,5 @@ export async function fetchFarmerAdvisoryContext(cropId?: string): Promise<Farme
 
   return json.data;
 }
+
 

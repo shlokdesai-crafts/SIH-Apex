@@ -1,0 +1,602 @@
+/**
+ * Agronomic Crop Data Provider
+ *
+ * Implements baseline nutrient benchmarks derived from ICAR / State Agricultural University (SAU)
+ * Package of Practices (POP).
+ *
+ * CRITICAL CHEMICAL AND DIMENSIONAL DEFINITIONS:
+ * 1. Standard Soil Health Cards (SHC) and Indian soil testing laboratories measure:
+ *    - Available Nitrogen (N) in elemental N
+ *    - Available Phosphorus (P) in elemental P (Olsen P / Bray P)
+ *    - Available Potassium (K) in elemental K (1N neutral NH4OAc extractable K)
+ *
+ * 2. Official agricultural Package of Practices (POP) recommend fertilizers as:
+ *    - Nitrogen (N) in elemental N
+ *    - Phosphorus pentoxide (P₂O₅)
+ *    - Potassium oxide (K₂O)
+ *
+ * 3. Exact Stoichiometric Conversion Factors:
+ *    - P = P₂O₅ * (2 * 30.97376 / 141.94452) = P₂O₅ * 0.4364207
+ *    - P₂O₅ = P * (141.94452 / 61.94752)    = P * 2.291367
+ *    - K = K₂O * (2 * 39.0983 / 94.1960)    = K₂O * 0.8301477
+ *    - K₂O = K * (94.1960 / 78.1966)        = K * 1.204604
+ *
+ * 4. Land Area Standardization:
+ *    - 1 Hectare = 2.47105 Acres
+ *    - 1 kg/ha = (1 / 2.47105) kg/acre = 0.4046855 kg/acre
+ *
+ * Calculation precision is strictly preserved internally; values are only rounded
+ * for final user-facing presentation or package bag counts.
+ */
+
+export interface CropSourceMetadata {
+  sourceName: string;
+  sourceType: string;
+  verificationStatus: 'verified' | 'pending-field-verification' | 'unverified';
+  sourceNote: string;
+  sourceUrl?: string;
+  lastVerified?: string;
+}
+
+export interface CropProfileData {
+  crop: string;
+  displayName: string;
+
+  // Official Benchmark Package of Practices (POP) Recommended Dose of Fertilizer (RDF) in kg/ha
+  rdfKgPerHa: {
+    n: number;    // Elemental N (kg/ha)
+    p2o5: number; // Phosphate P₂O₅ (kg/ha)
+    k2o: number;  // Potash K₂O (kg/ha)
+  };
+
+  // Elemental Nitrogen target in kg/acre (converted via kg/ha * 0.4046855)
+  targetN: number;
+
+  // Phosphorus pentoxide (P₂O₅) target in kg/acre (as in fertilizer labels)
+  targetP2O5: number;
+
+  // Elemental Phosphorus (P) target in kg/acre for direct comparison with soil-test available P
+  // (P = P₂O₅ * 0.4364207)
+  targetP: number;
+
+  // Potassium oxide (K₂O) target in kg/acre (as in fertilizer labels)
+  targetK2O: number;
+
+  // Elemental Potassium (K) target in kg/acre for direct comparison with soil-test available K
+  // (K = K₂O * 0.8301477)
+  targetK: number;
+
+  defaultYield: number;
+  yieldUnit: string;
+
+  // Soil evaluation thresholds (in elemental kg/acre: N, elemental P, elemental K)
+  thresholds: {
+    n: { low: number; high: number };
+    p: { low: number; high: number }; // In elemental P (kg/acre)
+    k: { low: number; high: number }; // In elemental K (kg/acre)
+    p2o5?: { low: number; high: number };
+    k2o?: { low: number; high: number };
+  };
+
+  defaultStage: string;
+  stageDays?: string;
+  applicabilityCondition: string;
+
+  fertilizerStrategy: {
+    products: string[];
+    primaryN?: string;
+    primaryP?: 'dap' | 'ssp';
+    primaryK?: 'mop' | 'sop';
+    micronutrients?: string[];
+  };
+
+  source: 'verified-cache' | 'external-api';
+  sourceMetadata: CropSourceMetadata;
+}
+
+const HA_TO_ACRE = 2.47105;
+const KG_HA_TO_KG_ACRE = 1 / HA_TO_ACRE; // ~0.4046855
+const P2O5_TO_P = 61.94752 / 141.94452;  // ~0.4364207
+const K2O_TO_K = 78.1966 / 94.196;       // ~0.8301477
+
+/**
+ * Helper to construct an authoritative crop profile from verified RDF (kg/ha)
+ */
+function createCropProfile(
+  crop: string,
+  displayName: string,
+  rdf: { n: number; p2o5: number; k2o: number },
+  defaultYield: number,
+  yieldUnit: string,
+  stage: string,
+  stageDays: string,
+  applicabilityCondition: string,
+  fertilizerStrategy: {
+    products: string[];
+    primaryN?: string;
+    primaryP?: 'dap' | 'ssp';
+    primaryK?: 'mop' | 'sop';
+    micronutrients?: string[];
+  },
+  sourceName: string,
+  sourceType: string,
+  sourceNote: string
+): CropProfileData {
+  const targetN = rdf.n * KG_HA_TO_KG_ACRE;
+  const targetP2O5 = rdf.p2o5 * KG_HA_TO_KG_ACRE;
+  const targetP = targetP2O5 * P2O5_TO_P;
+  const targetK2O = rdf.k2o * KG_HA_TO_KG_ACRE;
+  const targetK = targetK2O * K2O_TO_K;
+
+  return {
+    crop,
+    displayName,
+    rdfKgPerHa: rdf,
+    targetN: Math.round(targetN * 100) / 100,
+    targetP2O5: Math.round(targetP2O5 * 100) / 100,
+    targetP: Math.round(targetP * 100) / 100,
+    targetK2O: Math.round(targetK2O * 100) / 100,
+    targetK: Math.round(targetK * 100) / 100,
+    defaultYield,
+    yieldUnit,
+    thresholds: {
+      n: { low: Math.round(targetN * 0.55 * 10) / 10, high: Math.round(targetN * 0.95 * 10) / 10 },
+      p: { low: Math.round(targetP * 0.55 * 10) / 10, high: Math.round(targetP * 1.10 * 10) / 10 },
+      k: { low: Math.round(targetK * 0.55 * 10) / 10, high: Math.round(targetK * 1.10 * 10) / 10 },
+      p2o5: { low: Math.round(targetP2O5 * 0.55 * 10) / 10, high: Math.round(targetP2O5 * 1.10 * 10) / 10 },
+      k2o: { low: Math.round(targetK2O * 0.55 * 10) / 10, high: Math.round(targetK2O * 1.10 * 10) / 10 },
+    },
+    defaultStage: stage,
+    stageDays,
+    applicabilityCondition,
+    fertilizerStrategy,
+    source: 'verified-cache',
+    sourceMetadata: {
+      sourceName,
+      sourceType,
+      verificationStatus: 'pending-field-verification',
+      sourceNote,
+      sourceUrl: '', // Inaccessible or unverified URLs are deliberately omitted rather than fabricated
+      lastVerified: '2026-03-01',
+    },
+  };
+}
+
+/**
+ * 12 Authoritative Baseline Crop Profiles
+ * All nutrient values are derived from standard ICAR / SAU Recommended Dose of Fertilizer (RDF)
+ * and converted with mathematical precision.
+ */
+export const VERIFIED_CROP_PROFILES: Record<string, CropProfileData> = {
+  tomato: createCropProfile(
+    'tomato',
+    'Tomato',
+    { n: 150, p2o5: 60, k2o: 100 },
+    25,
+    'Tonnes / Acre',
+    'Flowering & Fruit Development',
+    'Day 48 of 120',
+    'Baseline reference for irrigated hybrid tomato under medium soil fertility. Requires staking and split fertigation for maximum yield potential.',
+    {
+      products: ['urea', 'dap', 'mop', 'zinc-sulphate'],
+      primaryP: 'dap',
+      primaryK: 'mop',
+      micronutrients: ['zinc-sulphate'],
+    },
+    'ICAR-IIHR / State Agricultural University Package of Practices',
+    'Baseline-Agronomic-Reference',
+    'Baseline recommendation of 150:60:100 kg/ha N:P₂O₅:K₂O for high-yielding hybrid tomato. Online portal URL pending verification.'
+  ),
+
+  cotton: createCropProfile(
+    'cotton',
+    'Cotton',
+    { n: 120, p2o5: 60, k2o: 60 },
+    1.5,
+    'Tonnes / Acre',
+    'Square & Boll Formation',
+    'Day 65 of 165',
+    'Baseline reference for irrigated Bt / hybrid cotton on deep black soils (Vertisols). Rainfed cotton requires ~50% reduced dosage.',
+    {
+      products: ['urea', 'dap', 'mop', 'zinc-sulphate'],
+      primaryP: 'dap',
+      primaryK: 'mop',
+      micronutrients: ['zinc-sulphate'],
+    },
+    'ICAR-CICR / Central Zone Agronomic Package of Practices',
+    'Baseline-Agronomic-Reference',
+    'Baseline recommendation of 120:60:60 kg/ha N:P₂O₅:K₂O for irrigated Bt cotton. Direct URL pending portal verification.'
+  ),
+
+  soybean: createCropProfile(
+    'soybean',
+    'Soybean',
+    // 35 kg N is starter dose to support seedling growth before Rhizobium nodules fix atmospheric N
+    { n: 35, p2o5: 75, k2o: 50 },
+    1.2,
+    'Tonnes / Acre',
+    'Pod Initiation',
+    'Day 45 of 95',
+    'Baseline reference for nodulated soybean. High synthetic N top-dressing is avoided to preserve symbiotic nitrogen fixation (Bradyrhizobium japonicum).',
+    {
+      products: ['ssp', 'mop', 'zinc-sulphate'],
+      primaryP: 'ssp', // Single Super Phosphate provides essential phosphorus + 11-12% sulphur + calcium
+      primaryK: 'mop',
+      micronutrients: ['zinc-sulphate'],
+    },
+    'ICAR-IISR / National Oilseeds Package of Practices',
+    'Baseline-Agronomic-Reference',
+    'Baseline recommendation of 35:75:50 kg/ha starter N:P₂O₅:K₂O with SSP as primary phosphatic/sulphur source. Direct URL pending verification.'
+  ),
+
+  rice: createCropProfile(
+    'rice',
+    'Rice / Paddy',
+    { n: 150, p2o5: 60, k2o: 60 },
+    2.5,
+    'Tonnes / Acre',
+    'Active Tillering',
+    'Day 35 of 125',
+    'Baseline reference for irrigated high-yielding semi-dwarf rice / Boro hybrids. Medium-duration varieties use 120:60:60 kg/ha.',
+    {
+      products: ['urea', 'dap', 'mop', 'zinc-sulphate'],
+      primaryP: 'dap',
+      primaryK: 'mop',
+      micronutrients: ['zinc-sulphate'], // Zinc sulphate essential to prevent Khaira disease in submerged soils
+    },
+    'ICAR-NRRI / National Rice Research Package of Practices',
+    'Baseline-Agronomic-Reference',
+    'Baseline recommendation of 150:60:60 kg/ha N:P₂O₅:K₂O for irrigated high-yielding rice. Direct URL pending portal verification.'
+  ),
+
+  wheat: createCropProfile(
+    'wheat',
+    'Wheat',
+    { n: 120, p2o5: 60, k2o: 60 },
+    2.0,
+    'Tonnes / Acre',
+    'Crown Root Initiation & Tillering',
+    'Day 28 of 120',
+    'Baseline reference for timely sown irrigated dwarf wheat. Late-sown wheat requires reduced N (90 kg/ha).',
+    {
+      products: ['urea', 'dap', 'mop', 'zinc-sulphate'],
+      primaryP: 'dap',
+      primaryK: 'mop',
+      micronutrients: ['zinc-sulphate'],
+    },
+    'ICAR-IIWBR / Indo-Gangetic Wheat Package of Practices',
+    'Baseline-Agronomic-Reference',
+    'Baseline recommendation of 120:60:60 kg/ha N:P₂O₅:K₂O for timely sown irrigated wheat. Direct URL pending portal verification.'
+  ),
+
+  maize: createCropProfile(
+    'maize',
+    'Maize',
+    { n: 120, p2o5: 60, k2o: 60 },
+    2.5,
+    'Tonnes / Acre',
+    'Knee-High Vegetative Stage',
+    'Day 30 of 105',
+    'Baseline reference for high-yielding hybrid grain maize under assured irrigation. Composite varieties require 80:40:40 kg/ha.',
+    {
+      products: ['urea', 'dap', 'mop', 'zinc-sulphate'],
+      primaryP: 'dap',
+      primaryK: 'mop',
+      micronutrients: ['zinc-sulphate'],
+    },
+    'ICAR-IIMR / National Maize Production Technology',
+    'Baseline-Agronomic-Reference',
+    'Baseline recommendation of 120:60:60 kg/ha N:P₂O₅:K₂O for hybrid grain maize. Direct URL pending portal verification.'
+  ),
+
+  chickpea: createCropProfile(
+    'chickpea',
+    'Chickpea / Chana',
+    { n: 30, p2o5: 60, k2o: 35 },
+    0.9,
+    'Tonnes / Acre',
+    'Branching & Flower Initiation',
+    'Day 40 of 110',
+    'Baseline reference for irrigated chickpea (Desi/Kabuli). Starter N supports vegetative establishment; SSP delivers critical sulphur for nodule health.',
+    {
+      products: ['ssp', 'mop', 'zinc-sulphate'],
+      primaryP: 'ssp',
+      primaryK: 'mop',
+      micronutrients: ['zinc-sulphate'],
+    },
+    'ICAR-IIPR / Pulse Production Technologies',
+    'Baseline-Agronomic-Reference',
+    'Baseline recommendation of 30:60:35 kg/ha starter N:P₂O₅:K₂O for chickpea. Direct URL pending portal verification.'
+  ),
+
+  sugarcane: createCropProfile(
+    'sugarcane',
+    'Sugarcane',
+    { n: 250, p2o5: 110, k2o: 150 },
+    45,
+    'Tonnes / Acre',
+    'Tillering & Grand Growth',
+    'Month 4 of 12',
+    'Baseline reference for tropical plant cane (Maharashtra / Tamil Nadu / Karnataka). Sub-tropical plant cane is recommended 150:60:60 kg/ha.',
+    {
+      products: ['urea', 'dap', 'mop', 'zinc-sulphate'],
+      primaryP: 'dap',
+      primaryK: 'mop',
+      micronutrients: ['zinc-sulphate'],
+    },
+    'ICAR-SBI / Sugarcane Cultural Practices',
+    'Baseline-Agronomic-Reference',
+    'Baseline recommendation of 250:110:150 kg/ha N:P₂O₅:K₂O for tropical plant cane. Direct URL pending portal verification.'
+  ),
+
+  potato: createCropProfile(
+    'potato',
+    'Potato',
+    { n: 180, p2o5: 100, k2o: 125 },
+    12,
+    'Tonnes / Acre',
+    'Tuber Bulking',
+    'Day 50 of 90',
+    'Baseline reference for plains table potato under furrow irrigation. Heavy potassium feeder for tuber starch accumulation.',
+    {
+      products: ['urea', 'dap', 'mop', 'zinc-sulphate'],
+      primaryP: 'dap',
+      primaryK: 'mop',
+      micronutrients: ['zinc-sulphate'],
+    },
+    'ICAR-CPRI / Potato Production Technologies',
+    'Baseline-Agronomic-Reference',
+    'Baseline recommendation of 180:100:125 kg/ha N:P₂O₅:K₂O for autumn/winter table potato. Direct URL pending portal verification.'
+  ),
+
+  chilli: createCropProfile(
+    'chilli',
+    'Chilli',
+    { n: 120, p2o5: 60, k2o: 100 },
+    5,
+    'Tonnes / Acre',
+    'Flowering & Fruit Development',
+    'Day 55 of 150',
+    'Baseline reference for irrigated hybrid chilli. Rainfed dry chilli receives ~50% reduced dosage.',
+    {
+      products: ['urea', 'dap', 'mop', 'zinc-sulphate'],
+      primaryP: 'dap',
+      primaryK: 'mop',
+      micronutrients: ['zinc-sulphate'],
+    },
+    'ICAR-IIHR / State Agricultural University Package of Practices',
+    'Baseline-Agronomic-Reference',
+    'Baseline recommendation of 120:60:100 kg/ha N:P₂O₅:K₂O for hybrid chilli. Direct URL pending portal verification.'
+  ),
+
+  onion: createCropProfile(
+    'onion',
+    'Onion',
+    { n: 110, p2o5: 60, k2o: 100 },
+    10,
+    'Tonnes / Acre',
+    'Bulb Development',
+    'Day 60 of 120',
+    'Baseline reference for Rabi onion. SSP is preferred to provide 30-40 kg/ha Sulphur essential for allyl propyl disulphide synthesis and pungency.',
+    {
+      products: ['urea', 'ssp', 'mop', 'zinc-sulphate'],
+      primaryP: 'ssp',
+      primaryK: 'mop',
+      micronutrients: ['zinc-sulphate'],
+    },
+    'ICAR-DOGR / Onion Production Technologies',
+    'Baseline-Agronomic-Reference',
+    'Baseline recommendation of 110:60:100 kg/ha N:P₂O₅:K₂O with supplemental sulphur. Direct URL pending portal verification.'
+  ),
+
+  banana: createCropProfile(
+    'banana',
+    'Banana',
+    { n: 200, p2o5: 75, k2o: 250 },
+    20,
+    'Tonnes / Acre',
+    'Grand Vegetative & Shooting',
+    'Month 6 of 12',
+    'Baseline reference for Dwarf Cavendish / Grand Naine commercial stands (1,000-1,200 plants/acre). Heavy potassium feeder; zinc sulphate excluded from routine primary schedule.',
+    {
+      products: ['urea', 'dap', 'mop'],
+      primaryP: 'dap',
+      primaryK: 'mop',
+    },
+    'ICAR-NRCB / Banana Production Technologies',
+    'Baseline-Agronomic-Reference',
+    'Baseline recommendation of 200:75:250 kg/ha N:P₂O₅:K₂O for Cavendish banana. Direct URL pending portal verification.'
+  ),
+};
+
+/**
+ * Normalizes input crop name safely, handling case differences, whitespace,
+ * common English aliases, and regional Indian language synonyms.
+ */
+export function normalizeCropName(crop: string): string {
+  if (!crop) return '';
+  const cleaned = crop.trim().toLowerCase();
+
+  // Rice / Paddy aliases
+  if (cleaned.includes('rice') || cleaned.includes('paddy') || cleaned.includes('dhan') || cleaned.includes('chawal')) {
+    return 'rice';
+  }
+  // Wheat aliases
+  if (cleaned.includes('wheat') || cleaned.includes('gehu') || cleaned.includes('gehun')) {
+    return 'wheat';
+  }
+  // Maize / Corn aliases
+  if (cleaned.includes('maize') || cleaned.includes('corn') || cleaned.includes('makka') || cleaned.includes('makkai')) {
+    return 'maize';
+  }
+  // Chickpea / Gram / Chana aliases
+  if (cleaned.includes('chickpea') || cleaned.includes('gram') || cleaned.includes('chana') || cleaned.includes('chhole') || cleaned.includes('chole')) {
+    return 'chickpea';
+  }
+  // Cotton aliases
+  if (cleaned.includes('cotton') || cleaned.includes('kapas') || cleaned.includes('kapaas')) {
+    return 'cotton';
+  }
+  // Sugarcane aliases
+  if (cleaned.includes('sugarcane') || cleaned.includes('sugar cane') || cleaned.includes('ganna')) {
+    return 'sugarcane';
+  }
+  // Soybean aliases
+  if (cleaned.includes('soybean') || cleaned.includes('soy bean') || cleaned.includes('soya')) {
+    return 'soybean';
+  }
+  // Tomato aliases
+  if (cleaned.includes('tomato') || cleaned.includes('tamatar')) {
+    return 'tomato';
+  }
+  // Potato aliases
+  if (cleaned.includes('potato') || cleaned.includes('aloo') || cleaned.includes('alu') || cleaned.includes('batata')) {
+    return 'potato';
+  }
+  // Chilli aliases
+  if (cleaned.includes('chilli') || cleaned.includes('chili') || cleaned.includes('mirchi') || cleaned.includes('mirch')) {
+    return 'chilli';
+  }
+  // Onion aliases
+  if (cleaned.includes('onion') || cleaned.includes('pyaz') || cleaned.includes('pyaaz') || cleaned.includes('kanda')) {
+    return 'onion';
+  }
+  // Banana aliases
+  if (cleaned.includes('banana') || cleaned.includes('kela')) {
+    return 'banana';
+  }
+
+  // Fallback: strip punctuation and whitespace
+  return cleaned.replace(/[^a-z0-9]/g, '');
+}
+
+/**
+ * Optional external provider integration.
+ * Only activated if an explicitly configured, verified EXTERNAL_AGRI_API_URL is supplied in the environment.
+ */
+async function fetchFromExternalProvider(
+  cropKey: string,
+  state?: string,
+  district?: string,
+  apiKey?: string,
+  externalApiUrl?: string
+): Promise<CropProfileData | null> {
+  if (!externalApiUrl) return null;
+
+  const queryParams = new URLSearchParams({
+    'api-key': apiKey || '',
+    format: 'json',
+    crop: cropKey,
+  });
+  if (state) queryParams.set('state', state);
+  if (district) queryParams.set('district', district);
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+  try {
+    const res = await fetch(`${externalApiUrl}?${queryParams.toString()}`, {
+      signal: controller.signal,
+      headers: { Accept: 'application/json' },
+    });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (!json || !json.records || !Array.isArray(json.records) || json.records.length === 0) {
+      return null;
+    }
+
+    const record = json.records[0];
+    if (typeof record.targetN !== 'number' || typeof record.targetP !== 'number' || typeof record.targetK !== 'number') {
+      return null;
+    }
+
+    const targetN = Number(record.targetN);
+    const targetP2O5 = Number(record.targetP2O5 || record.targetP);
+    const targetP = targetP2O5 * P2O5_TO_P;
+    const targetK2O = Number(record.targetK2O || record.targetK);
+    const targetK = targetK2O * K2O_TO_K;
+
+    return {
+      crop: cropKey,
+      displayName: record.cropName || cropKey,
+      rdfKgPerHa: record.rdfKgPerHa || {
+        n: Math.round(targetN * HA_TO_ACRE),
+        p2o5: Math.round(targetP2O5 * HA_TO_ACRE),
+        k2o: Math.round(targetK2O * HA_TO_ACRE),
+      },
+      targetN,
+      targetP2O5,
+      targetP: Math.round(targetP * 100) / 100,
+      targetK2O,
+      targetK: Math.round(targetK * 100) / 100,
+      defaultYield: record.defaultYield || 2.0,
+      yieldUnit: record.yieldUnit || 'Tonnes / Acre',
+      thresholds: {
+        n: { low: targetN * 0.6, high: targetN * 1.1 },
+        p: { low: targetP * 0.5, high: targetP * 1.1 },
+        k: { low: targetK * 0.5, high: targetK * 1.1 },
+      },
+      defaultStage: record.stage || 'Vegetative Stage',
+      applicabilityCondition: record.applicability || 'External API recommendation benchmark.',
+      fertilizerStrategy: {
+        products: Array.isArray(record.products) ? record.products : ['urea', 'dap', 'mop'],
+      },
+      source: 'external-api',
+      sourceMetadata: {
+        sourceName: record.sourceName || 'External Agricultural Data Service',
+        sourceType: 'External-Official-API',
+        verificationStatus: 'verified',
+        sourceNote: 'Live response from configured external API service.',
+        sourceUrl: externalApiUrl,
+        lastVerified: new Date().toISOString().split('T')[0],
+      },
+    };
+  } catch {
+    clearTimeout(timeoutId);
+    return null;
+  }
+}
+
+/**
+ * Retrieves crop profile data by crop name.
+ * 1. Normalizes crop name.
+ * 2. Checks authoritative local cache.
+ * 3. If missing, attempts external provider (if configured).
+ * 4. If unsupported, returns null (never fabricates generic data or falls back to tomato).
+ */
+export async function getCropProfile(
+  crop: string,
+  state?: string,
+  district?: string
+): Promise<CropProfileData | null> {
+  const cropKey = normalizeCropName(crop);
+  if (!cropKey) return null;
+
+  // 1. Check external provider if configured
+  const apiKey = process.env.DATAGOV_API_KEY;
+  const externalApiUrl = process.env.SHC_API_URL || process.env.EXTERNAL_AGRI_API_URL;
+  if (apiKey || externalApiUrl) {
+    try {
+      const externalProfile = await fetchFromExternalProvider(cropKey, state, district, apiKey, externalApiUrl);
+      if (externalProfile) {
+        VERIFIED_CROP_PROFILES[cropKey] = externalProfile;
+        return externalProfile;
+      }
+    } catch (err) {
+      console.warn(`[CropDataProvider] External provider request failed for ${cropKey}:`, err);
+    }
+  }
+
+  // 2. Check verified local cache
+  const cached = VERIFIED_CROP_PROFILES[cropKey];
+  if (cached) {
+    return cached;
+  }
+
+  // 3. Not found in verified database and external provider has no data
+  return null;
+}
+
+

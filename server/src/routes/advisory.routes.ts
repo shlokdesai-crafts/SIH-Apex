@@ -4,6 +4,7 @@ import {
   calculateFertilizerAdvisory, 
   CalculateAdvisoryInput 
 } from '../services/recommendationEngine.js';
+import { normalizeCropName, VERIFIED_CROP_PROFILES } from '../services/cropDataProvider.js';
 
 const router = Router();
 
@@ -14,7 +15,8 @@ const router = Router();
  */
 router.get('/context', async (req: Request, res: Response) => {
   try {
-    const requestedCrop = (req.query.crop as string || req.query.cropId as string || 'tomato').toLowerCase().trim();
+    const rawCrop = (req.query.crop as string || req.query.cropId as string || 'tomato');
+    const requestedCrop = normalizeCropName(rawCrop) || 'tomato';
     const farmerIdParam = req.query.farmerId as string | undefined;
     const farmIdParam = req.query.farmId as string | undefined;
 
@@ -75,17 +77,6 @@ router.get('/context', async (req: Request, res: Response) => {
           [farmRow.id, `%${requestedCrop}%`]
         );
         cropCycleRow = ccNameRes.rows[0];
-      }
-
-      // If still not found, get the latest active crop cycle
-      if (!cropCycleRow) {
-        const ccAnyRes = await query(
-          `SELECT * FROM crop_cycles 
-           WHERE farm_id = $1 AND status = 'active'
-           ORDER BY created_at DESC LIMIT 1;`,
-          [farmRow.id]
-        );
-        cropCycleRow = ccAnyRes.rows[0];
       }
     }
 
@@ -288,14 +279,18 @@ router.get('/soil-tests/latest', async (req: Request, res: Response) => {
  * @access  Public
  */
 router.get('/crops', (_req: Request, res: Response) => {
+  const cropList = Object.values(VERIFIED_CROP_PROFILES).map((p) => ({
+    id: p.crop,
+    name: p.displayName,
+    season: p.crop === 'sugarcane' || p.crop === 'banana' ? 'Annual / Perennial' : p.crop === 'wheat' || p.crop === 'chickpea' ? 'Rabi' : 'Kharif / Rabi',
+    defaultYield: p.defaultYield,
+    yieldUnit: p.yieldUnit,
+    sourceMetadata: p.sourceMetadata,
+  }));
+
   res.status(200).json({
     status: 'success',
-    data: [
-      { id: 'tomato', name: 'Tomato', season: 'Rabi / Kharif', defaultYield: 25.0, yieldUnit: 'Tonnes/Acre' },
-      { id: 'cotton', name: 'Cotton', season: 'Kharif', defaultYield: 1.5, yieldUnit: 'Tonnes/Acre' },
-      { id: 'soybean', name: 'Soybean', season: 'Kharif', defaultYield: 1.2, yieldUnit: 'Tonnes/Acre' },
-      { id: 'sugarcane', name: 'Sugarcane', season: 'Annual', defaultYield: 45.0, yieldUnit: 'Tonnes/Acre' }
-    ]
+    data: cropList,
   });
 });
 
@@ -368,6 +363,14 @@ router.post('/calculate', async (req: Request, res: Response) => {
 
     const calculation = await calculateFertilizerAdvisory(inputData);
 
+    if (calculation.isAvailable === false) {
+      return res.status(200).json({
+        status: 'unavailable',
+        message: `Fertilizer recommendation benchmark not currently verified for ${calculation.inputSummary.cropDisplayName}. Actual soil test values are preserved.`,
+        data: calculation,
+      });
+    }
+
     return res.status(200).json({
       status: 'success',
       message: `Fertilizer recommendation generated successfully for ${calculation.inputSummary.cropDisplayName}`,
@@ -384,3 +387,4 @@ router.post('/calculate', async (req: Request, res: Response) => {
 });
 
 export default router;
+
