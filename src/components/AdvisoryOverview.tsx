@@ -1,5 +1,16 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import './AdvisoryOverview.css';
+import type { ScanResultData } from '../pages/Dashboard';
+import { 
+  ADVISORY_DATA,
+  getDynamicCropAdvisory, 
+  normalizeCropKey,
+  type SoilNutrient,
+  type NutrientRequirement,
+  type FertilizerProduct,
+  type ApplicationStep,
+  type CropAdvisoryData
+} from '../data/advisoryCropData';
 import { getOrganicPreparationDetails } from '../utils/organicGuides';
 import { useTranslation } from '../i18n/useTranslation';
 import { 
@@ -10,44 +21,12 @@ import {
 } from '../services/advisoryApi';
 
 interface AdvisoryOverviewProps {
+  scanResult?: ScanResultData | null;
   onBack?: () => void;
   onOpenFertilizer?: () => void;
 }
 
-interface SoilNutrient {
-  name: string;
-  symbol: string;
-  status: 'Low' | 'Adequate' | 'Moderate' | 'High';
-  currentVal: number;
-  targetVal: number;
-  unit: string;
-}
-
-interface NutrientRequirement {
-  nutrient: string;
-  symbol: string;
-  recommended: number;
-  current: number;
-  additional: number;
-  unit: string;
-}
-
-export interface FertilizerProduct {
-  id: string;
-  name: string;
-  formula: string;
-  composition: string;
-  ratePerAcre: number;
-  unit: string;
-  badge: string;
-  bagColor: string;
-  description: string;
-  category?: string;
-  packageSizeKg?: number;
-  packageUnit?: string;
-  price?: number;
-  isOrganic?: boolean;
-}
+export type { SoilNutrient, NutrientRequirement, FertilizerProduct, ApplicationStep, CropAdvisoryData };
 
 export interface DbFertilizerItem {
   id: string;
@@ -67,749 +46,29 @@ export interface DbFertilizerItem {
   isActive: boolean;
 }
 
-interface ApplicationStep {
-  step: number;
-  title: string;
-  timing: string;
-  badge: string;
-  details: string;
-}
-
-interface NearbyRiskReport {
-  id: string;
-  crop: string;
-  threat: string;
-  distance: string;
-  farmsAffected: number;
-  severity: 'High' | 'Moderate' | 'Low';
-  status: string;
-  advisedAction: string;
-}
-
-interface CropAdvisoryData {
-  id: string;
-  name: string;
-  image: string;
-  stage: string;
-  stageDays: string;
-  field: string;
-  acres: number;
-  location: string;
-  soilType: string;
-  todayAdvice: string;
-  soilNutrients: {
-    nitrogen: SoilNutrient;
-    phosphorus: SoilNutrient;
-    potassium: SoilNutrient;
-    ph: { value: number; label: string };
-    organicCarbon: { value: string; label: string };
-    micronutrients: { label: string; elements: string };
-  };
-  requirements: NutrientRequirement[];
-  keyInsights: string[];
-  calloutMessage: string;
-  products: FertilizerProduct[];
-  calculatorRates: {
-    ureaKgPerAcre: number;
-    dapKgPerAcre: number;
-    mopKgPerAcre: number;
-    zincKgPerAcre: number;
-  };
-  timingSteps: ApplicationStep[];
-  safetyTips: string[];
-  organicAlternatives: {
-    name: string;
-    type: string;
-    dosage: string;
-    benefit: string;
-  }[];
-  nearbyRiskReports: NearbyRiskReport[];
-}
-
-const ADVISORY_DATA: Record<string, CropAdvisoryData> = {
-  tomato: {
-    id: 'tomato',
-    name: 'Tomato',
-    image: '/images/tomato_crop.jpg',
-    stage: 'Flowering Stage',
-    stageDays: 'Day 48 of 120',
-    field: 'Field 1',
-    acres: 3.5,
-    location: 'Akola, Maharashtra',
-    soilType: 'Medium Black Clay Loam',
-    todayAdvice: 'Apply 2nd Nitrogen split (Urea) and give light drip irrigation early morning before 10 AM. Inspect lower leaves for blight spots.',
-    soilNutrients: {
-      nitrogen: {
-        name: 'Nitrogen',
-        symbol: 'N',
-        status: 'Low',
-        currentVal: 25,
-        targetVal: 60,
-        unit: 'kg/acre',
-      },
-      phosphorus: {
-        name: 'Phosphorus',
-        symbol: 'P',
-        status: 'Adequate',
-        currentVal: 18,
-        targetVal: 25,
-        unit: 'kg/acre',
-      },
-      potassium: {
-        name: 'Potassium',
-        symbol: 'K',
-        status: 'Moderate',
-        currentVal: 20,
-        targetVal: 40,
-        unit: 'kg/acre',
-      },
-      ph: { value: 7.2, label: 'Neutral' },
-      organicCarbon: { value: '0.6%', label: 'Low' },
-      micronutrients: { label: 'Needs Attention', elements: 'Zn, Fe' },
-    },
-    requirements: [
-      { nutrient: 'Nitrogen', symbol: 'N', recommended: 60, current: 25, additional: 35, unit: 'kg/acre' },
-      { nutrient: 'Phosphorus', symbol: 'P', recommended: 25, current: 18, additional: 7, unit: 'kg/acre' },
-      { nutrient: 'Potassium', symbol: 'K', recommended: 40, current: 20, additional: 20, unit: 'kg/acre' },
-      { nutrient: 'Calcium', symbol: 'Ca', recommended: 10, current: 5, additional: 5, unit: 'kg/acre' },
-      { nutrient: 'Magnesium', symbol: 'Mg', recommended: 5, current: 2, additional: 3, unit: 'kg/acre' },
-      { nutrient: 'Zinc', symbol: 'Zn', recommended: 1, current: 0.3, additional: 0.7, unit: 'kg/acre' },
-    ],
-    keyInsights: [
-      'Nitrogen is critically low, impacting vegetative growth and flower formation.',
-      'Phosphorus is at an adequate level; maintain current application rate.',
-      'Zinc and Iron deficiency observed, which may cause interveinal chlorosis.',
-      'Potassium levels are moderate; supplementary dose needed during fruit set.',
-    ],
-    calloutMessage: 'Apply the recommended fertilizers at the right time to ensure healthy flowering and higher yield.',
-    products: [
-      {
-        id: 'urea',
-        name: 'Urea',
-        formula: 'CO(NH₂)₂',
-        composition: '46% N',
-        ratePerAcre: 60,
-        unit: 'kg/acre',
-        badge: 'High Nitrogen',
-        bagColor: '#1e56a0',
-        description: 'Fast acting granular nitrogen fertilizer for rapid canopy growth and lush foliage.',
-      },
-      {
-        id: 'dap',
-        name: 'DAP',
-        formula: 'Di-Ammonium Phosphate',
-        composition: '18% N, 46% P',
-        ratePerAcre: 55,
-        unit: 'kg/acre',
-        badge: 'Root Developer',
-        bagColor: '#e67e22',
-        description: 'Excellent source of available phosphorus and nitrogen to stimulate deep root development.',
-      },
-      {
-        id: 'mop',
-        name: 'MOP',
-        formula: 'Muriate of Potash (KCl)',
-        composition: '60% Potassium',
-        ratePerAcre: 35,
-        unit: 'kg/acre',
-        badge: 'Fruit Quality',
-        bagColor: '#c0392b',
-        description: 'Increases fruit firmness, sugar content, shelf life, and resistance against drought.',
-      },
-    ],
-    calculatorRates: {
-      ureaKgPerAcre: 60,
-      dapKgPerAcre: 55,
-      mopKgPerAcre: 35,
-      zincKgPerAcre: 1,
-    },
-    timingSteps: [
-      {
-        step: 1,
-        title: 'First Dose (Basal)',
-        timing: 'This Week',
-        badge: 'Immediate',
-        details: 'Apply Urea & DAP near root zone with light irrigation.',
-      },
-      {
-        step: 2,
-        title: 'Second Dose (Top Dressing)',
-        timing: 'After 15 Days',
-        badge: 'Flowering Boost',
-        details: 'Apply MOP and remaining Nitrogen before flowering peak.',
-      },
-      {
-        step: 3,
-        title: 'Micronutrient Spray',
-        timing: 'After 20 Days',
-        badge: 'Foliar Health',
-        details: 'Foliar spray of Zinc Sulphate + Boron in early morning.',
-      },
-    ],
-    safetyTips: [
-      'Always wear protective gloves and mask when handling chemicals.',
-      'Avoid fertilizer application during high winds or right before heavy rainfall.',
-      'Store fertilizers in a dry, ventilated area away from direct sunlight.',
-    ],
-    organicAlternatives: [
-      {
-        name: 'Well-Decomposed Vermicompost',
-        type: 'Organic Matter',
-        dosage: '2.5 Tonnes / Acre',
-        benefit: 'Enriches microbial biodiversity, soil water-holding capacity, and balanced slow-release nutrients.',
-      },
-      {
-        name: 'Jeevamrutha Fermented Drench',
-        type: 'Bio-stimulant',
-        dosage: '200 Litres / Acre with drip',
-        benefit: 'Natural nitrogen fixers and phosphorus solubilizers directly revitalize rhizosphere bacteria.',
-      },
-      {
-        name: 'Neem Cake (De-oiled)',
-        type: 'Nitrification Inhibitor',
-        dosage: '100 kg / Acre',
-        benefit: 'Retards nitrogen leaching into groundwater while suppressing harmful soil nematodes.',
-      },
-    ],
-    nearbyRiskReports: [
-      {
-        id: 'risk-1',
-        crop: 'Tomato',
-        threat: 'Early Blight (Alternaria solani)',
-        distance: '4.2 km away',
-        farmsAffected: 6,
-        severity: 'Moderate',
-        status: 'Active Spore Spread',
-        advisedAction: 'Keep foliage dry; inspect lower leaf quadrants for dark brown target-spot rings.',
-      },
-      {
-        id: 'risk-2',
-        crop: 'Chilli & Tomato',
-        threat: 'Whitefly Infestation (Vector)',
-        distance: '6.8 km away',
-        farmsAffected: 11,
-        severity: 'Moderate',
-        status: 'Surveillance Alert',
-        advisedAction: 'Set up 4 yellow sticky traps per acre; spray neem oil 10,000 ppm if nymphs appear.',
-      },
-      {
-        id: 'risk-3',
-        crop: 'Brinjal / Solanaceae',
-        threat: 'Bacterial Wilt Notice',
-        distance: '12 km away',
-        farmsAffected: 3,
-        severity: 'Low',
-        status: 'Localized Containment',
-        advisedAction: 'Maintain clean drainage channels and avoid furrow flooding across adjacent plots.',
-      },
-    ],
-  },
-  cotton: {
-    id: 'cotton',
-    name: 'Cotton',
-    image: '/images/cotton_crop.jpg',
-    stage: 'Boll Development Stage',
-    stageDays: 'Day 78 of 150',
-    field: 'Field 2',
-    acres: 5.0,
-    location: 'Akola, Maharashtra',
-    soilType: 'Deep Black Cotton Vertisol',
-    todayAdvice: 'Install 5 pheromone traps per acre today. Apply Potassium (MOP) to accelerate boll filling and fiber strength.',
-    soilNutrients: {
-      nitrogen: {
-        name: 'Nitrogen',
-        symbol: 'N',
-        status: 'Moderate',
-        currentVal: 38,
-        targetVal: 65,
-        unit: 'kg/acre',
-      },
-      phosphorus: {
-        name: 'Phosphorus',
-        symbol: 'P',
-        status: 'Low',
-        currentVal: 14,
-        targetVal: 30,
-        unit: 'kg/acre',
-      },
-      potassium: {
-        name: 'Potassium',
-        symbol: 'K',
-        status: 'Adequate',
-        currentVal: 45,
-        targetVal: 50,
-        unit: 'kg/acre',
-      },
-      ph: { value: 7.8, label: 'Slightly Alkaline' },
-      organicCarbon: { value: '0.5%', label: 'Low' },
-      micronutrients: { label: 'Deficient', elements: 'Boron, Magnesium' },
-    },
-    requirements: [
-      { nutrient: 'Nitrogen', symbol: 'N', recommended: 65, current: 38, additional: 27, unit: 'kg/acre' },
-      { nutrient: 'Phosphorus', symbol: 'P', recommended: 30, current: 14, additional: 16, unit: 'kg/acre' },
-      { nutrient: 'Potassium', symbol: 'K', recommended: 50, current: 45, additional: 5, unit: 'kg/acre' },
-      { nutrient: 'Boron', symbol: 'B', recommended: 1.5, current: 0.5, additional: 1.0, unit: 'kg/acre' },
-      { nutrient: 'Magnesium', symbol: 'Mg', recommended: 12, current: 6, additional: 6, unit: 'kg/acre' },
-      { nutrient: 'Sulphur', symbol: 'S', recommended: 8, current: 4, additional: 4, unit: 'kg/acre' },
-    ],
-    keyInsights: [
-      'Phosphorus deficit is limiting boll retention and fiber elongation.',
-      'Boron deficiency can trigger flower bud shedding; spray recommended.',
-      'Potassium levels are adequate, supporting healthy boll weight.',
-      'Magnesium top-dressing prevents leaf reddening (lalya disease).',
-    ],
-    calloutMessage: 'Apply phosphorus booster immediately to maximize boll retention and prevent square shedding.',
-    products: [
-      {
-        id: 'ssp',
-        name: 'Single Super Phosphate (SSP)',
-        formula: 'Ca(H₂PO₄)₂ + CaSO₄',
-        composition: '16% P, 11% S',
-        ratePerAcre: 80,
-        unit: 'kg/acre',
-        badge: 'Phosphate & Sulphur',
-        bagColor: '#16a085',
-        description: 'Supplies essential phosphorus with readily available sulphate to strengthen boll walls.',
-      },
-      {
-        id: 'urea',
-        name: 'Urea',
-        formula: 'CO(NH₂)₂',
-        composition: '46% N',
-        ratePerAcre: 50,
-        unit: 'kg/acre',
-        badge: 'Boll Sizing',
-        bagColor: '#1e56a0',
-        description: 'Sustains boll maturation without encouraging excessive vegetative rank growth.',
-      },
-      {
-        id: 'mgso4',
-        name: 'Magnesium Sulphate',
-        formula: 'MgSO₄·7H₂O',
-        composition: '9.6% Mg, 12% S',
-        ratePerAcre: 20,
-        unit: 'kg/acre',
-        badge: 'Anti-Reddening',
-        bagColor: '#8e44ad',
-        description: 'Prevents cotton leaf reddening and enhances photosynthetic green chlorophyll.',
-      },
-    ],
-    calculatorRates: {
-      ureaKgPerAcre: 50,
-      dapKgPerAcre: 40,
-      mopKgPerAcre: 25,
-      zincKgPerAcre: 1.5,
-    },
-    timingSteps: [
-      {
-        step: 1,
-        title: 'Boll Sizing Dose',
-        timing: 'This Week',
-        badge: 'Immediate',
-        details: 'Apply SSP and Urea at second irrigation split in moist furrows.',
-      },
-      {
-        step: 2,
-        title: 'Foliar Boron Spray',
-        timing: 'After 10 Days',
-        badge: 'Square Retention',
-        details: 'Spray 0.15% Solubor (Boron) in evening hours for flower retention.',
-      },
-      {
-        step: 3,
-        title: 'Potash Boost Split',
-        timing: 'After 25 Days',
-        badge: 'Fiber Quality',
-        details: 'Broadcast MOP to ensure complete fiber filling and high lint index.',
-      },
-    ],
-    safetyTips: [
-      'Maintain deep moisture before applying concentrated granular fertilizer in black cotton soil.',
-      'Do not mix magnesium sulphate directly with phosphorus solutions in high concentrations.',
-      'Use certified masks when spraying foliar micronutrients.',
-    ],
-    organicAlternatives: [
-      {
-        name: 'Farm Yard Manure (FYM)',
-        type: 'Organic Base',
-        dosage: '4 Tonnes / Acre',
-        benefit: 'Restores black soil structure, prevents deep cracking, and increases organic carbon.',
-      },
-      {
-        name: 'Trichoderma enriched Compost',
-        type: 'Bio-Fungicide & Nutrient',
-        dosage: '250 kg / Acre',
-        benefit: 'Controls soil-borne root rot and wilt pathogens while unlocking fixed phosphorus.',
-      },
-      {
-        name: 'Panchagavya Foliar Tonic',
-        type: 'Plant Tonic',
-        dosage: '3% dilution (30 ml/L)',
-        benefit: 'Triggers phytohormones for abundant boll setting and uniform fiber growth.',
-      },
-    ],
-    nearbyRiskReports: [
-      {
-        id: 'cotton-risk-1',
-        crop: 'Cotton',
-        threat: 'Pink Bollworm (Pectinophora gossypiella)',
-        distance: '3.1 km away',
-        farmsAffected: 14,
-        severity: 'High',
-        status: 'Moth Catches > 8 / trap',
-        advisedAction: 'Install pheromone delta traps immediately; inspect rosetted flowers.',
-      },
-      {
-        id: 'cotton-risk-2',
-        crop: 'Cotton',
-        threat: 'Jassids & Thrips Alert',
-        distance: '7.5 km away',
-        farmsAffected: 9,
-        severity: 'Moderate',
-        status: 'Early Hopperburn Risk',
-        advisedAction: 'Apply neem-based bio-repellent or flonicamid if downward leaf curling begins.',
-      },
-    ],
-  },
-  soybean: {
-    id: 'soybean',
-    name: 'Soybean',
-    image: '/images/soybean_crop.jpg',
-    stage: 'Pod Formation Stage',
-    stageDays: 'Day 62 of 95',
-    field: 'Field 3',
-    acres: 4.2,
-    location: 'Akola, Maharashtra',
-    soilType: 'Clay Loam with good drainage',
-    todayAdvice: 'Spray foliar feed (00:52:34) to boost pod grain filling. Hold irrigation as topsoil has optimal 75% moisture.',
-    soilNutrients: {
-      nitrogen: {
-        name: 'Nitrogen',
-        symbol: 'N',
-        status: 'Adequate',
-        currentVal: 42,
-        targetVal: 45,
-        unit: 'kg/acre',
-      },
-      phosphorus: {
-        name: 'Phosphorus',
-        symbol: 'P',
-        status: 'Low',
-        currentVal: 15,
-        targetVal: 35,
-        unit: 'kg/acre',
-      },
-      potassium: {
-        name: 'Potassium',
-        symbol: 'K',
-        status: 'Moderate',
-        currentVal: 22,
-        targetVal: 35,
-        unit: 'kg/acre',
-      },
-      ph: { value: 6.9, label: 'Optimal' },
-      organicCarbon: { value: '0.75%', label: 'Medium' },
-      micronutrients: { label: 'Low Sulphur', elements: 'S, Mo' },
-    },
-    requirements: [
-      { nutrient: 'Nitrogen', symbol: 'N', recommended: 45, current: 42, additional: 3, unit: 'kg/acre' },
-      { nutrient: 'Phosphorus', symbol: 'P', recommended: 35, current: 15, additional: 20, unit: 'kg/acre' },
-      { nutrient: 'Potassium', symbol: 'K', recommended: 35, current: 22, additional: 13, unit: 'kg/acre' },
-      { nutrient: 'Sulphur', symbol: 'S', recommended: 15, current: 6, additional: 9, unit: 'kg/acre' },
-      { nutrient: 'Molybdenum', symbol: 'Mo', recommended: 0.5, current: 0.1, additional: 0.4, unit: 'kg/acre' },
-      { nutrient: 'Zinc', symbol: 'Zn', recommended: 2.0, current: 1.0, additional: 1.0, unit: 'kg/acre' },
-    ],
-    keyInsights: [
-      'Rhizobium nodules are actively fixing nitrogen; heavy urea is NOT required.',
-      'Sulphur supplementation is urgently needed to boost grain oil content.',
-      'Phosphorus replenishment will speed up pod filling and grain boldness.',
-      'Potassium will improve drought resilience and prevent premature senescence.',
-    ],
-    calloutMessage: 'Prioritize Sulphur and Phosphorus top-dress to significantly enhance pod weight and grain oil content.',
-    products: [
-      {
-        id: 'bentonite-s',
-        name: 'Bentonite Sulphur 90%',
-        formula: 'Pastille Granular S',
-        composition: '90% Elemental Sulphur',
-        ratePerAcre: 15,
-        unit: 'kg/acre',
-        badge: 'Oil & Protein',
-        bagColor: '#f39c12',
-        description: 'Crucial for synthesis of oil, methionine amino acids, and high test weight in pulses.',
-      },
-      {
-        id: 'dap',
-        name: 'DAP (18-46-0)',
-        formula: 'Di-Ammonium Phosphate',
-        composition: '18% N, 46% P',
-        ratePerAcre: 45,
-        unit: 'kg/acre',
-        badge: 'Pod Filling',
-        bagColor: '#e67e22',
-        description: 'Provides rapid bioavailable phosphorus for synchronous grain filling across nodes.',
-      },
-      {
-        id: 'potash',
-        name: 'Muriate of Potash (MOP)',
-        formula: 'KCl',
-        composition: '60% K₂O',
-        ratePerAcre: 25,
-        unit: 'kg/acre',
-        badge: 'Grain Boldness',
-        bagColor: '#c0392b',
-        description: 'Improves grain shine, bold kernel grading, and test-weight uniformity.',
-      },
-    ],
-    calculatorRates: {
-      ureaKgPerAcre: 15,
-      dapKgPerAcre: 45,
-      mopKgPerAcre: 25,
-      zincKgPerAcre: 1.0,
-    },
-    timingSteps: [
-      {
-        step: 1,
-        title: 'Sulphur & DAP Top-Dress',
-        timing: 'This Week',
-        badge: 'Pod Setting',
-        details: 'Side-dress Bentonite Sulphur + DAP before next rain shower.',
-      },
-      {
-        step: 2,
-        title: '19:19:19 Foliar Spray',
-        timing: 'After 10 Days',
-        badge: 'Grain Filling',
-        details: 'Foliar spray 1% NPK 19:19:19 with micronutrient chelate in morning.',
-      },
-      {
-        step: 3,
-        title: '0:0:50 Potash Finish',
-        timing: 'After 22 Days',
-        badge: 'Final Shine',
-        details: 'Spray Potassium Sulphate (0:0:50) at 5g/L for premium seed luster.',
-      },
-    ],
-    safetyTips: [
-      'Do not apply high nitrogen that triggers excessive lodging in soybean.',
-      'Sulphur should be spread evenly into moist topsoil for quick oxidation.',
-      'Calibrate sprayer pressure to avoid mechanical damage to tender pods.',
-    ],
-    organicAlternatives: [
-      {
-        name: 'Rhizobium + PSB Culture',
-        type: 'Bio-fertilizer',
-        dosage: '1 kg / Acre seed/soil',
-        benefit: 'Boosts root nodulation and solubilizes fixed insoluble phosphorus.',
-      },
-      {
-        name: 'Castor De-oiled Cake',
-        type: 'Nutrient Rich Cake',
-        dosage: '150 kg / Acre',
-        benefit: 'Slow continuous release of nitrogen and natural repellent against soil grubs.',
-      },
-      {
-        name: 'Bio-Potash (Frateuria aurentia)',
-        type: 'Potash Mobilizer',
-        dosage: '1 Litre / Acre',
-        benefit: 'Mobilizes insoluble potash reserves in soil without adding salts.',
-      },
-    ],
-    nearbyRiskReports: [
-      {
-        id: 'soy-risk-1',
-        crop: 'Soybean',
-        threat: 'Semilooper Foliage Defoliator',
-        distance: '5.4 km away',
-        farmsAffected: 8,
-        severity: 'Moderate',
-        status: 'Scattered Feeding Signs',
-        advisedAction: 'Spray biological Bacillus thuringiensis (Bt) or hand-pick larger caterpillars.',
-      },
-      {
-        id: 'soy-risk-2',
-        crop: 'Soybean & Pulses',
-        threat: 'Yellow Mosaic Virus (YMV)',
-        distance: '11.0 km away',
-        farmsAffected: 4,
-        severity: 'Low',
-        status: 'Isolated Vectors',
-        advisedAction: 'Rogue out infected chlorotic yellow plants to halt vector transmission.',
-      },
-    ],
-  },
-  sugarcane: {
-    id: 'sugarcane',
-    name: 'Sugarcane',
-    image: '/images/sugarcane_crop.jpg',
-    stage: 'Grand Growth Stage',
-    stageDays: 'Day 90 of 360',
-    field: 'Field 4',
-    acres: 6.0,
-    location: 'Akola, Maharashtra',
-    soilType: 'Heavy Clay Vertisol with high organic matter',
-    todayAdvice: 'Apply top dressing of Urea along with earth-up operation. Ensure uniform furrow moisture.',
-    soilNutrients: {
-      nitrogen: {
-        name: 'Nitrogen',
-        symbol: 'N',
-        status: 'Low',
-        currentVal: 45,
-        targetVal: 120,
-        unit: 'kg/acre',
-      },
-      phosphorus: {
-        name: 'Phosphorus',
-        symbol: 'P',
-        status: 'Moderate',
-        currentVal: 28,
-        targetVal: 45,
-        unit: 'kg/acre',
-      },
-      potassium: {
-        name: 'Potassium',
-        symbol: 'K',
-        status: 'Low',
-        currentVal: 32,
-        targetVal: 80,
-        unit: 'kg/acre',
-      },
-      ph: { value: 7.5, label: 'Neutral to Alkaline' },
-      organicCarbon: { value: '0.8%', label: 'Medium' },
-      micronutrients: { label: 'Deficient', elements: 'Fe, Zn' },
-    },
-    requirements: [
-      { nutrient: 'Nitrogen', symbol: 'N', recommended: 120, current: 45, additional: 75, unit: 'kg/acre' },
-      { nutrient: 'Phosphorus', symbol: 'P', recommended: 45, current: 28, additional: 17, unit: 'kg/acre' },
-      { nutrient: 'Potassium', symbol: 'K', recommended: 80, current: 32, additional: 48, unit: 'kg/acre' },
-      { nutrient: 'Iron', symbol: 'Fe', recommended: 10, current: 3, additional: 7, unit: 'kg/acre' },
-      { nutrient: 'Zinc', symbol: 'Zn', recommended: 5, current: 1.5, additional: 3.5, unit: 'kg/acre' },
-      { nutrient: 'Sulphur', symbol: 'S', recommended: 25, current: 12, additional: 13, unit: 'kg/acre' },
-    ],
-    keyInsights: [
-      'High cane tonnage demand requires heavy Nitrogen split application.',
-      'Potassium deficiency directly affects cane girth, internode count, and Brix sugar index.',
-      'Iron chlorosis (yellowing of whorl leaves) needs foliar ferrous sulphate correction.',
-      'Split fertilizer application along with earthing-up operations prevents lodging.',
-    ],
-    calloutMessage: 'Provide heavy Potash and Nitrogen split before cane canopy closes to lock in high sugar recovery and cane weight.',
-    products: [
-      {
-        id: 'urea',
-        name: 'Urea (46% N)',
-        formula: 'CO(NH₂)₂',
-        composition: '46% N',
-        ratePerAcre: 110,
-        unit: 'kg/acre',
-        badge: 'Cane Elongation',
-        bagColor: '#1e56a0',
-        description: 'Drives rapid internode elongation and maximum biomass accumulation during monsoon.',
-      },
-      {
-        id: 'mop',
-        name: 'MOP (0-0-60)',
-        formula: 'Muriate of Potash',
-        composition: '60% K₂O',
-        ratePerAcre: 75,
-        unit: 'kg/acre',
-        badge: 'Sugar & Girth',
-        bagColor: '#c0392b',
-        description: 'Improves cane diameter, internode thickness, drought hardiness, and Brix sucrose recovery.',
-      },
-      {
-        id: 'micronutrient-cane',
-        name: 'Sugarcane Micro-Mix',
-        formula: 'Fe + Zn + Mn + B Chelate',
-        composition: 'Full Spectrum Chelate',
-        ratePerAcre: 10,
-        unit: 'kg/acre',
-        badge: 'Whorl Chlorosis',
-        bagColor: '#27ae60',
-        description: 'Restores vibrant green photosynthesis in yellowed upper leaf canopies.',
-      },
-    ],
-    calculatorRates: {
-      ureaKgPerAcre: 110,
-      dapKgPerAcre: 50,
-      mopKgPerAcre: 75,
-      zincKgPerAcre: 5.0,
-    },
-    timingSteps: [
-      {
-        step: 1,
-        title: 'Grand Growth Earthing-Up Dose',
-        timing: 'This Week',
-        badge: 'Earthing Up',
-        details: 'Apply Urea + Potash deep into ridges prior to tractor earthing up.',
-      },
-      {
-        step: 2,
-        title: 'Ferrous + Zinc Drench',
-        timing: 'After 15 Days',
-        badge: 'Leaf Greening',
-        details: 'Apply 0.5% FeSO₄ drench at base to reverse iron chlorosis in whorls.',
-      },
-      {
-        step: 3,
-        title: 'Final Potassium Finish',
-        timing: 'After 35 Days',
-        badge: 'Sucrose Stacking',
-        details: 'Complete remaining Potash dose with irrigation to boost sucrose content.',
-      },
-    ],
-    safetyTips: [
-      'Never apply high dose fertilizer in completely dry trenches without immediate irrigation.',
-      'Ensure proper furrow placement at 10-15 cm depth to prevent volatilization loss.',
-      'Keep bags elevated on wooden pallets away from moisture during humid monsoon weather.',
-    ],
-    organicAlternatives: [
-      {
-        name: 'Pressmud Bio-Compost',
-        type: 'Sugar Mill By-product',
-        dosage: '5 Tonnes / Acre',
-        benefit: 'Rich in organic carbon, phosphorus, and essential micro-nutrients.',
-      },
-      {
-        name: 'Acetobacter Bio-fertilizer',
-        type: 'Endophytic Nitrogen Fixer',
-        dosage: '2 Litres / Acre',
-        benefit: 'Lives inside cane stems, continuously fixing 30-40% of cane nitrogen requirement.',
-      },
-      {
-        name: 'Trash Mulching with decomposer',
-        type: 'In-situ Organic Waste',
-        dosage: 'All field residue',
-        benefit: 'Retains soil moisture, prevents weed emergence, and adds tons of organic carbon.',
-      },
-    ],
-    nearbyRiskReports: [
-      {
-        id: 'cane-risk-1',
-        crop: 'Sugarcane',
-        threat: 'Early Shoot Borer (Chilo infuscatellus)',
-        distance: '4.8 km away',
-        farmsAffected: 5,
-        severity: 'Moderate',
-        status: 'Dead-heart monitoring',
-        advisedAction: 'Perform earthing up and release Trichogramma chilonis egg parasitoids.',
-      },
-      {
-        id: 'cane-risk-2',
-        crop: 'Sugarcane',
-        threat: 'Pyrilla Leaf Hopper',
-        distance: '9.2 km away',
-        farmsAffected: 7,
-        severity: 'Low',
-        status: 'Encourage Epiricania',
-        advisedAction: 'Conserve natural nymphal cocoons of Epiricania melanoleuca; avoid broad sprays.',
-      },
-    ],
-  },
-};
-
-export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryOverviewProps) {
+export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer }: AdvisoryOverviewProps) {
   const { t } = useTranslation();
-  const [selectedCropId, setSelectedCropId] = useState<string>('tomato');
+
+  // Active crop state: initialized from scanResult if present, defaulting to 'tomato'
+  const [selectedCropId, setSelectedCropId] = useState<string>(() => {
+    return scanResult?.crop ? normalizeCropKey(scanResult.crop) : 'tomato';
+  });
+  const lastScannedCropRef = useRef<string | undefined>(scanResult?.crop);
+
+  // When a new scan arrives, it automatically becomes the active crop in Advisory
+  useEffect(() => {
+    if (scanResult?.crop && scanResult.crop !== lastScannedCropRef.current) {
+      lastScannedCropRef.current = scanResult.crop;
+      const cropKey = normalizeCropKey(scanResult.crop);
+      setSelectedCropId(cropKey);
+      const scannedCrop = ADVISORY_DATA[cropKey];
+      if (scannedCrop) {
+        setFieldSize(scannedCrop.acres || 3.5);
+        setSelectedFertilizers(scannedCrop.products.map((p) => p.id));
+      }
+    }
+  }, [scanResult?.crop]);
+
   const [activeSubTab, setActiveSubTab] = useState<string>('nutrient-status');
   const [fieldSize, setFieldSize] = useState<number>(3.5);
   const [fieldUnit, setFieldUnit] = useState<'Acres' | 'Hectares' | 'Guntha'>('Acres');
@@ -833,7 +92,6 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
       [taskId]: !prev[taskId],
     }));
   };
-  const [showNearbyModal, setShowNearbyModal] = useState<boolean>(false);
   const [showSoilModal, setShowSoilModal] = useState<boolean>(false);
   const [showCatalogModal, setShowCatalogModal] = useState<boolean>(false);
   const [catalogSearchQuery, setCatalogSearchQuery] = useState<string>('');
@@ -842,7 +100,8 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
   const [showToast, setShowToast] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string>('');
 
-  const crop = ADVISORY_DATA[selectedCropId] || ADVISORY_DATA.tomato;
+  const activeCropId = selectedCropId;
+  const crop = ADVISORY_DATA[activeCropId] || getDynamicCropAdvisory(activeCropId, scanResult?.crop || activeCropId);
 
   // Fetch live active fertilizer products from PostgreSQL API (/api/fertilizers)
   const [dbFertilizers, setDbFertilizers] = useState<DbFertilizerItem[]>([]);
@@ -889,7 +148,7 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
 
     async function loadFarmerContext() {
       try {
-        const data = await fetchFarmerAdvisoryContext(selectedCropId);
+        const data = await fetchFarmerAdvisoryContext(activeCropId);
         if (data && isMounted) {
           setFarmerContext(data);
           // Set initial field size from crop cycle or farm if available
@@ -909,7 +168,7 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
     return () => {
       isMounted = false;
     };
-  }, [selectedCropId]);
+  }, [activeCropId]);
 
   // Compute active recommended fertilizer products enriched with live PostgreSQL data
   const recommendedProducts: FertilizerProduct[] = useMemo(() => {
@@ -991,7 +250,6 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
       'app-guide': 'section-timing-tips',
       'calculator': 'section-products',
       'organic-alt': 'section-organic',
-      'nearby-risks': 'section-nearby-risks',
     };
     const targetElement = document.getElementById(sectionMap[tabId]);
     if (targetElement) {
@@ -1020,13 +278,15 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
         const soilPh = farmerContext?.soilTest ? farmerContext.soilTest.phVal : crop.soilNutrients.ph.value;
 
         const result = await calculateAdvisory({
-          crop: selectedCropId,
+          crop: activeCropId,
+          state: farmerContext?.farmer?.state,
+          district: farmerContext?.farmer?.district,
           farmArea: effectiveAcres,
           soilN,
           soilP,
           soilK,
           soilPh,
-          targetYield: selectedCropId === 'tomato' ? 25 : undefined,
+          targetYield: activeCropId === 'tomato' ? 25 : undefined,
         });
 
         if (!isCancelled) {
@@ -1048,7 +308,7 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
       isCancelled = true;
     };
   }, [
-    selectedCropId,
+    activeCropId,
     effectiveAcres,
     farmerContext,
     crop.soilNutrients.nitrogen.currentVal,
@@ -1060,32 +320,32 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
   // Derived live soil nutrients status
   const activeSoilNutrients = useMemo(() => {
     const baseSoil = crop.soilNutrients;
-    const fallbackN = farmerContext?.soilTest ? {
+    const fallbackN = {
       name: 'Nitrogen',
       symbol: 'N',
-      status: (farmerContext.soilTest.nitrogenStatus || 'Low') as 'Low' | 'Adequate' | 'Moderate' | 'High',
-      currentVal: farmerContext.soilTest.nitrogenVal,
-      targetVal: farmerContext.soilTest.nitrogenTarget || 60,
+      status: (farmerContext?.soilTest?.nitrogenStatus || baseSoil.nitrogen.status) as 'Low' | 'Adequate' | 'Moderate' | 'High',
+      currentVal: farmerContext?.soilTest ? farmerContext.soilTest.nitrogenVal : baseSoil.nitrogen.currentVal,
+      targetVal: baseSoil.nitrogen.targetVal,
       unit: 'kg/acre',
-    } : baseSoil.nitrogen;
+    };
 
-    const fallbackP = farmerContext?.soilTest ? {
-      name: 'Phosphorus',
-      symbol: 'P',
-      status: (farmerContext.soilTest.phosphorusStatus || 'Adequate') as 'Low' | 'Adequate' | 'Moderate' | 'High',
-      currentVal: farmerContext.soilTest.phosphorusVal,
-      targetVal: farmerContext.soilTest.phosphorusTarget || 25,
+    const fallbackP = {
+      name: baseSoil.phosphorus.name || 'Phosphorus (P)',
+      symbol: baseSoil.phosphorus.symbol || 'P',
+      status: (farmerContext?.soilTest?.phosphorusStatus || baseSoil.phosphorus.status) as 'Low' | 'Adequate' | 'Moderate' | 'High',
+      currentVal: farmerContext?.soilTest ? farmerContext.soilTest.phosphorusVal : baseSoil.phosphorus.currentVal,
+      targetVal: baseSoil.phosphorus.targetVal,
       unit: 'kg/acre',
-    } : baseSoil.phosphorus;
+    };
 
-    const fallbackK = farmerContext?.soilTest ? {
-      name: 'Potassium',
-      symbol: 'K',
-      status: (farmerContext.soilTest.potassiumStatus || 'Moderate') as 'Low' | 'Adequate' | 'Moderate' | 'High',
-      currentVal: farmerContext.soilTest.potassiumVal,
-      targetVal: farmerContext.soilTest.potassiumTarget || 40,
+    const fallbackK = {
+      name: baseSoil.potassium.name || 'Potassium (K)',
+      symbol: baseSoil.potassium.symbol || 'K',
+      status: (farmerContext?.soilTest?.potassiumStatus || baseSoil.potassium.status) as 'Low' | 'Adequate' | 'Moderate' | 'High',
+      currentVal: farmerContext?.soilTest ? farmerContext.soilTest.potassiumVal : baseSoil.potassium.currentVal,
+      targetVal: baseSoil.potassium.targetVal,
       unit: 'kg/acre',
-    } : baseSoil.potassium;
+    };
 
     const fallbackPh = farmerContext?.soilTest ? {
       value: farmerContext.soilTest.phVal,
@@ -1167,29 +427,8 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
 
   // Derived live recommended fertilizer products with pricing and packaging
   const activeRecommendedProducts = useMemo(() => {
-    if (apiCalculation?.recommendedFertilizers?.length) {
-      return apiCalculation.recommendedFertilizers.map((rf) => ({
-        id: rf.productCode,
-        name: rf.name,
-        formula: rf.formula,
-        composition: rf.composition,
-        ratePerAcre: rf.ratePerAcreKg,
-        unit: 'kg/acre',
-        badge: rf.badge || rf.applicationRole,
-        bagColor: rf.bagColor || '#1e56a0',
-        description: rf.description,
-        category: rf.category,
-        packageSizeKg: rf.standardPackageSizeKg,
-        packageUnit: rf.packageUnit,
-        price: rf.pricePerBagInr,
-        isOrganic: rf.isOrganic,
-        totalQuantityKg: rf.totalQuantityKg,
-        totalBags: rf.totalBags,
-        estimatedCostInr: rf.estimatedCostInr,
-      }));
-    }
     return recommendedProducts;
-  }, [apiCalculation, recommendedProducts]);
+  }, [recommendedProducts]);
 
   // Derived live application timing steps
   const activeTimingSteps: ApplicationStep[] = useMemo(() => {
@@ -1448,14 +687,6 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
           <span>{t('Organic Alternatives')}</span>
         </button>
 
-        <button
-          className={`fert-subnav-pill ${activeSubTab === 'nearby-risks' ? 'active-pill' : ''}`}
-          onClick={() => handleTabClick('nearby-risks')}
-          id="tab-nearby-risks"
-        >
-          <span className="pill-emoji">🚨</span>
-          <span>{t('Nearby Crop Risks')}</span>
-        </button>
       </nav>
 
       {/* ============================================================
@@ -1510,49 +741,6 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
               </button>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* ============================================================
-          COMPACT: NEARBY CROP RISK REPORTS
-          (Replacing old bulky Risk Forecast card)
-          ============================================================ */}
-      <section className="nearby-risk-reports-strip" id="section-nearby-risks">
-        <div className="nearby-strip-header">
-          <div className="nearby-strip-title-group">
-            <span className="nearby-radar-icon">🚨</span>
-            <div>
-              <h2 className="nearby-strip-title">Nearby Crop Risk Reports</h2>
-              <p className="nearby-strip-sub">Real-time disease &amp; pest occurrences verified by agronomists around {crop.location}</p>
-            </div>
-          </div>
-          <button 
-            className="btn-view-nearby-reports"
-            id="btn-view-nearby-reports"
-            onClick={() => setShowNearbyModal(true)}
-          >
-            <span>View All Nearby Reports ({crop.nearbyRiskReports.length})</span>
-            <span>→</span>
-          </button>
-        </div>
-
-        <div className="nearby-reports-compact-grid">
-          {crop.nearbyRiskReports.map((report) => (
-            <div key={report.id} className="nearby-compact-card">
-              <div className="nearby-compact-top">
-                <span className="nearby-crop-pill">{report.crop}</span>
-                <span className={`nearby-severity-chip severity-${report.severity.toLowerCase()}`}>
-                  {report.severity} Alert
-                </span>
-              </div>
-              <h3 className="nearby-threat-title">{report.threat}</h3>
-              <div className="nearby-meta-row">
-                <span className="nearby-dist-tag">📍 {report.distance}</span>
-                <span className="nearby-farms-tag">🏡 {report.farmsAffected} Farms Affected</span>
-              </div>
-              <p className="nearby-action-hint"><strong>Advised Action:</strong> {report.advisedAction}</p>
-            </div>
-          ))}
         </div>
       </section>
 
@@ -1720,23 +908,31 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
                 </tr>
               </thead>
               <tbody>
-                {activeRequirements.map((row) => (
-                  <tr key={row.nutrient} className="req-table-row">
-                    <td className="td-nutrient">
-                      <div className="nutrient-label-cell">
-                        <span className="nutrient-symbol-badge">{row.symbol}</span>
-                        <span className="nutrient-full-name">{row.nutrient}</span>
-                      </div>
-                    </td>
-                    <td className="td-num font-mono">{row.recommended}</td>
-                    <td className="td-num font-mono text-muted">{row.current}</td>
-                    <td className="td-num td-highlight font-mono">
-                      <span className="additional-val-badge">
-                        +{row.additional} {row.unit.split('/')[0]}
-                      </span>
+                {activeRequirements.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
+                      Crop nutrient targets are not currently cataloged for {crop.name}. Certified soil test values are displayed above.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  activeRequirements.map((row) => (
+                    <tr key={row.nutrient} className="req-table-row">
+                      <td className="td-nutrient">
+                        <div className="nutrient-label-cell">
+                          <span className="nutrient-symbol-badge">{row.symbol}</span>
+                          <span className="nutrient-full-name">{row.nutrient}</span>
+                        </div>
+                      </td>
+                      <td className="td-num font-mono">{row.recommended}</td>
+                      <td className="td-num font-mono text-muted">{row.current}</td>
+                      <td className="td-num td-highlight font-mono">
+                        <span className="additional-val-badge">
+                          +{row.additional} {row.unit.split('/')[0]}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -1825,17 +1021,27 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
           <div className="fert-card-body">
             {/* Recommended Fertilizers Grid (Top 3 by Default) */}
             <div className="fert-products-grid">
-              {activeRecommendedProducts.slice(0, 3).map((prod) => {
-                const isSelected = selectedFertilizers.includes(prod.id);
-                const calculatedKg = Math.round(effectiveAcres * prod.ratePerAcre * 10) / 10;
-                const calculatedBags = Math.ceil(calculatedKg / (prod.packageSizeKg || 50));
+              {activeRecommendedProducts.length === 0 ? (
+                <div style={{ padding: '28px 20px', textAlign: 'center', background: '#f8fafc', borderRadius: '12px', border: '1px dashed #cbd5e1', gridColumn: '1 / -1' }}>
+                  <p style={{ fontWeight: 700, color: '#334155', margin: '0 0 6px 0', fontSize: '15px' }}>
+                    Certified fertilizer recommendation schedule unavailable for {crop.name}
+                  </p>
+                  <p style={{ fontSize: '13px', color: '#64748b', margin: 0, lineHeight: 1.5 }}>
+                    Official ICAR / State Agricultural University package of practices is pending verification for this variety to prevent inaccurate agronomic applications.
+                  </p>
+                </div>
+              ) : (
+                activeRecommendedProducts.slice(0, 3).map((prod) => {
+                  const isSelected = selectedFertilizers.includes(prod.id);
+                  const calculatedKg = Math.round(effectiveAcres * prod.ratePerAcre * 10) / 10;
+                  const calculatedBags = Math.ceil(calculatedKg / (prod.packageSizeKg || 50));
 
-                return (
-                  <div 
-                    key={prod.id} 
-                    className={`fert-product-item-card ${isSelected ? 'prod-card-selected' : ''}`} 
-                    id={`product-${prod.id}`}
-                  >
+                  return (
+                    <div 
+                      key={prod.id} 
+                      className={`fert-product-item-card ${isSelected ? 'prod-card-selected' : ''}`} 
+                      id={`product-${prod.id}`}
+                    >
                     <div className="fert-bag-container">
                       <div className="fertilizer-bag-graphic" style={{ borderColor: prod.bagColor }}>
                         <div className="bag-top-crease"></div>
@@ -1903,7 +1109,7 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
                     </div>
                   </div>
                 );
-              })}
+              }))}
             </div>
 
             {/* View More Fertilizers Option */}
@@ -1991,8 +1197,13 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
 
           <div className="fert-card-body timing-body-layout">
             <div className="timing-steps-track">
-              {activeTimingSteps.map((step) => (
-                <div key={step.step} className="timing-step-node">
+              {activeTimingSteps.length === 0 ? (
+                <div style={{ padding: '24px 16px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
+                  Application timing schedule is pending verification for {crop.name}.
+                </div>
+              ) : (
+                activeTimingSteps.map((step) => (
+                  <div key={step.step} className="timing-step-node">
                   <div className="timing-step-num-col">
                     <div className="step-num-circle">{step.step}</div>
                     {step.step < crop.timingSteps.length && <div className="step-connector-line"></div>}
@@ -2006,7 +1217,7 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
                     <p className="step-detail-text">{step.details}</p>
                   </div>
                 </div>
-              ))}
+              )))}
             </div>
 
             <div className="fert-safety-box">
@@ -3016,62 +2227,7 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
             </div>
           </div>
         );
-      })()}
-
-      {/* ============================================================
-          MODAL: NEARBY CROP RISK REPORTS DETAIL
-          ============================================================ */}
-      {showNearbyModal && (
-        <div className="fert-modal-overlay" onClick={() => setShowNearbyModal(false)}>
-          <div className="fert-modal-container nearby-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="fert-modal-header">
-              <div className="modal-title-wrap">
-                <span className="modal-icon">🚨</span>
-                <div>
-                  <h3 className="fert-modal-title">Nearby Crop Risk Surveillance</h3>
-                  <p className="fert-modal-desc">Community agronomic reports within 15 km of {crop.location}</p>
-                </div>
-              </div>
-              <button className="fert-modal-close" onClick={() => setShowNearbyModal(false)}>✕</button>
-            </div>
-
-            <div className="fert-modal-body">
-              <div className="nearby-detail-list">
-                {crop.nearbyRiskReports.map((report) => (
-                  <div key={report.id} className="nearby-detail-card">
-                    <div className="nearby-detail-header">
-                      <div>
-                        <span className="nearby-crop-pill">{report.crop}</span>
-                        <h4 className="nearby-detail-threat">{report.threat}</h4>
-                      </div>
-                      <span className={`nearby-severity-chip severity-${report.severity.toLowerCase()}`}>
-                        {report.severity} Alert
-                      </span>
-                    </div>
-
-                    <div className="nearby-detail-specs">
-                      <div><strong>Distance:</strong> {report.distance}</div>
-                      <div><strong>Affected Farms:</strong> {report.farmsAffected} Farms</div>
-                      <div><strong>Telemetry Status:</strong> {report.status}</div>
-                    </div>
-
-                    <div className="nearby-detail-action-box">
-                      <strong>Agronomist Preventative Guidance:</strong>
-                      <p>{report.advisedAction}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="fert-modal-footer">
-              <button className="btn-modal-cancel" onClick={() => setShowNearbyModal(false)}>Close</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ============================================================
+      })()}{/* ============================================================
           MODAL: DETAILED SOIL REPORT
           ============================================================ */}
       {showSoilModal && (
@@ -3113,19 +2269,19 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
                     <tr>
                       <td>Nitrogen (Available N)</td>
                       <td>{activeSoilNutrients.nitrogen.currentVal} kg/acre</td>
-                      <td>55 - 80 kg/acre</td>
+                      <td>Target: {activeSoilNutrients.nitrogen.targetVal} kg/acre</td>
                       <td><span className={`soil-tag tag-${activeSoilNutrients.nitrogen.status === 'Low' ? 'low' : activeSoilNutrients.nitrogen.status === 'Adequate' ? 'opt' : 'mod'}`}>{activeSoilNutrients.nitrogen.status}</span></td>
                     </tr>
                     <tr>
                       <td>Phosphorus (Available P₂O₅)</td>
                       <td>{activeSoilNutrients.phosphorus.currentVal} kg/acre</td>
-                      <td>18 - 35 kg/acre</td>
+                      <td>Target: {activeSoilNutrients.phosphorus.targetVal} kg/acre</td>
                       <td><span className={`soil-tag tag-${activeSoilNutrients.phosphorus.status === 'Low' ? 'low' : activeSoilNutrients.phosphorus.status === 'Adequate' ? 'opt' : 'mod'}`}>{activeSoilNutrients.phosphorus.status}</span></td>
                     </tr>
                     <tr>
                       <td>Potassium (Available K₂O)</td>
                       <td>{activeSoilNutrients.potassium.currentVal} kg/acre</td>
-                      <td>35 - 60 kg/acre</td>
+                      <td>Target: {activeSoilNutrients.potassium.targetVal} kg/acre</td>
                       <td><span className={`soil-tag tag-${activeSoilNutrients.potassium.status === 'Low' ? 'low' : activeSoilNutrients.potassium.status === 'Adequate' ? 'opt' : 'mod'}`}>{activeSoilNutrients.potassium.status}</span></td>
                     </tr>
                     <tr>
@@ -3620,3 +2776,16 @@ export default function AdvisoryOverview({ onBack, onOpenFertilizer }: AdvisoryO
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
