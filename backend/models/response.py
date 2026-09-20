@@ -18,7 +18,7 @@ class ImageQuality(BaseModel):
 
 
 class CropIdentification(BaseModel):
-    crop_name: str                        # "Rice", "Wheat", "Maize", "Cotton", "Soybean", "Sugarcane", "Tomato", "Chickpea"
+    crop_name: str                        # "Rice", "Wheat", "Maize (Corn)", "Cotton", "Soybean", "Sugarcane", "Tomato", "Chickpea"
     confidence: float                     # Actual model confidence (0.0 to 1.0)
     is_identified: bool                   # True if confidence >= threshold
     message: Optional[str] = None         # Rejection message if confidence < threshold
@@ -37,7 +37,7 @@ class DiseaseDetectionResult(BaseModel):
     crop: str
     disease: str
     confidence: float
-    severity: str                                # "None", "Mild", "Moderate", "Severe"
+    severity: str                                # "None", "Mild", "Moderate", "Severe", "Unknown"
     status: str                                  # "Healthy", "Diseased", "Needs expert verification"
     explanation: Optional[str] = None
     symptoms: List[str] = []
@@ -47,19 +47,77 @@ class DiseaseDetectionResult(BaseModel):
     abstain_reason: Optional[str] = None         # Why model abstained (entropy/margin/confidence)
 
 
+# ── Structured Diagnosis Contract (STEP 8) ───────────────────────────────────
+class PredictionCandidate(BaseModel):
+    crop: str
+    condition: str
+    confidence: float
+    probability: Optional[float] = None
+
+
+class CropDetail(BaseModel):
+    name: str
+    confidence: float
+
+
+class DiagnosisDetail(BaseModel):
+    condition: str
+    type: str                                    # "disease" | "pest" | "healthy" | "uncertain"
+    healthStatus: str                            # "Healthy" | "Affected" | "At Risk" | "Needs expert verification"
+    confidence: float
+    severity: str                                # "None" | "Mild" | "Moderate" | "Severe" | "Unknown"
+
+
+class AnalysisDetail(BaseModel):
+    summary: str
+    symptoms: List[str] = []
+    recommendedActions: List[str] = []
+    prevention: List[str] = []
+    pesticideNote: Optional[str] = None
+
+
+class ModelMetadata(BaseModel):
+    model: str
+    modelVersion: str
+    datasetSources: List[str] = ["ICAR", "PlantVillage"]
+
+
+class VerificationDetail(BaseModel):
+    isVerified: bool = True
+    accuracyPercentage: float
+    confidencePercentage: float
+    reliabilityLevel: str
+    referenceSource: str
+    referenceProtocol: str
+    datasetAttribution: str
+    scientificCitation: str
+
+
 class ScanResponse(BaseModel):
     """
-    Structured response for the /api/scan endpoint.
+    Standardized, structured response for /api/scan endpoint.
+    Guarantees backward compatibility with existing frontends while
+    providing strict typed contracts for the upgraded pipeline.
     """
-    status: str                          # "valid" | "invalid"
+    scanId: Optional[str] = None
+    status: str                          # "valid" | "success" | "uncertain" | "invalid_image" | "unsupported_crop" | "server_error"
     message: str                         # Human-readable primary message
+    timestamp: Optional[str] = None
+
+    # Structured contracts
+    crop: Optional[CropDetail] = None
+    diagnosis: Optional[DiagnosisDetail] = None
+    topPredictions: List[PredictionCandidate] = []
+    analysis: Optional[AnalysisDetail] = None
+    metadata: Optional[ModelMetadata] = None
+    verification: Optional[VerificationDetail] = None
+    imageUrl: Optional[str] = None
+
+    # Backward-compatible fields
     validation: ValidationResult
     image_quality: Optional[ImageQuality] = None
     crop_analysis: Optional[CropAnalysis] = None
-    disease_detection: Optional[DiseaseDetectionResult] = None  # Crop + Disease + Confidence + Severity + Status
-    severity: Optional[str] = None           # Severity level (None/Mild/Moderate/Severe)
-    risk_score: Optional[Any] = None         # 0-100 risk index
-    advisory: Optional[Any] = None           # Treatment recommendations
-
-
-
+    disease_detection: Optional[DiseaseDetectionResult] = None
+    severity: Optional[str] = None
+    risk_score: Optional[Any] = None
+    advisory: Optional[Any] = None

@@ -33,12 +33,45 @@ def init_db() -> None:
                 created_at   TEXT    NOT NULL
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS scan_history (
+                id                  TEXT PRIMARY KEY,
+                farmer_id           TEXT NOT NULL DEFAULT 'default_farmer',
+                crop_name           TEXT NOT NULL,
+                predicted_condition TEXT NOT NULL,
+                condition_type      TEXT NOT NULL DEFAULT 'disease',
+                crop_confidence     REAL NOT NULL,
+                disease_confidence  REAL NOT NULL,
+                severity            TEXT NOT NULL DEFAULT 'Unknown',
+                image_path          TEXT,
+                diagnosis_summary   TEXT,
+                symptoms_json       TEXT,
+                actions_json        TEXT,
+                prevention_json     TEXT,
+                model_name          TEXT NOT NULL,
+                model_version       TEXT NOT NULL,
+                data_source         TEXT NOT NULL,
+                created_at          TEXT NOT NULL,
+                updated_at          TEXT NOT NULL
+            )
+        """)
         # Migrate existing databases: add lat/lng columns if they don't exist yet
         for col in ('latitude', 'longitude'):
             try:
                 conn.execute(f"ALTER TABLE submissions ADD COLUMN {col} REAL")
             except Exception:
                 pass  # Column already exists
+
+        # Migrate scan_history table: add verification and reference columns
+        for col, col_type in (
+            ('reference_source', 'TEXT'),
+            ('accuracy_score', 'REAL'),
+            ('verification_json', 'TEXT'),
+        ):
+            try:
+                conn.execute(f"ALTER TABLE scan_history ADD COLUMN {col} {col_type}")
+            except Exception:
+                pass
         conn.commit()
 
 
@@ -156,3 +189,95 @@ def update_status(submission_id: int, new_status: str) -> bool:
         )
         conn.commit()
         return cur.rowcount > 0
+
+
+# ── Scan History Layer ────────────────────────────────────────────────────────
+def insert_scan_history(
+    scan_id: str,
+    crop_name: str,
+    predicted_condition: str,
+    crop_confidence: float,
+    disease_confidence: float,
+    farmer_id: str = "default_farmer",
+    condition_type: str = "disease",
+    severity: str = "Unknown",
+    image_path: str | None = None,
+    diagnosis_summary: str = "",
+    symptoms_json: str = "[]",
+    actions_json: str = "[]",
+    prevention_json: str = "[]",
+    model_name: str = "CropGuard-Hybrid-MobileNetV3-CLIP",
+    model_version: str = "2.4.0",
+    data_source: str = "ICAR + PlantVillage",
+    reference_source: str = "",
+    accuracy_score: float = 98.4,
+    verification_json: str = "{}",
+) -> str:
+    """Inserts a complete diagnostic scan record into persistent scan_history."""
+    now_iso = datetime.now(timezone.utc).isoformat()
+    with _get_conn() as conn:
+        conn.execute(
+            """
+            INSERT OR REPLACE INTO scan_history (
+                id, farmer_id, crop_name, predicted_condition, condition_type,
+                crop_confidence, disease_confidence, severity, image_path,
+                diagnosis_summary, symptoms_json, actions_json, prevention_json,
+                model_name, model_version, data_source, reference_source,
+                accuracy_score, verification_json, created_at, updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                scan_id, farmer_id, crop_name, predicted_condition, condition_type,
+                crop_confidence, disease_confidence, severity, image_path,
+                diagnosis_summary, symptoms_json, actions_json, prevention_json,
+                model_name, model_version, data_source, reference_source,
+                accuracy_score, verification_json, now_iso, now_iso
+            ),
+        )
+        conn.commit()
+    return scan_id
+
+
+def get_scan_history(farmer_id: str | None = None, limit: int = 50) -> list[dict]:
+    """Fetch persistent scan history, newest first."""
+    with _get_conn() as conn:
+        if farmer_id:
+            rows = conn.execute(
+                """
+                SELECT * FROM scan_history
+                WHERE farmer_id = ?
+                ORDER BY created_at DESC
+                LIMIT ?
+                """,
+                (farmer_id, limit),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                """
+                SELECT * FROM scan_history
+                ORDER BY created_at DESC
+                LIMIT ?
+                """,
+                (limit,),
+            ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def get_scan_history_by_id(scan_id: str) -> dict | None:
+    """Fetch a single complete scan record by ID."""
+    with _get_conn() as conn:
+        row = conn.execute(
+            "SELECT * FROM scan_history WHERE id = ?",
+            (scan_id,),
+        ).fetchone()
+        return dict(row) if row else None
+
+
+def delete_scan_history(scan_id: str) -> bool:
+    """Delete a scan history entry by ID. Returns True if row was deleted."""
+    with _get_conn() as conn:
+        cur = conn.execute("DELETE FROM scan_history WHERE id = ?", (scan_id,))
+        conn.commit()
+        return cur.rowcount > 0
+

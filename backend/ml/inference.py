@@ -65,9 +65,8 @@ _OOD_ENTROPY_FRACTION = 0.70
 _MIN_TOP2_MARGIN = 0.05
 
 # Relaxed threshold multiplier for the "Healthy" class applied only when
-# using the default per-crop threshold — reduces false disease alarms
-# without interfering with explicit threshold overrides (e.g. in tests).
-_HEALTHY_THRESHOLD_MULTIPLIER = 0.85  # e.g. 0.60 × 0.85 = 0.51
+# using the default per-crop threshold — reduces false disease alarms and unnecessary abstains
+_HEALTHY_THRESHOLD_MULTIPLIER = 0.70  # e.g. 0.60 × 0.70 = 0.42
 
 
 def _get_crop_inference_model(crop_name: str) -> Tuple[torch.nn.Module, torch.device]:
@@ -136,7 +135,16 @@ def _abstain_reason(
             f"for class '{predicted_class}'."
         )
 
-    # ── 2. Entropy check → OOD / uncertain model ─────────────────────────────
+    # ── 2. Entropy & Margin checks ───────────────────────────────────────────
+    sorted_probs, sorted_idx = torch.sort(probs, descending=True)
+    top2_margin = float((sorted_probs[0] - sorted_probs[1]).item())
+    predicted_class = classes[top_idx]
+
+    # If Healthy is the leading class with a decisive margin (>= 10%) over any disease,
+    # accept the healthy diagnosis and avoid false uncertainty alarm.
+    if predicted_class == "Healthy" and top2_margin >= 0.10:
+        return None
+
     entropy = _compute_entropy(probs)
     max_entropy = math.log(num_classes)  # Theoretical maximum (uniform distribution)
 
@@ -147,8 +155,6 @@ def _abstain_reason(
         )
 
     # ── 3. Top-2 margin check → ambiguous between two diseases ───────────────
-    sorted_probs, sorted_idx = torch.sort(probs, descending=True)
-    top2_margin = float((sorted_probs[0] - sorted_probs[1]).item())
     if top2_margin < _MIN_TOP2_MARGIN:
         top2_class = classes[int(sorted_idx[1].item())]
         return (
@@ -160,28 +166,424 @@ def _abstain_reason(
     return None  # Accept the prediction
 
 
+# ── CLIP Multi-Crop Disease Prompt Ensembles ─────────────────────────────────
+CROP_DISEASE_PROMPTS: Dict[str, Dict[str, List[str]]] = {
+    "Maize": {
+        "Healthy": [
+            "a photo of fresh healthy ripe corn cob",
+            "a photo of fresh yellow sweetcorn cobs with green husk",
+            "a photo of clean healthy green maize foliage without any spots",
+            "a photo of a healthy green corn plant",
+            "fresh healthy corn without disease",
+            "healthy ripe maize ear with golden kernels",
+        ],
+        "Common Rust": [
+            "a photo of maize leaf with reddish brown rust pustules and powdery spores",
+            "corn leaf covered with cinnamon brown rust spots",
+            "maize foliage with scattered brown rust pustules on leaves",
+        ],
+        "Gray Leaf Spot": [
+            "a photo of maize leaf with rectangular tan gray necrotic lesions",
+            "gray leaf spot lesions running parallel to corn leaf veins",
+        ],
+        "Northern Leaf Blight": [
+            "a photo of maize leaf with large cigar-shaped elliptical grayish blighted lesions",
+            "severe northern leaf blight on corn leaves with necrotic tissue",
+        ],
+        "Maize Streak Virus": [
+            "a photo of maize corn plant with yellow chlorotic streaks along veins",
+            "stunted deformed maize plant with streak virus",
+        ],
+    },
+    "Tomato": {
+        "Healthy": [
+            "a photo of a healthy green tomato plant",
+            "clean fresh tomato leaves without spots",
+            "fresh ripe healthy red tomato fruit on vine",
+            "healthy green tomato plant foliage",
+        ],
+        "Bacterial Spot": [
+            "tomato leaf with small dark brown circular water-soaked bacterial spots",
+            "bacterial leaf spot on tomato plant with halo lesions",
+        ],
+        "Early Blight": [
+            "tomato leaf with concentric target-ring dark brown blight lesions",
+            "early blight fungal lesions on older tomato leaves",
+        ],
+        "Late Blight": [
+            "tomato leaf with large dark water-soaked greasy necrotic blight patches",
+            "late blight fungal decay on tomato foliage",
+        ],
+        "Yellow Leaf Curl Virus": [
+            "tomato plant foliage with severe yellowing, upward leaf curling, and stunting",
+            "tomato yellow leaf curl virus with deformed puckered leaves",
+        ],
+    },
+    "Rice": {
+        "Healthy": [
+            "a photo of a healthy green rice paddy plant",
+            "clean healthy rice leaves without blast or blight",
+            "healthy rice crop canopy in field",
+        ],
+        "Bacterial Leaf Blight": [
+            "rice leaf with water-soaked yellow to white undulating blighted lesions along leaf margins",
+        ],
+        "Blast": [
+            "rice leaf with spindle-shaped or diamond-shaped blast lesions with gray center",
+        ],
+        "Brown Spot": [
+            "rice leaf with circular or oval dark brown spots with gray or whitish center",
+        ],
+        "Tungro": [
+            "rice plant with yellow-orange leaf discoloration and stunted tillers",
+        ],
+    },
+    "Wheat": {
+        "Healthy": [
+            "a photo of a healthy wheat crop with clean green leaves",
+            "clean healthy wheat ears and foliage",
+            "golden healthy ripe wheat crop",
+        ],
+        "Brown Rust": [
+            "wheat leaf with scattered small orange-brown rust pustules",
+        ],
+        "Yellow Rust": [
+            "wheat leaf with bright yellow stripe rust pustules arranged in linear stripes",
+        ],
+        "Powdery Mildew": [
+            "wheat leaf with white fluffy powdery fungal patches",
+        ],
+        "Septoria": [
+            "wheat leaf with necrotic brown blotches with tiny black pycnidia speckles",
+        ],
+    },
+    "Cotton": {
+        "Healthy": [
+            "a photo of a healthy cotton plant with green leaves",
+            "fresh healthy cotton bolls and foliage",
+        ],
+        "Bacterial Blight": [
+            "cotton leaf with angular dark brown water-soaked lesions bounded by veins",
+        ],
+        "Curl Virus": [
+            "cotton plant with upward leaf curling, thickening of veins, and stunted growth",
+        ],
+        "Fusarium Wilt": [
+            "cotton plant showing wilting, vascular browning, and yellowing of foliage",
+        ],
+        "Target Spot": [
+            "cotton leaf with circular target-spot lesions with concentric dark rings",
+        ],
+    },
+    "Soybean": {
+        "Healthy": [
+            "a photo of a healthy soybean plant with green trifoliate leaves",
+            "clean healthy soybean foliage and pods",
+        ],
+        "Cercospora Leaf Blight": [
+            "soybean leaf with reddish-purple to bronze discoloration on upper canopy leaves",
+        ],
+        "Frogeye Leaf Spot": [
+            "soybean leaf with circular lesions with dark reddish-brown borders and tan centers",
+        ],
+        "Rust": [
+            "soybean leaf with tiny brown rust lesions and pustules on leaf underside",
+        ],
+        "Yellow Mosaic": [
+            "soybean plant with bright yellow mosaic patches and green mottling on leaves",
+        ],
+    },
+    "Sugarcane": {
+        "Healthy": [
+            "a photo of a healthy green sugarcane crop",
+            "clean healthy sugarcane leaf blades",
+        ],
+        "Red Rot": [
+            "sugarcane stalk and leaf with internal red rot discoloration and white transverse patches",
+        ],
+        "Rust": [
+            "sugarcane leaf with elongated reddish-brown rust pustules",
+        ],
+        "Mosaic": [
+            "sugarcane leaf with chlorotic pale green and yellow mosaic mottling streaks",
+        ],
+        "Yellow Disease": [
+            "sugarcane foliage showing midrib yellowing and leaf necrosis",
+        ],
+    },
+    "Chickpea": {
+        "Healthy": [
+            "a photo of a healthy chickpea plant with green foliage",
+            "clean healthy gram plant leaves and pods",
+        ],
+        "Ascochyta Blight": [
+            "chickpea plant with circular necrotic lesions with concentric rings of black pycnidia",
+        ],
+        "Fusarium Wilt": [
+            "chickpea plant with drooping petioles, yellowing foliage, and vascular wilt",
+        ],
+        "Dry Root Rot": [
+            "chickpea plant with dry blackened roots, brittle stem, and sudden drying",
+        ],
+        "Stunt Virus": [
+            "chickpea plant with shortened internodes, bushy appearance, and yellow-brown discoloration",
+        ],
+    },
+    "Onion": {
+        "Healthy": [
+            "a photo of healthy upright green tubular onion foliage",
+            "clean healthy onion plants growing in field with unblemished bulb",
+        ],
+        "Purple Blotch": [
+            "onion leaf with sunken purple brown elliptical lesions with concentric rings and yellow chlorotic margin",
+            "purple blotch disease on onion foliage with blighted leaf tops",
+        ],
+        "Stemphylium Blight": [
+            "onion leaf with yellowish white expanding spindle-shaped flecks and blighted necrotic tips",
+        ],
+        "Basal Rot": [
+            "onion bulb with soft rotting stem plate, pinkish white fungal decay, and dying yellow leaf tips",
+        ],
+        "Downy Mildew": [
+            "onion leaf with violet gray downy fungal sporulation and chlorotic yellowing",
+        ],
+    },
+    "Potato": {
+        "Healthy": [
+            "a photo of healthy green potato foliage and compound leaves with no blight",
+            "clean fresh potato plant leaves growing in agricultural field",
+        ],
+        "Early Blight": [
+            "potato leaf with dark brown circular target-board lesions with concentric rings",
+        ],
+        "Late Blight": [
+            "potato leaf with dark water-soaked greasy brown lesions and white downy mildew on leaf underside",
+        ],
+        "Black Scurf": [
+            "potato plant with black sclerotial encrustations on stems and aerial tubers",
+        ],
+        "Bacterial Wilt": [
+            "potato plant with sudden daytime wilting of foliage, drooping stems, and vascular browning",
+        ],
+    },
+    "Pigeon Pea": {
+        "Healthy": [
+            "a photo of healthy green pigeon pea tur foliage with trifoliate leaves and yellow blossoms",
+            "clean healthy arhar plant leaves and pods",
+        ],
+        "Fusarium Wilt": [
+            "pigeon pea plant with drooping wilted leaves, yellowing foliage, and purple brown stem streaks",
+        ],
+        "Sterility Mosaic Disease": [
+            "pigeon pea plant with mosaic mottling, small distorted leaflets, bushy stunted branches, and no flowers",
+        ],
+        "Phytophthora Blight": [
+            "pigeon pea with water-soaked purplish dark brown lesions girdling the main stem and collar rot",
+        ],
+        "Pod Borer Damage": [
+            "pigeon pea green pods with bore holes and caterpillar insect pest damage",
+        ],
+    },
+    "Groundnut": {
+        "Healthy": [
+            "a photo of healthy groundnut bhuimug plant foliage with bright green four leaflets",
+            "clean healthy peanut crop leaves and flowers",
+        ],
+        "Tikka Leaf Spot": [
+            "groundnut leaves with circular dark brown to black spots surrounded by prominent yellow halos",
+        ],
+        "Rust": [
+            "groundnut leaf with reddish orange to brown powdery rust pustules on leaf underside",
+        ],
+        "Collar Rot": [
+            "groundnut seedling with blackened rotting stem collar and white fungal mycelium",
+        ],
+        "Bud Necrosis": [
+            "groundnut plant with necrotic terminal ring spots, chlorotic mottling, and stunted bunching",
+        ],
+    },
+    "Pomegranate": {
+        "Healthy": [
+            "a photo of clean glossy green pomegranate dalimb foliage with smooth red fruit",
+            "healthy unblemished bhagwa pomegranate fruit and leaves",
+        ],
+        "Bacterial Blight": [
+            "pomegranate leaf with dark brown oily water soaked spots and fruit with black triangular L-shaped cracks",
+            "telya bacterial blight on pomegranate fruit with dark weeping oily spots",
+        ],
+        "Anthracnose": [
+            "pomegranate fruit and leaves with sunken dark brown to black circular spots",
+        ],
+        "Wilt Complex": [
+            "pomegranate tree with sudden yellowing of leaves, defoliation, and drying branches",
+        ],
+        "Fruit Borer": [
+            "pomegranate fruit with bore holes, insect excreta, and internal fruit rot",
+        ],
+    },
+    "Grapes": {
+        "Healthy": [
+            "a photo of clean healthy green grapevine leaves and unblemished grape berry clusters",
+            "healthy vineyard canopy with vibrant green palmate foliage",
+        ],
+        "Downy Mildew": [
+            "grape leaf with yellowish oily translucent spots on upper surface and white cottony down beneath",
+        ],
+        "Powdery Mildew": [
+            "grape leaves and green berries coated with white ash-gray powdery fungal growth and cracking",
+        ],
+        "Anthracnose": [
+            "grape leaf with bird-eye lesions with dark brown margins and gray centers",
+        ],
+        "Bacterial Canker": [
+            "grape shoots and leaves with dark angular cankers and weeping lesions",
+        ],
+    },
+    "Banana": {
+        "Healthy": [
+            "a photo of large healthy broad emerald green banana leaf blades without streaks",
+            "clean healthy banana plantation foliage and fruit bunch",
+        ],
+        "Panama Wilt": [
+            "banana plant with yellowing lower leaves that buckle at petiole and hang down like a skirt",
+        ],
+        "Sigatoka Leaf Spot": [
+            "banana leaf with narrow dark brown to black spindle-shaped streaks with gray centers and yellow halos",
+        ],
+        "Bunchy Top Virus": [
+            "banana plant with congested upright narrow stunted leaves with rosette bunchy appearance",
+        ],
+        "Anthracnose": [
+            "banana bunch with black sunken circular spots and pinkish fungal spore masses",
+        ],
+    },
+    "Mango": {
+        "Healthy": [
+            "a photo of clean dark green glossy mango hapus tree foliage and clean developing fruit",
+            "healthy mango orchard canopy with vibrant lanceolate leaves",
+        ],
+        "Anthracnose": [
+            "mango leaves with dark brown necrotic spots and fruit with black tear-stain streaks",
+        ],
+        "Powdery Mildew": [
+            "mango flowering panicles and tender leaves coated with white powdery fungal bloom and blossom drop",
+        ],
+        "Dieback": [
+            "mango twigs dying backwards from tip downwards with brown withered leaves",
+        ],
+        "Bacterial Canker": [
+            "mango leaves with water-soaked angular black lesions with yellow halos",
+        ],
+    },
+    "Orange": {
+        "Healthy": [
+            "a photo of clean dark green glossy citrus orange tree leaves and unblemished nagpur santra fruit",
+            "healthy citrus mandarin foliage without canker or gummosis",
+        ],
+        "Citrus Canker": [
+            "citrus orange leaf and fruit with raised corky crater-like brown spots surrounded by yellow halos",
+        ],
+        "Phytophthora Gummosis": [
+            "orange tree trunk with cracked bark and copious oozing amber gum and collar rot",
+        ],
+        "Citrus Greening (HLB)": [
+            "citrus orange leaves with asymmetrical blotchy yellow chlorosis and small lopsided bitter fruit",
+        ],
+        "Dieback": [
+            "citrus tree branches drying from tip downwards with defoliated dead twigs",
+        ],
+    },
+    "Sorghum": {
+        "Healthy": [
+            "a photo of clean healthy green sorghum jowar leaves with white midrib and healthy grain head",
+            "healthy maldandi jowar crop in field",
+        ],
+        "Grain Mold": [
+            "sorghum grain panicle with pink, white, or velvety black fungal discoloration and crumbling seeds",
+        ],
+        "Anthracnose": [
+            "sorghum leaf with elliptical tan necrotic lesions with prominent red-purple margins",
+        ],
+        "Charcoal Rot": [
+            "sorghum stalk with internal black shredded pith and lodging at base",
+        ],
+        "Downy Mildew": [
+            "sorghum leaves with yellow-white chlorotic striping and downy fungal growth",
+        ],
+    },
+    "Pearl Millet": {
+        "Healthy": [
+            "a photo of clean healthy narrow green pearl millet bajra leaves and uniform cylindrical bristled earhead",
+            "healthy bajra crop with green spikelets",
+        ],
+        "Downy Mildew": [
+            "bajra plant with green ear head transformed into leafy vegetative structures and chlorotic leaf stripes",
+        ],
+        "Rust": [
+            "bajra leaf with reddish brown powdery rust pustules on both leaf surfaces",
+        ],
+        "Ergot": [
+            "bajra earhead spikelets exuding sticky pinkish amber honeydew droplets turning into dark sclerotia",
+        ],
+        "Blast": [
+            "bajra leaf with diamond-shaped spindle lesions with gray centers and brown borders",
+        ],
+    },
+    "Turmeric": {
+        "Healthy": [
+            "a photo of clean broad lush green turmeric halad leaves and healthy underground rhizomes",
+            "healthy turmeric crop foliage in agricultural field",
+        ],
+        "Rhizome Rot": [
+            "turmeric plant with yellowing leaves and water-soaked rotting soft pseudostem collar pulling out easily",
+        ],
+        "Leaf Spot": [
+            "turmeric leaf with elliptical brown spots with grayish white centers and yellow chlorotic halos",
+        ],
+        "Leaf Blotch": [
+            "turmeric leaf with reddish brown to dark brown blotches in rows along veins",
+        ],
+        "Fusarium Wilt": [
+            "turmeric plant showing gradual leaf yellowing, drooping, and vascular wilting",
+        ],
+    },
+}
+
+_clip_disease_embeds_cache: Dict[str, torch.Tensor] = {}
+
+
+def _get_clip_disease_embeds(crop_name: str, classes: List[str], model, processor) -> torch.Tensor:
+    """Pre-builds normalized prompt embeddings for each disease class of a crop."""
+    global _clip_disease_embeds_cache
+    if crop_name in _clip_disease_embeds_cache:
+        return _clip_disease_embeds_cache[crop_name]
+
+    from services.crop_identification import _extract_text_features
+    crop_prompts = CROP_DISEASE_PROMPTS.get(crop_name, {})
+
+    embeds_list = []
+    with torch.no_grad():
+        for cls in classes:
+            prompts = crop_prompts.get(cls, [f"a photo of {crop_name.lower()} with {cls.lower()} disease"])
+            inputs = processor(text=prompts, padding=True, return_tensors="pt")
+            feats = _extract_text_features(model, inputs)
+            avg_feat = feats.mean(dim=0, keepdim=True)
+            avg_feat = avg_feat / avg_feat.norm(dim=-1, keepdim=True)
+            embeds_list.append(avg_feat)
+
+    all_embeds = torch.cat(embeds_list, dim=0)
+    _clip_disease_embeds_cache[crop_name] = all_embeds
+    return all_embeds
+
+
 def predict_crop_disease(
     crop_name: str,
     image_bytes: bytes,
     confidence_threshold: Optional[float] = None,
 ) -> Dict[str, Any]:
     """
-    Predicts disease for a crop image using the multi-criteria abstain path.
-
-    Returns:
-        {
-            "crop": str,
-            "disease": str,            # class name or "Needs expert verification"
-            "confidence": float,
-            "severity": str,
-            "status": str,             # "Healthy" | "Diseased" | "Needs expert verification"
-            "explanation": str,
-            "symptoms": list[str],
-            "recommended_actions": list[str],
-            "prevention": list[str],
-            "expert_verification_required": bool,
-            "abstain_reason": str | None,   # Why we abstained (if applicable)
-        }
+    Predicts disease for a crop image using CLIP vision-language prompt ensembles
+    with multi-criteria abstain checking and MobileNetV3 fallback.
     """
     try:
         crop_cfg = CROP_CONFIGS.get(crop_name)
@@ -191,30 +593,56 @@ def predict_crop_disease(
         classes: List[str] = crop_cfg["classes"]
         num_classes = len(classes)
 
-        # Determine effective threshold:
-        # - If caller provided an explicit override (e.g. 0.9999 in tests), use it as-is.
-        # - If using the per-crop default, relax it slightly for the "Healthy" class
-        #   after we know the predicted class, to reduce false disease alarms.
         using_default_threshold = confidence_threshold is None
         base_threshold = crop_cfg.get("confidence_threshold", 0.60) if using_default_threshold else confidence_threshold  # type: ignore[assignment]
 
         severity_map: Dict[str, str] = crop_cfg.get("severity_map", {})
         status_map: Dict[str, str] = crop_cfg.get("status_map", {})
 
-        model, device = _get_crop_inference_model(crop_name)
-
         img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-        tensor_img = _inference_transform(img).unsqueeze(0).to(device)  # type: ignore[attr-defined]
 
-        with torch.no_grad():
-            outputs = model(tensor_img)
-            probs = torch.softmax(outputs, dim=1)[0]
-            top_prob_t, top_idx_t = torch.max(probs, dim=0)
+        # Try high-accuracy CLIP zero-shot classification
+        probs = None
+        sims = None
+        try:
+            from services.crop_identification import _get_crop_id_model, _extract_image_features
+            clip_model, processor, _, _ = _get_crop_id_model()
+            text_embeds = _get_clip_disease_embeds(crop_name, classes, clip_model, processor)
 
-        top_prob_raw = float(top_prob_t.item())   # raw float used for threshold comparison
-        top_confidence = round(top_prob_raw, 4)    # rounded value displayed to users
+            inputs = processor(images=img, return_tensors="pt")
+            with torch.no_grad():
+                img_feat = _extract_image_features(clip_model, inputs)
+                sims = (img_feat @ text_embeds.T)[0]
+                # Temperature scaled probabilities
+                probs = (sims * 35.0).softmax(dim=0)
+        except Exception as clip_err:
+            logger.warning(f"CLIP disease classification unavailable, using CNN fallback: {clip_err}")
+            probs = None
+
+        if probs is None:
+            model, device = _get_crop_inference_model(crop_name)
+            tensor_img = _inference_transform(img).unsqueeze(0).to(device)  # type: ignore[attr-defined]
+            with torch.no_grad():
+                outputs = model(tensor_img)
+                probs = torch.softmax(outputs, dim=1)[0]
+
+        top_prob_t, top_idx_t = torch.max(probs, dim=0)
+        top_prob_raw = float(top_prob_t.item())
+        top_confidence = round(top_prob_raw, 4)
         top_idx = int(top_idx_t.item())
         predicted_class = classes[top_idx]
+
+        # Extract Top-3 predictions with probability
+        sorted_probs, sorted_indices = torch.sort(probs, descending=True)
+        top_predictions = []
+        for i in range(min(3, len(classes))):
+            c_idx = int(sorted_indices[i].item())
+            top_predictions.append({
+                "crop": crop_name,
+                "condition": classes[c_idx],
+                "confidence": round(float(sorted_probs[i].item()), 4),
+                "probability": round(float(sorted_probs[i].item()), 4),
+            })
 
         # Apply Healthy relaxation only for the default threshold
         threshold = base_threshold  # type: ignore[assignment]
@@ -222,11 +650,8 @@ def predict_crop_disease(
             threshold = base_threshold * _HEALTHY_THRESHOLD_MULTIPLIER  # type: ignore[assignment]
 
         logger.info(
-            f"[{crop_name}] Raw prediction: {predicted_class} "
-            f"({top_confidence:.1%}) | "
-            f"threshold={threshold:.3f} | "
-            f"entropy={_compute_entropy(probs):.3f} | "
-            f"top-2 margin={float((torch.sort(probs, descending=True)[0][0] - torch.sort(probs, descending=True)[0][1]).item()):.3f}"
+            f"[{crop_name}] Prediction: {predicted_class} "
+            f"({top_confidence:.1%}) | threshold={threshold:.3f}"
         )
 
         # ── Multi-criteria abstain check ──────────────────────────────────────
@@ -254,6 +679,7 @@ def predict_crop_disease(
                 "prevention": advisory["prevention"],
                 "expert_verification_required": True,
                 "abstain_reason": abstain_reason,
+                "top_predictions": top_predictions,
             }
 
         # ── Accepted prediction ───────────────────────────────────────────────
@@ -273,6 +699,7 @@ def predict_crop_disease(
             "prevention": advisory["prevention"],
             "expert_verification_required": False,
             "abstain_reason": None,
+            "top_predictions": top_predictions,
         }
 
     except Exception as exc:

@@ -1,53 +1,109 @@
 """
 routes/scan.py
 ──────────────
-POST /api/scan  –  Phase 1: Upload validation + image quality gate.
+POST /api/scan  –  Complete crop identification & disease analysis pipeline.
 
-Phase 2+ hooks (crop_analysis, disease_detection, severity, risk_score,
-advisory) are wired in the response model but return null until the
-respective ML service modules are implemented.
+Pipeline steps:
+1. File format, size, resolution validation
+2. Image quality gate (brightness & Laplacian blur)
+3. Plant/crop relevance validation via MobileNetV2
+4. Crop species identification via CLIP Vision Transformer & Prototypes
+5. Multi-crop disease detection with Top-3 predictions & entropy/margin abstain check
+6. Safe file storage in backend/uploads/scan_history/
+7. Persistent scan history logging in SQLite (submissions.db)
+8. Structured, typed response contract with backward compatibility
 """
 
+import json
+import logging
+import os
+import uuid
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Optional, List
+
 from fastapi import APIRouter, File, Form, UploadFile
-from typing import Optional
 
 from services.validation import validate_upload
 from services.image_quality import analyze_quality, quality_errors
 from services.crop_relevance import validate_crop_relevance
 from services.crop_identification import identify_crop
-from models.response import ImageQuality, ScanResponse, ValidationResult, CropAnalysis, CropIdentification, DiseaseDetectionResult
+from models.response import (
+    ImageQuality,
+    ScanResponse,
+    ValidationResult,
+    CropAnalysis,
+    CropIdentification,
+    DiseaseDetectionResult,
+    CropDetail,
+    DiagnosisDetail,
+    AnalysisDetail,
+    ModelMetadata,
+    PredictionCandidate,
+    VerificationDetail,
+)
 from ml.inference import predict_crop_disease
 from ml.config import CROP_CONFIGS
-from db import insert_submission
+from db import insert_submission, insert_scan_history
+from data.canonical_mapping import (
+    normalize_crop_name,
+    get_display_crop_name,
+    get_condition_type,
+    get_crop_verification_metadata,
+)
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
+
+UPLOAD_DIR = Path(__file__).resolve().parent.parent / "uploads" / "scan_history"
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _save_uploaded_image(contents: bytes, original_filename: Optional[str]) -> tuple[str, str]:
+    """
+    Saves the image safely with a unique filename and validated extension.
+    Returns (relative_web_url, disk_filepath).
+    """
+    ext = ".jpg"
+    if original_filename:
+        suffix = Path(original_filename).suffix.lower()
+        if suffix in (".jpg", ".jpeg", ".png", ".webp"):
+            ext = suffix
+
+    now_tag = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    unique_name = f"{now_tag}_{uuid.uuid4().hex[:8]}{ext}"
+    disk_path = UPLOAD_DIR / unique_name
+    with open(disk_path, "wb") as f:
+        f.write(contents)
+
+    web_url = f"/uploads/scan_history/{unique_name}"
+    return web_url, str(disk_path)
 
 
 @router.post("/scan", response_model=ScanResponse, summary="Validate and analyse a crop image")
 async def scan_crop(
     file: UploadFile = File(..., description="JPG or PNG crop image, max 10 MB"),
     farmer_name: Optional[str] = Form(default="Anonymous"),
+    farmer_id: Optional[str] = Form(default="default_farmer"),
     location: Optional[str] = Form(default="Unknown"),
     latitude: Optional[float] = Form(default=None),
     longitude: Optional[float] = Form(default=None),
 ):
     """
-    Phase 1, Phase 2, Phase 3A & Phase 3B Multi-Crop pipeline:
-    1. File-type, size, and resolution validation (Phase 1)
-    2. Image brightness & blur/sharpness analysis (Phase 1)
-    3. Crop/plant relevance validation using CV model (Phase 2)
-    4. Real Crop Species Identification (Phase 3A)
-    5. Crop Disease Detection using dedicated MobileNetV3 model (Phase 3B)
+    Multi-Crop identification and disease diagnostic pipeline with persistent scan history.
     """
+    now_iso = datetime.now(timezone.utc).isoformat()
+    scan_id = f"scan_{int(datetime.now(timezone.utc).timestamp())}_{uuid.uuid4().hex[:6]}"
 
     # ── Step 1: upload validation ─────────────────────────────────────────────
     val_errors, val_warnings, contents = await validate_upload(file)
 
-    # Hard stop – file is unusable
     if val_errors and not contents:
         return ScanResponse(
-            status="invalid",
+            scanId=scan_id,
+            status="invalid_image",
             message=val_errors[0],
+            timestamp=now_iso,
             validation=ValidationResult(
                 passed=False, errors=val_errors, warnings=val_warnings
             ),
@@ -71,11 +127,12 @@ async def scan_crop(
             is_sharp_enough=qual_metrics["is_sharp_enough"],
         )
 
-    # Hard stop – quality check failed
     if all_errors:
         return ScanResponse(
-            status="invalid",
+            scanId=scan_id,
+            status="invalid_image",
             message=all_errors[0],
+            timestamp=now_iso,
             validation=ValidationResult(
                 passed=False,
                 errors=all_errors,
@@ -85,15 +142,17 @@ async def scan_crop(
             crop_analysis=None,
         )
 
-    # ── Step 3: Phase 2 Crop Relevance Validation ─────────────────────────────
+    # ── Step 3: Phase 2 Crop/Plant Relevance Validation ───────────────────────
     crop_analysis: CropAnalysis = validate_crop_relevance(contents)
 
     if not crop_analysis.is_relevant:
-        rejection_msg = crop_analysis.rejection_reason or "This image does not appear to contain a crop or plant."
+        rejection_msg = "This image does not appear to contain a crop or plant. Please upload a clear plant image."
         all_errors.append(rejection_msg)
         return ScanResponse(
-            status="invalid",
+            scanId=scan_id,
+            status="invalid_image",
             message=rejection_msg,
+            timestamp=now_iso,
             validation=ValidationResult(
                 passed=False,
                 errors=all_errors,
@@ -108,11 +167,13 @@ async def scan_crop(
     crop_analysis.crop_identification = crop_id
 
     if not crop_id.is_identified:
-        unidentified_msg = crop_id.message or "Unable to identify crop."
-        all_errors.append(unidentified_msg)
+        unsupported_msg = crop_id.message or "This crop is not currently supported by the CropGuard recognition model."
+        all_errors.append(unsupported_msg)
         return ScanResponse(
-            status="invalid",
-            message=unidentified_msg,
+            scanId=scan_id,
+            status="unsupported_crop",
+            message=unsupported_msg,
+            timestamp=now_iso,
             validation=ValidationResult(
                 passed=False,
                 errors=all_errors,
@@ -122,33 +183,111 @@ async def scan_crop(
             crop_analysis=crop_analysis,
         )
 
-    # Passed Phase 1 quality + Phase 2 relevance + Phase 3A crop identification!
-    conf_pct = round(crop_id.confidence * 100, 1)
+    # Normalise canonical and display crop names
+    canonical_crop = normalize_crop_name(crop_id.crop_name)
+    display_crop = get_display_crop_name(canonical_crop)
+    crop_id.crop_name = display_crop
+    crop_conf_pct = round(crop_id.confidence * 100, 1)
 
     # ── Step 5: Phase 3B Real Crop Disease Detection ──────────────────────────
     disease_detection: DiseaseDetectionResult | None = None
-    severity: str | None = None
-    msg = f"Crop identified as {crop_id.crop_name} with {conf_pct}% confidence."
+    severity: str = "Unknown"
+    top_predictions: List[PredictionCandidate] = []
+    condition_name = "Healthy Plant"
+    condition_type = "healthy"
+    health_status = "Healthy"
 
-    crop_cfg = CROP_CONFIGS.get(crop_id.crop_name)
+    crop_cfg = CROP_CONFIGS.get(canonical_crop)
+    is_uncertain = False
+    abstain_msg = None
+
     if crop_cfg and crop_cfg.get("classes"):
-        disease_res = predict_crop_disease(crop_id.crop_name, contents)
-        disease_detection = DiseaseDetectionResult(**disease_res)
-        severity = disease_detection.severity
-        disease_conf_pct = round(disease_detection.confidence * 100, 1)
-        msg = (
-            f"Crop identified as {crop_id.crop_name} ({conf_pct}% confidence). "
-            f"Disease: {disease_detection.disease} ({disease_conf_pct}% confidence)."
-        )
+        disease_res = predict_crop_disease(canonical_crop, contents)
+        raw_top_preds = disease_res.get("top_predictions", [])
+        for tp in raw_top_preds:
+            top_predictions.append(
+                PredictionCandidate(
+                    crop=display_crop,
+                    condition=tp.get("condition", "Unknown"),
+                    confidence=tp.get("confidence", 0.0),
+                    probability=tp.get("probability", 0.0),
+                )
+            )
 
-    # ── Step 6: Persist to database ──────────────────────────────────────────
-    ai_result_str = disease_detection.disease if disease_detection else "Unknown"
-    confidence_val = disease_detection.confidence if disease_detection else None
+        disease_detection = DiseaseDetectionResult(
+            crop=display_crop,
+            disease=disease_res.get("disease", "Unknown"),
+            confidence=disease_res.get("confidence", 0.0),
+            severity=disease_res.get("severity", "Unknown"),
+            status=disease_res.get("status", "Healthy"),
+            explanation=disease_res.get("explanation"),
+            symptoms=disease_res.get("symptoms", []),
+            recommended_actions=disease_res.get("recommended_actions", []),
+            prevention=disease_res.get("prevention", []),
+            expert_verification_required=disease_res.get("expert_verification_required", False),
+            abstain_reason=disease_res.get("abstain_reason"),
+        )
+        severity = disease_detection.severity
+        condition_name = disease_detection.disease
+        condition_type = get_condition_type(condition_name)
+        is_healthy = condition_name in ("Healthy", "Healthy Plant")
+
+        if disease_detection.expert_verification_required:
+            is_uncertain = True
+            abstain_msg = "We couldn't identify this condition confidently. Please upload another clear photo of the affected leaf or plant."
+            health_status = "Needs expert verification"
+        else:
+            health_status = "Healthy" if is_healthy else "Diseased"
+
+    # ── Step 6: Safe Image Storage ────────────────────────────────────────────
+    saved_web_url, disk_path = _save_uploaded_image(contents, file.filename)
+
+    # ── Step 7: Persist Scan History to Database ──────────────────────────────
+    explanation = disease_detection.explanation if disease_detection else ""
+    symptoms = disease_detection.symptoms if disease_detection else []
+    actions = disease_detection.recommended_actions if disease_detection else []
+    prevention = disease_detection.prevention if disease_detection else []
+
+    disease_conf = disease_detection.confidence if disease_detection else 0.0
+
+    # ── Step 7: Build Authoritative Verification & References ─────────────────
+    verification_dict = get_crop_verification_metadata(
+        canonical_crop=canonical_crop,
+        condition_name=condition_name,
+        crop_conf=crop_id.confidence,
+        disease_conf=disease_conf,
+    )
+    verification = VerificationDetail(**verification_dict)
+
+    # Save to persistent scan_history table
+    insert_scan_history(
+        scan_id=scan_id,
+        crop_name=display_crop,
+        predicted_condition=condition_name,
+        crop_confidence=crop_id.confidence,
+        disease_confidence=disease_conf,
+        farmer_id=farmer_id or "default_farmer",
+        condition_type=condition_type,
+        severity=severity,
+        image_path=saved_web_url,
+        diagnosis_summary=explanation or "",
+        symptoms_json=json.dumps(symptoms),
+        actions_json=json.dumps(actions),
+        prevention_json=json.dumps(prevention),
+        model_name="CropGuard-Hybrid-MobileNetV3-CLIP",
+        model_version="2.4.0",
+        data_source="ICAR + PlantVillage",
+        reference_source=verification.referenceSource,
+        accuracy_score=verification.accuracyPercentage,
+        verification_json=json.dumps(verification_dict),
+    )
+
+    # Save to legacy submissions table for government dashboard analytics
     insert_submission(
-        crop=crop_id.crop_name,
-        ai_result=ai_result_str,
-        disease=disease_detection.disease if disease_detection else None,
-        confidence=confidence_val,
+        crop=display_crop,
+        ai_result=condition_name,
+        disease=condition_name,
+        confidence=disease_conf,
         severity=severity,
         farmer_name=farmer_name or "Anonymous",
         location=location or "Unknown",
@@ -156,9 +295,46 @@ async def scan_crop(
         longitude=longitude,
     )
 
+    # ── Step 8: Assemble Response ─────────────────────────────────────────────
+    if is_uncertain:
+        primary_msg = abstain_msg or "Diagnosis uncertain. Please upload another clear photo."
+        resp_status = "uncertain"
+    else:
+        disease_conf_pct = round(disease_conf * 100, 1)
+        primary_msg = (
+            f"Crop identified as {display_crop} ({crop_conf_pct}% confidence). "
+            f"Disease: {condition_name} ({disease_conf_pct}% confidence)."
+        )
+        resp_status = "valid"  # maintains existing frontend checking json.status === 'valid'
+
     return ScanResponse(
-        status="valid",
-        message=msg,
+        scanId=scan_id,
+        status=resp_status,
+        message=primary_msg,
+        timestamp=now_iso,
+        imageUrl=saved_web_url,
+        crop=CropDetail(name=display_crop, confidence=crop_id.confidence),
+        diagnosis=DiagnosisDetail(
+            condition=condition_name,
+            type=condition_type,
+            healthStatus=health_status,
+            confidence=disease_conf,
+            severity=severity,
+        ),
+        topPredictions=top_predictions,
+        analysis=AnalysisDetail(
+            summary=explanation or primary_msg,
+            symptoms=symptoms,
+            recommendedActions=actions,
+            prevention=prevention,
+            pesticideNote="Use only registered crop-protection products according to the label and local agricultural guidance.",
+        ),
+        metadata=ModelMetadata(
+            model="CropGuard-Hybrid-MobileNetV3-CLIP",
+            modelVersion="2.4.0",
+            datasetSources=["ICAR", "PlantVillage"],
+        ),
+        verification=verification,
         validation=ValidationResult(
             passed=True,
             errors=[],
@@ -171,5 +347,3 @@ async def scan_crop(
         risk_score=None,
         advisory=None,
     )
-
-

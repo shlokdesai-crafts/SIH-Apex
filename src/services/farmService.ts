@@ -15,6 +15,55 @@ import type {
 
 const STORAGE_PREFIX = 'cropguard_farm_';
 
+export function getCanonicalCropKey(crop: string): string {
+  if (!crop) return 'unknown';
+  const c = crop.trim().toLowerCase();
+  if (c.includes('maize') || c.includes('corn')) return 'maize';
+  if (c.includes('tomato')) return 'tomato';
+  if (c.includes('rice') || c.includes('paddy')) return 'rice';
+  if (c.includes('wheat')) return 'wheat';
+  if (c.includes('cotton') || c.includes('kapus')) return 'cotton';
+  if (c.includes('soybean') || c.includes('soya')) return 'soybean';
+  if (c.includes('sugarcane') || c.includes('cane') || c.includes('us')) return 'sugarcane';
+  if (c.includes('chickpea') || c.includes('gram') || c.includes('chana') || c.includes('harbara')) return 'chickpea';
+  if (c.includes('potato') || c.includes('batata')) return 'potato';
+  if (c.includes('onion') || c.includes('kanda')) return 'onion';
+  if (c.includes('pigeon') || c.includes('tur') || c.includes('arhar')) return 'pigeon_pea';
+  if (c.includes('groundnut') || c.includes('peanut') || c.includes('bhuimug')) return 'groundnut';
+  if (c.includes('pomegranate') || c.includes('dalimb')) return 'pomegranate';
+  if (c.includes('grape') || c.includes('draksha')) return 'grapes';
+  if (c.includes('banana') || c.includes('keli')) return 'banana';
+  if (c.includes('mango') || c.includes('hapus') || c.includes('alphonso')) return 'mango';
+  if (c.includes('orange') || c.includes('santra')) return 'orange';
+  if (c.includes('sorghum') || c.includes('jowar')) return 'sorghum';
+  if (c.includes('millet') || c.includes('bajra')) return 'pearl_millet';
+  if (c.includes('turmeric') || c.includes('halad') || c.includes('haldi')) return 'turmeric';
+  return c.replace(/[^a-z0-9]/g, '');
+}
+
+export const CROP_ICONS: Record<string, string> = {
+  maize: '🌽',
+  tomato: '🍅',
+  rice: '🌾',
+  wheat: '🌾',
+  cotton: '☁️',
+  soybean: '🌱',
+  sugarcane: '🎋',
+  chickpea: '🌿',
+  potato: '🥔',
+  onion: '🧅',
+  pigeon_pea: '🫘',
+  groundnut: '🥜',
+  pomegranate: '🍎',
+  grapes: '🍇',
+  banana: '🍌',
+  mango: '🥭',
+  orange: '🍊',
+  sorghum: '🌾',
+  pearl_millet: '🌾',
+  turmeric: '🫚',
+};
+
 function formatTodayDate(): string {
   const d = new Date();
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -318,13 +367,18 @@ export function sanitizeFarmState(state: FarmState, defaultLocation?: string): {
     onion: '/images/onion_crop.jpg',
     tomato: '/images/tomato_crop.jpg',
     potato: '/images/potato_crop.jpg',
+    maize: '/images/crop_maize.jpg',
+    rice: '/images/crop_rice.jpg',
+    wheat: '/images/crop_wheat.jpg',
+    sugarcane: '/images/crop_sugarcane.jpg',
+    chickpea: '/images/crop_chickpea.jpg',
   };
 
   let modified = false;
 
   if (Array.isArray(state.crops)) {
     state.crops = state.crops.map((c) => {
-      const key = c.name.toLowerCase();
+      const key = getCanonicalCropKey(c.id || c.name);
       if (cropImageMap[key] && (!c.image || c.image.includes('crop_leaf') || c.image.includes('crop_healthy_leaf'))) {
         modified = true;
         return { ...c, image: cropImageMap[key] };
@@ -452,11 +506,14 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
 
   const updatedScans = [scanRecord, ...(currentState.scans || [])];
 
-  // 2. Update Crop
+  // 2. Update Crop (with canonical deduplication)
   let cropFound = false;
   const normalizedInputCrop = input.crop.trim().toLowerCase();
+  const inputCropKey = getCanonicalCropKey(input.crop);
+
   const updatedCrops = currentState.crops.map((c) => {
-    if (c.name.toLowerCase() === normalizedInputCrop || c.id.toLowerCase() === normalizedInputCrop) {
+    const cKey = getCanonicalCropKey(c.id || c.name);
+    if (cKey === inputCropKey || c.name.toLowerCase() === normalizedInputCrop) {
       cropFound = true;
       return {
         ...c,
@@ -465,6 +522,7 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
         lastScanDate: todayStr,
         detectedDisease: input.disease,
         severity: input.severity,
+        image: input.previewUrl || c.image,
       };
     }
     return c;
@@ -472,11 +530,13 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
 
   if (!cropFound) {
     // Add new crop dynamically
+    const displayCrop = input.crop;
+    const cropIcon = CROP_ICONS[inputCropKey] || '🌿';
     const newCrop: FarmCrop = {
-      id: input.crop.toLowerCase().replace(/\s+/g, '-'),
-      name: input.crop,
-      icon: '🌿',
-      image: input.previewUrl || '/images/crop_healthy_leaf.jpg',
+      id: inputCropKey,
+      name: displayCrop,
+      icon: cropIcon,
+      image: input.previewUrl || `/images/crop_${inputCropKey}.jpg`,
       status: cropStatus,
       healthScore: cropHealth,
       areaHa: 0.5,
@@ -492,7 +552,7 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
   let targetFieldId = input.fieldId;
   if (!targetFieldId) {
     const matchingField = currentState.fields.find(
-      (f) => f.crop.toLowerCase() === normalizedInputCrop
+      (f) => getCanonicalCropKey(f.crop) === inputCropKey || f.crop.toLowerCase() === normalizedInputCrop
     );
     if (matchingField) {
       targetFieldId = matchingField.id;
@@ -500,7 +560,8 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
   }
 
   const updatedFields = currentState.fields.map((f) => {
-    if (f.id === targetFieldId || (!targetFieldId && f.crop.toLowerCase() === normalizedInputCrop)) {
+    const fKey = getCanonicalCropKey(f.crop);
+    if (f.id === targetFieldId || (!targetFieldId && (fKey === inputCropKey || f.crop.toLowerCase() === normalizedInputCrop))) {
       return {
         ...f,
         status: fieldStatus,

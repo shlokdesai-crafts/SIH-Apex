@@ -403,6 +403,166 @@
 .sc-actions-block { background: #f1f8e9; border-color: #c8e6c9; }
 .sc-prevention-block { background: #e8eaf6; border-color: #c5cae9; }
 
+/* ── Verified References & Accuracy Trust Card ── */
+.sc-verification-card {
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  border-radius: 12px;
+  padding: 13px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 1px 4px rgba(22, 101, 52, 0.05);
+}
+
+.sc-verification-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-bottom: 1px solid #bbf7d0;
+  padding-bottom: 9px;
+}
+
+.sc-verification-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sc-verification-shield {
+  font-size: 20px;
+}
+
+.sc-verification-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #14532d;
+  letter-spacing: -0.2px;
+}
+
+.sc-verification-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+}
+
+.sc-accuracy-badge-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  border: 1.5px solid #4ade80;
+  border-radius: 10px;
+  padding: 6px 12px;
+  box-shadow: 0 2px 6px rgba(34, 197, 94, 0.12);
+}
+
+.sc-accuracy-badge-val {
+  font-size: 19px;
+  font-weight: 900;
+  color: #15803d;
+  line-height: 1;
+}
+
+.sc-accuracy-badge-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.sc-accuracy-badge-label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #166534;
+  letter-spacing: 0.5px;
+}
+
+.sc-accuracy-badge-sub {
+  font-size: 10px;
+  color: #15803d;
+  font-weight: 600;
+}
+
+.sc-ref-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 8px;
+}
+
+.sc-ref-item {
+  background: #ffffff;
+  border: 1px solid #dcfce7;
+  border-radius: 8px;
+  padding: 8px 11px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.sc-ref-icon {
+  font-size: 15px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.sc-ref-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.sc-ref-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 2px;
+}
+
+.sc-ref-val {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.sc-diff-diag-wrap {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 11.5px;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sc-diff-diag-label {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.sc-diff-pill {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
 .sc-block-title {
   font-size: 13px;
   font-weight: 700;
@@ -947,6 +1107,139 @@
 .sc-assistant-desc {
   font-size: 11px;
   color: #777;
+}
+
+/* ================================================================
+   20 CROPS DATABASE CARD (Maharashtra Benchmark Catalog)
+   ================================================================ */
+.sc-crops-db-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px 14px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f1f5f9;
+}
+
+.sc-crops-db-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.sc-crops-db-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sc-crops-db-leaf-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.sc-crops-db-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.2px;
+}
+
+.sc-crops-db-viewall {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #16a34a;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sc-crops-db-viewall:hover {
+  color: #15803d;
+  transform: translateX(2px);
+  text-decoration: underline;
+}
+
+.sc-crops-db-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px 6px;
+}
+
+.sc-crop-card-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #edf9f3;
+  border: 1px solid #d1fae5;
+  border-radius: 8px;
+  padding: 4px 6px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease-in-out;
+  outline: none;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sc-crop-card-item:hover {
+  background: #dcfce7;
+  border-color: #86efac;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(22, 101, 52, 0.1);
+}
+
+.sc-crop-card-item.selected {
+  background: #dcfce7;
+  border-color: #16a34a;
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.25);
+}
+
+.sc-crop-card-img {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.sc-crop-card-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  line-height: 1.15;
+}
+
+.sc-crop-card-name {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sc-crop-card-marathi {
+  font-size: 9px;
+  font-weight: 600;
+  color: #0369a1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 480px) {
+  .sc-crops-db-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* ================================================================

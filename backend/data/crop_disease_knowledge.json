@@ -1,0 +1,1883 @@
+{
+  "Tomato": {
+    "Healthy": {
+      "explanation": "The tomato plant shows optimal physiological vigor, vibrant green foliage, strong stems, and zero signs of foliar blight, bacterial specking, or viral distortion.",
+      "symptoms": [
+        "Uniform deep green leaf lamina with intact serrated margins",
+        "Firm erect stems and healthy cluster flowering",
+        "Absence of chlorotic halos, necrotic spots, or leaf curling"
+      ],
+      "culturalActions": [
+        "Maintain consistent drip or furrow irrigation to prevent moisture stress and blossom-end rot",
+        "Prune lower suckers near soil level to optimize airflow and minimize soil-splash contamination",
+        "Provide sturdy stakes or trellising to keep foliage and fruit elevated above wet soil"
+      ],
+      "prevention": [
+        "Rotate tomato planting with non-solanaceous crops (e.g. maize, legumes) every 2-3 seasons",
+        "Use certified pathogen-free hybrid seeds with high germination vigor",
+        "Apply organic straw mulch around plant bases to conserve moisture and suppress weeds"
+      ],
+      "source": "ICAR - Indian Institute of Vegetable Research (IIVR) & TNAU Agritech",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Early Blight": {
+      "explanation": "Early Blight (Alternaria solani) is a prevalent fungal foliar disease producing distinctive concentric target-board brown lesions, beginning on older lower foliage.",
+      "symptoms": [
+        "Circular dark brown to black spots with characteristic concentric rings (target pattern)",
+        "Chlorotic yellowing surrounding necrotic spots, progressing to premature defoliation",
+        "Stem collar lesions and dark sunken leathery spots at stem ends of fruits"
+      ],
+      "culturalActions": [
+        "Promptly rogue and destroy severely spotted lower leaves to reduce airborne inoculum",
+        "Switch from sprinkler/overhead watering to ground-level drip irrigation to keep canopy dry",
+        "Space plants adequately (60 cm × 45 cm) to facilitate thorough air circulation"
+      ],
+      "prevention": [
+        "Treat seeds prior to sowing using certified biocontrol agents (Trichoderma viride at 4g/kg seed)",
+        "Deep plow crop residues immediately post-harvest to accelerate fungal decomposition",
+        "Follow a strict 3-year crop rotation avoiding potato, eggplant, and chili"
+      ],
+      "source": "ICAR - Indian Agricultural Research Institute (IARI) & DPPQS",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Late Blight": {
+      "explanation": "Late Blight (Phytophthora infestans) is an aggressive water mold pathogen thriving under cool, humid conditions, causing rapid foliar decay and fruit rot.",
+      "symptoms": [
+        "Irregular water-soaked dark lesions appearing rapidly on leaf tips and margins",
+        "White delicate downy fungal growth visible on leaf undersides during humid mornings",
+        "Dark greasy firm rot patches spreading across green and ripe tomato fruits"
+      ],
+      "culturalActions": [
+        "Immediately remove and deeply bury blighted plant sections to contain rapid field spread",
+        "Avoid working in tomato fields when leaves are wet to prevent spreading spores",
+        "Ensure field ditches and furrows provide rapid drainage after heavy rainfall"
+      ],
+      "prevention": [
+        "Plant certified resistant varieties recommended by state agricultural universities",
+        "Enforce wide row spacing and north-south ridge orientation for rapid sun-drying of foliage",
+        "Apply preventive bio-formulations during prolonged foggy or high-humidity spells"
+      ],
+      "source": "ICAR - Central Potato Research Institute (CPRI) & IIVR",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Bacterial Spot": {
+      "explanation": "Bacterial Spot (Xanthomonas campestris pv. vesicatoria) causes small water-soaked dark flecks that turn necrotic and scab-like on both leaves and fruit.",
+      "symptoms": [
+        "Small, circular to angular water-soaked dark spots on leaves with yellow halos",
+        "Severely infected leaves turn yellow, blister, and drop prematurely",
+        "Slightly raised brown scab-like spots with rough margins on tomato fruit"
+      ],
+      "culturalActions": [
+        "Eliminate weed hosts and wild nightshade species around greenhouse and field borders",
+        "Sterilize farm pruning shears and harvest crates with certified disinfectant solution",
+        "Avoid sprinkler or rain-gun irrigation that splashes bacterial slime between plants"
+      ],
+      "prevention": [
+        "Source disease-free seed tested for bacterial contamination",
+        "Soak nursery seeds in hot water (50°C for 25 minutes) before planting",
+        "Practice strict rotation with corn, sorghum, or legumes"
+      ],
+      "source": "ICAR - Indian Agricultural Research Institute (IARI) Plant Pathology",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Yellow Leaf Curl Virus": {
+      "explanation": "Tomato Yellow Leaf Curl Virus (TYLCV) is a debilitating begomovirus transmitted by silverleaf whiteflies (Bemisia tabaci), inducing severe stunting and leaf deformation.",
+      "symptoms": [
+        "Marked upward curling and cupping of leaflets with chlorotic yellow margins",
+        "Interveinal chlorosis, reduction in leaf lamina size, and crinkled texture",
+        "Severe plant stunting with flower drop, leading to virtually zero fruit set"
+      ],
+      "culturalActions": [
+        "Install yellow sticky traps (15-20 traps/acre) uniformly across the field to monitor whitefly vectors",
+        "Erect 40-50 mesh insect-proof nylon netting around nursery seedbeds",
+        "Promptly uproot and burn virus-infected stunt plants to prevent vector transmission"
+      ],
+      "prevention": [
+        "Sow TYLCV-tolerant hybrid cultivars recommended for your agro-climatic zone",
+        "Plant border barrier crops of maize or pearl millet (3 rows) around the tomato plot",
+        "Spray botanical neem formulation (Azadirachtin 1500 ppm at 3ml/L) to deter whitefly colonization"
+      ],
+      "source": "ICAR - National Research Centre for Integrated Pest Management (NCIPM)",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    }
+  },
+  "Maize": {
+    "Healthy": {
+      "explanation": "The maize crop exhibits healthy broad leaf blades, deep green chlorophyll pigmentation, robust central midribs, intact protective husks, and uniform golden kernels.",
+      "symptoms": [
+        "Uniform green corn leaf lamina with smooth margins and erect posture",
+        "Clean central midrib without reddish streak lesions, chlorosis, or necrotic spots",
+        "Well-filled uniform ear with healthy golden yellow kernels and fresh silks"
+      ],
+      "culturalActions": [
+        "Ensure consistent irrigation during critical tasseling and silking growth stages",
+        "Split nitrogen applications (basal, knee-high, and pre-tasseling) to maximize nutrient uptake",
+        "Conduct regular field scouting to monitor ear health and beneficial insect populations"
+      ],
+      "prevention": [
+        "Sow certified hybrid maize seed with verified high germination vigor",
+        "Implement field crop rotation with leguminous pulses (gram, soybean, or moong)",
+        "Store harvested grain at safe moisture levels (below 12-14%) in sanitized, pest-proof bins"
+      ],
+      "source": "ICAR - Indian Institute of Maize Research (IIMR)",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Common Rust": {
+      "explanation": "Common Rust (Puccinia sorghi) is a foliar fungal pathogen producing cinnamon-brown powdery pustules across both upper and lower leaf surfaces.",
+      "symptoms": [
+        "Small, circular to elongated cinnamon-brown pustules (uredinia) scattered on leaves",
+        "Powdery brick-red spores released upon rupture of the leaf epidermis",
+        "Pustules turning brownish-black late in the season as resting spores (teliospores) form"
+      ],
+      "culturalActions": [
+        "Avoid excess nitrogen fertilization that promotes overly lush, susceptible foliage",
+        "Maintain recommended plant population density (60,000-65,000 plants/ha) to facilitate airflow",
+        "Irrigate in early morning so canopy surfaces dry quickly under sunlight"
+      ],
+      "prevention": [
+        "Plant rust-resistant certified hybrid maize cultivars adapted to local climate",
+        "Sow at the earliest recommended agronomic window to avoid peak late-season rust spore showers",
+        "Destroy volunteer maize stalks and perennial host grasses near field borders"
+      ],
+      "source": "ICAR - Indian Institute of Maize Research (IIMR) & PAU",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Gray Leaf Spot": {
+      "explanation": "Gray Leaf Spot (Cercospora zeae-maydis) is a damaging fungal foliar disease causing distinct rectangular tan-to-gray lesions bounded strictly by leaf veins.",
+      "symptoms": [
+        "Rectangular elongated lesions parallel to leaf veins with sharp distinct borders",
+        "Lesions turn grayish-tan under humid conditions due to fungal sporulation",
+        "Coalescence of lesions resulting in extensive foliar blighting and premature stalk dry-down"
+      ],
+      "culturalActions": [
+        "Incorporate infected crop residue through deep summer plowing to accelerate residue breakdown",
+        "Rotate fields out of maize for at least one full crop season using soybean or cotton",
+        "Scout lower leaves starting at 8-leaf vegetative stage through silking"
+      ],
+      "prevention": [
+        "Select certified hybrid varieties with moderate to high genetic resistance ratings",
+        "Avoid continuous monocropping of maize on fields with history of gray leaf spot",
+        "Ensure balanced balanced potassium fertilization to bolster leaf structural cell walls"
+      ],
+      "source": "ICAR - Directorate of Maize Research (DMR) / IIMR",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Northern Leaf Blight": {
+      "explanation": "Northern Corn Leaf Blight (Exserohilum turcicum) is a major fungal disease producing large cigar-shaped elliptical grayish-green necrotic lesions.",
+      "symptoms": [
+        "Large elliptical cigar-shaped lesions (2.5 to 15 cm long) on foliage",
+        "Lesions start grayish-green, turning tan or grayish-brown as tissue dies",
+        "Dark sooty sporulation rings visible inside lesions during humid morning hours"
+      ],
+      "culturalActions": [
+        "Chop and deeply plow maize stubble post-harvest to reduce overwintering conidia",
+        "Optimize row spacing to prevent prolonged microclimate humidity within canopy",
+        "Rogue severely blighted seedlings in early growth stages"
+      ],
+      "prevention": [
+        "Sow certified disease-tolerant maize hybrids with multi-genic resistance",
+        "Practice 2-year crop rotation with non-graminaceous crops",
+        "Ensure timely sowing according to regional university agricultural calendars"
+      ],
+      "source": "ICAR - Indian Institute of Maize Research (IIMR) Plant Pathology",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Maize Streak Virus": {
+      "explanation": "Maize Streak Virus (MSV) is a leafhopper-vectored (Cicadulina spp.) mastrevirus causing continuous chlorotic yellow-white streaks parallel to leaf veins.",
+      "symptoms": [
+        "Tiny round chlorotic spots developing into continuous narrow streaks along veins",
+        "Streaks appear uniformly on all leaves emerging after the point of infection",
+        "Severe stunting, shortened internodes, and undersized or barren ears"
+      ],
+      "culturalActions": [
+        "Maintain strict weed-free buffer zones around fields to eliminate leafhopper refuges",
+        "Avoid staggered planting dates within the same locality to break vector breeding cycles",
+        "Rogue and bury severely stunted symptomatic plants during early vegetative stages"
+      ],
+      "prevention": [
+        "Sow MSV-resistant hybrid seed lots",
+        "Treat seeds prior to sowing with certified registered seed protectants",
+        "Coordinate synchronized community sowing dates across the village cluster"
+      ],
+      "source": "ICAR - National Research Centre for Integrated Pest Management (NCIPM)",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Fall Armyworm": {
+      "explanation": "Fall Armyworm (Spodoptera frugiperda) is an invasive noctuid pest whose larvae voraciously feed within the maize leaf whorl, shredding foliage and boring into developing ears.",
+      "symptoms": [
+        "Pinholes and irregular window-pane feeding scratches on young whorl leaves",
+        "Severe ragged leaf tearing and abundant moist sawdust-like fecal frass in the whorl",
+        "Larva possesses inverted white 'Y' mark on head and 4 raised dark spots arranged in square on 8th abdominal segment"
+      ],
+      "culturalActions": [
+        "Conduct weekly whorl inspection starting 7 days after germination",
+        "Apply neem seed kernel extract (NSKE 5%) or sand-lime mixture into whorls to suffocate young instars",
+        "Install pheromone traps (5 traps/acre) across field margins for early moth detection"
+      ],
+      "prevention": [
+        "Intercrop maize with pigeonpea, cowpea, or desmodium as push-pull pest deterrents",
+        "Conserve predatory earwigs, parasitoid wasps, and entomopathogenic fungi in field",
+        "Deep summer plow to expose pupae to predatory birds and intense solar radiation"
+      ],
+      "source": "ICAR - National Bureau of Agricultural Insect Resources (NBAIR) & IIMR",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    }
+  },
+  "Rice": {
+    "Healthy": {
+      "explanation": "The paddy crop shows vibrant deep green upright tillers, clean leaf blades, healthy root aeration, and zero symptoms of blast, sheath rot, or bacterial blight.",
+      "symptoms": [
+        "Uniform green erect leaf blades with smooth leaf margins",
+        "Clean leaf sheaths and collar regions without lesions or water-soaking",
+        "Healthy root system with reddish-brown oxidation halos indicating active oxygen transport"
+      ],
+      "culturalActions": [
+        "Follow Alternate Wetting and Drying (AWD) irrigation to conserve water and promote root vigor",
+        "Apply recommended dose of nitrogen split into 3-4 stages matching tiller formation and panicle initiation",
+        "Maintain clean bunds and weed-free field borders"
+      ],
+      "prevention": [
+        "Use certified paddy seed with germination vigor > 85%",
+        "Adopt System of Rice Intensification (SRI) spacing (25 cm × 25 cm) for robust tillering",
+        "Incorporate green manure (Dhaincha / Sunnhemp) before transplanting"
+      ],
+      "source": "ICAR - National Rice Research Institute (NRRI), Cuttack",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Bacterial Leaf Blight": {
+      "explanation": "Bacterial Leaf Blight (Xanthomonas oryzae pv. oryzae) is a major bacterial disease causing water-soaked to yellowish-white undulating wavy stripes along leaf margins.",
+      "symptoms": [
+        "Water-soaked lesions starting at leaf tips and wavy undulating margins",
+        "Lesions turn milky-white to straw-colored with translucent wavy margins",
+        "Bacterial ooze droplets visible on young lesions during early humid morning hours"
+      ],
+      "culturalActions": [
+        "Drain standing water from infected fields and suspend irrigation for 2-3 days",
+        "Withhold nitrogen top-dressing immediately; apply potassium to strengthen cell walls",
+        "Avoid handling or working in flooded fields while foliage is wet"
+      ],
+      "prevention": [
+        "Cultivate BLB-resistant varieties (e.g., Improved Samba Mahsuri, Swarna-Sub1 where recommended)",
+        "Soak seeds in hot water (52-54°C for 10 minutes) or certified bactericidal solution",
+        "Clip seedling leaf tips during transplanting only with sanitized implements"
+      ],
+      "source": "ICAR - National Rice Research Institute (NRRI) & Indian Institute of Rice Research (IIRR)",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Blast": {
+      "explanation": "Rice Blast (Magnaporthe oryzae) is an airborne fungal disease producing characteristic spindle-shaped eye-like lesions on leaves, nodes, and neck joints of panicles.",
+      "symptoms": [
+        "Spindle-shaped or elliptical lesions with grayish-white centers and dark brown margins",
+        "Lesions enlarge and coalesce, causing entire leaf blades to wither and dry",
+        "Neck blast causes blackening of panicle base, resulting in incomplete grain filling (chaffy grains)"
+      ],
+      "culturalActions": [
+        "Avoid excessive nitrogen fertilization which creates soft, succulent vulnerable tissue",
+        "Keep field bunds clear of grassy weed alternate hosts like Echinochloa",
+        "Maintain continuous shallow flooding (2-5 cm) to suppress airborne spore inoculation"
+      ],
+      "prevention": [
+        "Sow certified blast-resistant cultivars adapted to your agro-climatic region",
+        "Treat seed with Trichoderma harzianum or certified seed dressing formulation",
+        "Avoid late transplanting during peak humid monsoon overcast periods"
+      ],
+      "source": "ICAR - Indian Institute of Rice Research (IIRR), Hyderabad",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Brown Spot": {
+      "explanation": "Brown Spot (Bipolaris oryzae) is a fungal disease strongly associated with poor soil fertility, zinc deficiency, or drought stress, causing circular oval brown spots.",
+      "symptoms": [
+        "Numerous small circular or oval sesame seed-like brown spots evenly across leaf blades",
+        "Mature spots feature a gray or light-brown center surrounded by a reddish-brown margin",
+        "Discoloration and black spotting of glumes and grain hulls"
+      ],
+      "culturalActions": [
+        "Correct underlying soil nutrient imbalances by applying balanced N-P-K along with Zinc Sulfate (25 kg/ha)",
+        "Maintain adequate irrigation; avoid moisture stress during vegetative growth",
+        "Apply decomposed farmyard manure (FYM at 10-12 t/ha) to improve soil organic carbon"
+      ],
+      "prevention": [
+        "Conduct seed treatment with hot water (54°C for 15 min) or certified biological inoculants",
+        "Test soil fertility before transplanting to ensure adequate potash and zinc availability",
+        "Burn or deeply incorporate stubble from severely spotted fields"
+      ],
+      "source": "ICAR - NRRI Cuttack & CRIDA",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Tungro": {
+      "explanation": "Rice Tungro Disease is caused by a joint viral infection (RTBV & RTSV) transmitted by green leafhoppers (Nephotettix virescens), causing intense stunting and orange-yellow discoloration.",
+      "symptoms": [
+        "Leaves turn yellow to bright orange starting from leaf tips and margins",
+        "Young leaves mottled with pale green to white interveinal striping",
+        "Marked plant stunting, reduced tillering, and delayed panicle emergence"
+      ],
+      "culturalActions": [
+        "Monitor green leafhopper populations using light traps and sweep nets",
+        "Rogue and destroy infected hills early in nursery and tillering stages",
+        "Synchronize planting across the village to minimize vector migration windows"
+      ],
+      "prevention": [
+        "Sow tungro-resistant or GLH-resistant cultivars (e.g. Vikramarya, Radha)",
+        "Maintain clean bunds free of weed grass alternate hosts (Leersia hexandra)",
+        "Spray registered botanical neem formulation if vector density crosses economic threshold"
+      ],
+      "source": "ICAR - Indian Institute of Rice Research (IIRR)",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    }
+  },
+  "Wheat": {
+    "Healthy": {
+      "explanation": "The wheat crop displays vigorous upright tillering, clean lanceolate leaf blades, sturdy hollow culms, healthy emerging spikelets, and absence of rust or mildew pustules.",
+      "symptoms": [
+        "Uniform glaucous green leaf blades with clean margins",
+        "Sturdy erect tillers with intact auricles and ligules",
+        "Uniform earhead emergence with well-developed spikelets"
+      ],
+      "culturalActions": [
+        "Provide critical crown root initiation (CRI) irrigation 20-25 days after sowing",
+        "Apply balanced nitrogen splitting (1/2 basal, 1/4 at CRI, 1/4 at late tillering)",
+        "Scout field twice weekly during flowering and grain-filling stages"
+      ],
+      "prevention": [
+        "Sow certified rust-resistant wheat varieties (e.g. HD-2967, HD-3086, DBW series)",
+        "Ensure timely sowing (first fortnight of November for North-Western Plains Zone)",
+        "Maintain optimal seed rate (100 kg/ha for timely sown irrigated conditions)"
+      ],
+      "source": "ICAR - Indian Institute of Wheat and Barley Research (IIWBR), Karnal",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Brown Rust": {
+      "explanation": "Brown / Leaf Rust (Puccinia triticina) produces small round to oval orange-brown powdery pustules scattered randomly across the upper leaf surface.",
+      "symptoms": [
+        "Small circular to oval orange-brown pustules distributed randomly on leaf blades",
+        "Orange powder rubs off on fingers; pustules rarely coalesce into linear stripes",
+        "Severely infected leaves turn yellow, senesce prematurely, and reduce grain weight"
+      ],
+      "culturalActions": [
+        "Avoid late sowing which exposes crop to high spring temperatures favored by brown rust",
+        "Maintain balanced potash fertilization to increase leaf epidermal resistance",
+        "Irrigate judiciously during boot and flowering stages"
+      ],
+      "prevention": [
+        "Cultivate certified multi-gene rust-resistant varieties recommended by IIWBR",
+        "Eradicate alternate hosts and wild self-sown wheat volunteers",
+        "Follow regional surveillance advisories issued by wheat rust monitoring stations"
+      ],
+      "source": "ICAR - IIWBR Karnal Wheat Rust Monitoring Station, Flowerdale",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Yellow Rust": {
+      "explanation": "Yellow / Stripe Rust (Puccinia striiformis) thrives in cool humid conditions, producing bright lemon-yellow pustules arranged in distinct narrow linear stripes.",
+      "symptoms": [
+        "Small bright yellow to orange-yellow pustules arranged in parallel linear stripes",
+        "Lesions resemble narrow yellow ribbons running down the leaf blade and glumes",
+        "Chlorotic and necrotic stripes remain after spores discharge; severe shriveling of grains"
+      ],
+      "culturalActions": [
+        "Inspect cool, shaded, or low-lying field corners where moisture lingers in December-January",
+        "Cease overhead sprinkler irrigation during active yellow rust alerts",
+        "Report initial focal patches to local Krishi Vigyan Kendra (KVK) extension officers"
+      ],
+      "prevention": [
+        "Sow verified stripe-rust resistant cultivars recommended for sub-montane/plains zones",
+        "Avoid growing highly susceptible older varieties",
+        "Ensure seed treatment with certified registered fungicides if recommended locally"
+      ],
+      "source": "ICAR - IIWBR Karnal & PAU Ludhiana",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Powdery Mildew": {
+      "explanation": "Powdery Mildew (Blumeria graminis f. sp. tritici) causes fluffy white to gray powdery fungal patches across lower leaves and stems, reducing photosynthetic area.",
+      "symptoms": [
+        "White fluffy powdery fungal colonies on leaf blades, sheaths, and lower stems",
+        "Patches enlarge and turn dull gray with tiny black speck-like fruiting bodies (cleistothecia)",
+        "Underlying leaf tissue turns chlorotic yellow and desiccates prematurely"
+      ],
+      "culturalActions": [
+        "Avoid overly dense plant canopies and excessive nitrogenous fertilization",
+        "Promote sun penetration and air circulation across the crop canopy",
+        "Scout shaded field perimeters adjoining trees or windbreaks"
+      ],
+      "prevention": [
+        "Sow certified tolerant cultivars with open erect canopy architecture",
+        "Follow recommended seed rate to avoid dense crowding",
+        "Rotate fields out of susceptible cereals"
+      ],
+      "source": "ICAR - IIWBR Karnal",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Septoria": {
+      "explanation": "Septoria Leaf Blotch (Zymoseptoria tritici) causes irregular tan to brown blotches studded with tiny black pycnidia speckles, progressing from bottom foliage upward.",
+      "symptoms": [
+        "Irregular oval to rectangular tan blotches on leaf blades",
+        "Prominent tiny black pinhead-sized dots (pycnidia) embedded inside dead lesions",
+        "Extensive blighting of flag leaf under extended rainy overcast spells"
+      ],
+      "culturalActions": [
+        "Plow under infected crop residues immediately post-harvest",
+        "Avoid excessive nitrogen that stimulates dense lower leaf moisture retention",
+        "Monitor flag leaf protection carefully from boot stage through grain fill"
+      ],
+      "prevention": [
+        "Adopt 2-year crop rotation with non-cereal crops (mustard, chickpea, potato)",
+        "Use certified clean pathogen-free seed lots",
+        "Plant certified resistant varieties suited to irrigated high-yield tracts"
+      ],
+      "source": "ICAR - IIWBR Karnal & IARI",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    }
+  },
+  "Cotton": {
+    "Healthy": {
+      "explanation": "The cotton crop exhibits robust vegetative branching, deep green palmately lobed leaves, intact leaf margins, healthy squares/bolls, and no vascular wilting.",
+      "symptoms": [
+        "Vibrant green leaves with clear venation and absence of crinkling",
+        "Uniform square and boll development with no premature shedding",
+        "Firm erect main stem and healthy sympodial fruiting branches"
+      ],
+      "culturalActions": [
+        "Maintain regular furrow or drip irrigation; avoid waterlogging in root zone",
+        "Monitor crop weekly using yellow and blue sticky traps for sucking pests",
+        "Apply balanced N-P-K with micronutrient foliar spray (Magnesium and Boron) during boll development"
+      ],
+      "prevention": [
+        "Plant certified Bt cotton hybrids adapted to local rainfed or irrigated conditions",
+        "Adopt recommended plant spacing (90 cm × 60 cm or 120 cm × 45 cm)",
+        "Maintain clean bunds free of weed hosts (Abutilon, Xanthium)"
+      ],
+      "source": "ICAR - Central Institute for Cotton Research (CICR), Nagpur",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Bacterial Blight": {
+      "explanation": "Bacterial Blight / Angular Leaf Spot (Xanthomonas citri pv. malvacearum) produces distinct angular water-soaked lesions bounded by leaf veinlets.",
+      "symptoms": [
+        "Small angular water-soaked lesions bounded strictly by leaf veins",
+        "Lesions turn reddish-brown to black on both leaf surfaces",
+        "Black arm symptom on branches and water-soaked dark sunken spots on bolls"
+      ],
+      "culturalActions": [
+        "Rogue and burn severely infected plant stalks and diseased seedlings",
+        "Avoid overhead sprinkler irrigation that splashes bacterial cells across rows",
+        "Clean farm tools with certified disinfectant between operations"
+      ],
+      "prevention": [
+        "Delint and treat planting seeds with concentrated acid and certified bactericide",
+        "Sow certified blight-tolerant cotton hybrids",
+        "Destroy cotton stalks post-harvest rather than storing them in field borders"
+      ],
+      "source": "ICAR - CICR Nagpur & PAU Ludhiana",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Curl Virus": {
+      "explanation": "Cotton Leaf Curl Virus (CLCuV) is a devastating begomovirus vectored by whiteflies (Bemisia tabaci), producing upward leaf curling, enations, and thickened veins.",
+      "symptoms": [
+        "Upward or downward cupping and curling of leaf margins",
+        "Thickening of primary and secondary leaf veins on undersides",
+        "Small cup-shaped leaf-like outgrowths (enations) on leaf undersides; severe plant stunting"
+      ],
+      "culturalActions": [
+        "Install yellow sticky traps (15-20 traps/acre) to track whitefly density",
+        "Eradicate weed hosts (Sida, Abutilon, Parthenium) around fields",
+        "Rogue and bury severely infected stunt plants during early 60 days of growth"
+      ],
+      "prevention": [
+        "Plant certified CLCuD-tolerant hybrid varieties recommended for your state",
+        "Avoid planting near alternate host crops like okra or tobacco",
+        "Spray registered botanical neem formulation (1500 ppm at 3ml/L) to suppress whitefly colonization"
+      ],
+      "source": "ICAR - CICR Regional Station, Sirsa & NCIPM",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Fusarium Wilt": {
+      "explanation": "Fusarium Wilt (Fusarium oxysporum f. sp. vasinfectum) is a soil-borne vascular wilt causing yellowing, drooping, and internal dark vascular ring browning.",
+      "symptoms": [
+        "Interveinal chlorosis and yellowing starting on lower leaves, spreading upward",
+        "Sudden wilting and drooping of foliage during hot sunny afternoons",
+        "Cutting the lower stem reveals dark brown to black vascular discoloration"
+      ],
+      "culturalActions": [
+        "Uproot and burn wilted plants with roots to prevent chlamydospore accumulation in soil",
+        "Improve field drainage; avoid standing water in heavy black clay soils",
+        "Apply Trichoderma viride enriched farmyard manure (2.5 kg Trichoderma in 250 kg FYM/acre)"
+      ],
+      "prevention": [
+        "Plant certified wilt-resistant cotton cultivars",
+        "Enforce a 3 to 4-year crop rotation with non-host crops like sorghum or millets",
+        "Avoid using tools from known wilt-infested plots without thorough sanitization"
+      ],
+      "source": "ICAR - Central Institute for Cotton Research (CICR)",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Target Spot": {
+      "explanation": "Target Spot (Corynespora cassiicola) is a foliar fungal pathogen producing large circular lesions with dark brown concentric rings, often causing severe lower canopy defoliation.",
+      "symptoms": [
+        "Circular to irregular brown lesions with prominent concentric target rings",
+        "Lesions develop rapidly in the dense lower canopy during humid warm periods",
+        "Severe infection causes premature defoliation of lower and middle leaves"
+      ],
+      "culturalActions": [
+        "Promote canopy air circulation by avoiding excessive plant density and excessive nitrogen",
+        "Scout the lower third of the canopy during boll-opening stage",
+        "Remove fallen severely infected leaves where practical"
+      ],
+      "prevention": [
+        "Select varieties with open canopy architecture",
+        "Follow recommended row spacing (minimum 90 cm)",
+        "Rotate fields out of susceptible host crops"
+      ],
+      "source": "ICAR - CICR Nagpur",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    }
+  },
+  "Soybean": {
+    "Healthy": {
+      "explanation": "The soybean crop displays healthy trifoliate leaves, uniform dark green foliage, vigorous nodulation on roots, and clean pods free of blights or rust spots.",
+      "symptoms": [
+        "Uniform green trifoliate leaves with smooth margins and no yellowing",
+        "Vigorous branching with healthy flower clusters and pod setting",
+        "Pink active nitrogen-fixing nodules on primary and secondary root system"
+      ],
+      "culturalActions": [
+        "Maintain adequate soil moisture during flowering and pod development stages",
+        "Inoculate seeds with Rhizobium japonicum and PSB before sowing for optimal nodulation",
+        "Keep the field weed-free during the first 30-45 critical days"
+      ],
+      "prevention": [
+        "Sow certified soybean seed with verified germination > 70%",
+        "Adopt broad bed furrow (BBF) or ridge-and-furrow planting to drain excess monsoon water",
+        "Rotate soybean with wheat, gram, or mustard in rabi season"
+      ],
+      "source": "ICAR - Indian Institute of Soybean Research (IISR), Indore",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Cercospora Leaf Blight": {
+      "explanation": "Cercospora Leaf Blight (Cercospora kikuchii) produces reddish-purple to bronze discoloration on upper canopy foliage exposed to sunlight.",
+      "symptoms": [
+        "Upper canopy leaves develop reddish-purple to bronze leathery appearance",
+        "Leaves become thickened, crinkled, and drop prematurely",
+        "Purple seed stain visible on harvested soybean seeds"
+      ],
+      "culturalActions": [
+        "Deep plow crop residues immediately following harvest to bury fungal inocula",
+        "Avoid using purple-stained seeds from diseased plots for subsequent sowing",
+        "Ensure balanced balanced potassium fertilization"
+      ],
+      "prevention": [
+        "Sow certified tolerant varieties recommended by IISR Indore",
+        "Treat seeds prior to sowing with certified biological Trichoderma inoculants",
+        "Practice crop rotation with non-leguminous cereals"
+      ],
+      "source": "ICAR - IISR Indore & JNKVV Jabalpur",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Frogeye Leaf Spot": {
+      "explanation": "Frogeye Leaf Spot (Cercospora sojina) is characterized by small circular to angular spots with gray to tan centers surrounded by narrow dark reddish-brown borders.",
+      "symptoms": [
+        "Small circular to angular lesions with tan or gray centers and reddish-brown borders",
+        "Spots resemble a frog's eye, primarily on the upper surface of leaves",
+        "Lesions may coalesce to form large blighted areas, leading to premature leaf drop"
+      ],
+      "culturalActions": [
+        "Inspect canopy regularly during warm, humid monsoon spells",
+        "Incorporate stubble and residue into the soil post-harvest",
+        "Avoid continuous monocropping of soybean on infected parcels"
+      ],
+      "prevention": [
+        "Plant certified resistant soybean cultivars",
+        "Use certified pathogen-free seeds tested for seed-borne fungal pathogens",
+        "Maintain 2-year crop rotation with maize or sorghum"
+      ],
+      "source": "ICAR - Indian Institute of Soybean Research (IISR)",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Rust": {
+      "explanation": "Soybean Rust (Phakopsora pachyrhizi) is an aggressive foliar fungal disease producing tiny chlorotic flecks that rapidly develop into raised brown pustules on leaf undersides.",
+      "symptoms": [
+        "Tiny chlorotic flecks developing into small raised reddish-brown pustules on leaf undersides",
+        "Spotted leaves turn yellow, appear scorched, and defoliate rapidly within days",
+        "Premature defoliation drastically curtails pod filling and yield"
+      ],
+      "culturalActions": [
+        "Conduct intense scouting on lower leaves starting at flowering stage in high-risk zones",
+        "Report early focal outbreaks to local district agricultural officers",
+        "Ensure adequate row spacing to facilitate air movement"
+      ],
+      "prevention": [
+        "Sow early-maturing certified varieties to escape late-season spore showers",
+        "Monitor regional rust alerts published by ICAR-IISR Indore",
+        "Apply recommended preventive bio-formulations upon first detection in district"
+      ],
+      "source": "ICAR - IISR Indore & UAS Dharwad",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Yellow Mosaic": {
+      "explanation": "Soybean Yellow Mosaic Virus is a begomovirus vectored by whiteflies (Bemisia tabaci), creating striking alternating yellow and green mosaic patterns on foliage.",
+      "symptoms": [
+        "Bright yellow mosaic patches interspersed with green areas on leaf blades",
+        "Affected leaves become puckered, smaller in size, and leathery",
+        "Flowering is severely delayed and pods produced are few, small, and contain shriveled seeds"
+      ],
+      "culturalActions": [
+        "Install yellow sticky traps (15 traps/acre) uniformly across the field to capture whiteflies",
+        "Rogue and destroy infected seedlings in the first 30 days of crop growth",
+        "Maintain weed-free field borders to eliminate alternate hosts (Croton, Parthenium)"
+      ],
+      "prevention": [
+        "Sow certified YMV-resistant cultivars (e.g., JS 20-34, JS 20-29, NRC 86 where recommended)",
+        "Treat seeds prior to sowing with certified registered seed protectants",
+        "Avoid staggered sowing dates across neighboring plots"
+      ],
+      "source": "ICAR - IISR Indore & RVSKVV Gwalior",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    }
+  },
+  "Sugarcane": {
+    "Healthy": {
+      "explanation": "The sugarcane crop exhibits robust stalk development, vibrant green leaf blades with prominent clean midribs, uniform tillering, and zero signs of red rot or mosaic streaks.",
+      "symptoms": [
+        "Uniform deep green leaf lamina with intact serrated margins",
+        "Clean central midrib with no reddish discoloration or pith breakdown",
+        "Sturdy erect cane stalks with healthy node and internode elongation"
+      ],
+      "culturalActions": [
+        "Maintain scheduled nitrogen and potassium fertigation matching grand growth period",
+        "Ensure effective drainage in furrows to prevent standing water during monsoon",
+        "Conduct routine bi-weekly leaf inspections and trash mulching"
+      ],
+      "prevention": [
+        "Use certified disease-free 2-budded or 3-budded setts from registered nurseries",
+        "Practice proper crop rotation with leguminous green manure (sunnhemp / dhaincha)",
+        "Adopt wider row spacing (120-150 cm) for single/paired row planting"
+      ],
+      "source": "ICAR - Indian Institute of Sugarcane Research (IISR), Lucknow & SBI Coimbatore",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Red Rot": {
+      "explanation": "Red Rot (Colletotrichum falcatum) is the most destructive disease of sugarcane in India, causing internal stalk reddening, white transverse cross-patches, and sudden stool drying.",
+      "symptoms": [
+        "Elongated reddish lesions on the upper leaf midrib",
+        "Third and fourth leaves wither and turn yellow-red from tips downward",
+        "Splitting the cane stalk reveals dark red internal tissues with distinctive white cross-bands and alcoholic odor"
+      ],
+      "culturalActions": [
+        "Immediately uproot and burn all affected clumps along with root systems",
+        "Do not ratoon fields infected with red rot; prepare land for crop rotation",
+        "Avoid flowing irrigation water from infected blocks into healthy cane blocks"
+      ],
+      "prevention": [
+        "Plant certified red-rot resistant varieties recommended for your zone (e.g., Co 86032, Co 0238 where suitable)",
+        "Treat seed setts with moist hot air therapy (MHAT at 54°C for 2.5 hours) or biological Trichoderma soak",
+        "Follow a strict 2 to 3-year crop rotation with paddy, maize, or legumes"
+      ],
+      "source": "ICAR - Sugarcane Breeding Institute (SBI), Coimbatore & IISR Lucknow",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Rust": {
+      "explanation": "Sugarcane Rust (Puccinia melanocephala) produces small elongated chlorotic spots that erupt into reddish-brown powdery pustules along leaf blades.",
+      "symptoms": [
+        "Small yellowish elongated spots developing into reddish-brown pustules on both leaf surfaces",
+        "Pustules rupture releasing masses of orange-brown urediniospores",
+        "Premature drying and scorching of leaves under heavy infestation"
+      ],
+      "culturalActions": [
+        "Remove lower dry senescent leaves (detrashing) to enhance airflow and reduce humidity",
+        "Avoid excessive nitrogen fertilization that stimulates overly succulent foliage",
+        "Scout fields weekly during warm humid weather"
+      ],
+      "prevention": [
+        "Cultivate certified rust-resistant sugarcane varieties",
+        "Maintain optimal plant density and row spacing to ensure good canopy ventilation",
+        "Adopt drip fertigation to minimize canopy wetting"
+      ],
+      "source": "ICAR - Sugarcane Breeding Institute (SBI), Coimbatore",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Mosaic": {
+      "explanation": "Sugarcane Mosaic Virus (SCMV) causes contrasting light green or yellow chlorotic streaks across leaf blades, reducing photosynthesis and stalk weight.",
+      "symptoms": [
+        "Contrasting light green or yellow chlorotic streaks on green leaf lamina",
+        "Mottled pattern more prominent on young expanding leaves",
+        "Stunted stool growth and reduced cane diameter in severe infections"
+      ],
+      "culturalActions": [
+        "Rogue out and destroy infected young plants early in the season",
+        "Monitor and control aphid vectors using sticky traps and field sanitation",
+        "Disinfect harvesting knives between fields"
+      ],
+      "prevention": [
+        "Plant virus-free tissue culture seed setts",
+        "Keep field borders clean of wild grassy weeds that host SCMV",
+        "Plant certified disease-free nursery seed cane"
+      ],
+      "source": "ICAR - IISR Lucknow & TNAU",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Yellow Disease": {
+      "explanation": "Sugarcane Yellow Leaf Disease (SCYLV) causes intense yellowing of the leaf midrib and lamina, severely impairing sucrose accumulation and yield.",
+      "symptoms": [
+        "Bright yellowing of the lower leaf midrib on the 3rd to 6th leaves",
+        "Yellowing spreading sideways into the leaf lamina",
+        "Stalk shortening, apical leaf bunching, and premature senescence in advanced stages"
+      ],
+      "culturalActions": [
+        "Remove and burn symptomatic stools to curb aphid-mediated transmission",
+        "Apply balanced N-P-K nutrients to support plant immunity",
+        "Maintain clean field borders free of alternate host grasses"
+      ],
+      "prevention": [
+        "Use SCYLV-certified seed material from nursery plots",
+        "Practice strict weed control along field margins",
+        "Adopt tissue-culture derived certified planting materials"
+      ],
+      "source": "ICAR - SBI Coimbatore & IISR Lucknow",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    }
+  },
+  "Chickpea": {
+    "Healthy": {
+      "explanation": "The chickpea (gram) crop shows vigorous branching, uniform pinnate green leaflets, healthy root system with active pink nodules, and clean pods free of wilt or blight.",
+      "symptoms": [
+        "Uniform green pinnate leaflets with intact glandular hairs",
+        "Healthy erect bushy branching with active flower buds and pod filling",
+        "Healthy root system with prominent nitrogen-fixing Rhizobium nodules"
+      ],
+      "culturalActions": [
+        "Provide light irrigation at pre-flowering and pod-development stages if winter rainfall is absent",
+        "Inoculate seeds with Mesorhizobium ciceri and PSB culture before sowing",
+        "Maintain proper weed management during the first 30-40 days"
+      ],
+      "prevention": [
+        "Sow certified disease-resistant chickpea varieties (e.g., JG-11, JAKI 9218, Digvijay)",
+        "Adopt broad bed and furrow (BBF) or ridge planting to prevent waterlogging",
+        "Rotate chickpea with sorghum, pearl millet, or maize in kharif season"
+      ],
+      "source": "ICAR - Indian Institute of Pulses Research (IIPR), Kanpur",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Ascochyta Blight": {
+      "explanation": "Ascochyta Blight (Ascochyta rabiei) is an aggressive foliar fungal disease forming circular necrotic lesions with concentric rings of tiny black pycnidia on leaves, stems, and pods.",
+      "symptoms": [
+        "Circular to elongated necrotic lesions on leaves, stems, and pods",
+        "Concentric rings of tiny black pinhead-like fruiting bodies (pycnidia) inside lesions",
+        "Stem girdling causing branches to snap and break over easily in the wind"
+      ],
+      "culturalActions": [
+        "Collect and burn crop debris immediately following harvest to destroy perithecia",
+        "Avoid working in fields when morning dew or rain makes foliage wet",
+        "Maintain wide row spacing to allow sunlight penetration"
+      ],
+      "prevention": [
+        "Sow certified Ascochyta-resistant cultivars recommended by IIPR Kanpur",
+        "Treat seed with certified biological or registered seed-dressing fungicides",
+        "Enforce 3-year crop rotation with non-leguminous cereals"
+      ],
+      "source": "ICAR - IIPR Kanpur & ICRISAT",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Fusarium Wilt": {
+      "explanation": "Fusarium Wilt (Fusarium oxysporum f. sp. ciceris) is a destructive soil-borne vascular wilt causing sudden drooping of leaves and internal dark vascular browning of the root/stem.",
+      "symptoms": [
+        "Drooping of petioles and rachis within 3-4 weeks after sowing or at flowering stage",
+        "Foliage turns dull pale green before drying completely without yellowing",
+        "Splitting the taproot longitudinally reveals dark brown to black internal vascular discoloration"
+      ],
+      "culturalActions": [
+        "Uproot and burn wilted plants to prevent chlamydospore proliferation in the soil",
+        "Deep summer plowing to expose resting spores to hot summer sun",
+        "Apply Trichoderma viride enriched compost (5 kg Trichoderma in 500 kg FYM/ha) during final land preparation"
+      ],
+      "prevention": [
+        "Sow certified wilt-resistant chickpea varieties (e.g. JG-14, JG-315, KWR-108)",
+        "Treat seeds prior to sowing with Trichoderma harzianum (4-5 g/kg seed)",
+        "Practice multi-year crop rotation with wheat, mustard, or sorghum"
+      ],
+      "source": "ICAR - Indian Institute of Pulses Research (IIPR) & ICRISAT",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Dry Root Rot": {
+      "explanation": "Dry Root Rot (Rhizoctonia bataticola / Macrophomina phaseolina) is a devastating fungal root rot emerging under moisture stress and high temperatures (>30°C).",
+      "symptoms": [
+        "Whole plant withers and dries up suddenly; leaves turn yellowish-gray or straw-colored",
+        "Taproot becomes brittle, blackened, completely dry, and devoid of secondary rootlets",
+        "Splitting the bark reveals dark ash-gray fungal sclerotial bodies embedded in the wood"
+      ],
+      "culturalActions": [
+        "Provide light irrigation during pod development to relieve severe drought stress",
+        "Avoid water stress and high soil temperature by applying light organic straw mulch",
+        "Maintain soil organic matter by adding compost or well-decomposed FYM"
+      ],
+      "prevention": [
+        "Sow certified tolerant varieties adapted to rainfed conditions",
+        "Seed treatment with Trichoderma viride or certified bio-fungicide formulations",
+        "Schedule sowing early to ensure pod filling completes before severe spring heat"
+      ],
+      "source": "ICAR - IIPR Kanpur & ICRISAT Pulses Program",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Stunt Virus": {
+      "explanation": "Chickpea Stunt Disease is caused by luteoviruses transmitted by aphids (Aphis craccivora), causing shortened internodes, bushy appearance, and reddish-brown foliage.",
+      "symptoms": [
+        "Severe shortening of internodes giving the plant a distinctive stunted bushy appearance",
+        "Leaflets turn yellow-brown, orange, or reddish-brown and become thickened and brittle",
+        "Phloem browning visible as a dark ring when the collar region is sliced transversely"
+      ],
+      "culturalActions": [
+        "Rogue and destroy stunted plants in the early vegetative stage",
+        "Monitor and control aphid populations using yellow sticky traps",
+        "Maintain clean bunds free of weed hosts (Medicago, Melilotus)"
+      ],
+      "prevention": [
+        "Sow certified tolerant chickpea cultivars",
+        "Adopt optimum plant density to avoid sparse patchy stands that attract aphid vectors",
+        "Spray registered botanical neem extract (Azadirachtin 1500 ppm at 3ml/L) if aphid colonies form"
+      ],
+      "source": "ICAR - IIPR Kanpur & ICRISAT",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    }
+  },
+  "Onion": {
+    "Healthy": {
+      "explanation": "Onion foliage exhibits healthy erect tubular leaves with uniform bluish-green waxy sheen, vigorous bulb swelling, and no neck rotting or foliar flecking.",
+      "symptoms": [
+        "Erect tubular leaves with smooth waxy cuticle",
+        "Absence of purple lesions, sunken spots, or downy mold",
+        "Firm, tight neck and uniform bulb expansion"
+      ],
+      "culturalActions": [
+        "Maintain raised bed planting to prevent water stagnation around bulb necks",
+        "Cease irrigation 10-15 days prior to harvesting to promote neck closure and curing",
+        "Ensure balanced potash application to enhance storage keeping quality"
+      ],
+      "prevention": [
+        "Use certified seeds of adapted varieties (Bhima Super, Bhima Red, Bhima Kiran)",
+        "Follow crop rotation with non-allium crops like maize, sugarcane, or soybean",
+        "Dip seedlings in Trichoderma viride suspension before transplanting"
+      ],
+      "source": "ICAR - Directorate of Onion and Garlic Research (DOGR), Rajgurunagar, Pune",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Purple Blotch": {
+      "explanation": "Purple Blotch (Alternaria porri) is a serious fungal disease prevalent in Maharashtra during warm humid weather, producing sunken purple-centered lesions on leaves and seed stalks.",
+      "symptoms": [
+        "Small water-soaked lesions that enlarge into sunken elliptic spots with purplish-brown centers",
+        "Concentric dark and light zones surrounded by a chlorotic yellow halo",
+        "Leaves break over at the point of lesion development and wither"
+      ],
+      "culturalActions": [
+        "Rogue out severely spotted foliage and avoid overhead sprinkler irrigation",
+        "Destroy all volunteer allium weeds and field trash post-harvest",
+        "Provide wide row spacing for canopy ventilation"
+      ],
+      "prevention": [
+        "Apply certified seed treatment using thiram or carbendazim at 2g/kg seed",
+        "Spray bio-fungicide Pseudomonas fluorescens at 5g/L at first appearance of spots",
+        "Follow 3-year crop rotation avoiding garlic and leeks"
+      ],
+      "source": "ICAR - DOGR Pune & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Stemphylium Blight": {
+      "explanation": "Stemphylium Leaf Blight (Stemphylium vesicarium) causes yellow-to-pale-orange oval flecks on outer leaves that coalesce into severe foliar blighting.",
+      "symptoms": [
+        "Small yellowish-white flecks that rapidly expand into elongated spindle-shaped spots",
+        "Lesions turn olive-brown to dark brown as fungal spores develop",
+        "Complete drying of tops resulting in premature defoliation and undersized bulbs"
+      ],
+      "culturalActions": [
+        "Avoid excessive nitrogen fertilization which produces soft, susceptible succulent foliage",
+        "Provide deep drainage channels to prevent soil saturation",
+        "Collect and burn infected onion tops following harvest"
+      ],
+      "prevention": [
+        "Adopt wider plant spacing (15 cm x 10 cm) on raised beds",
+        "Foliar spray of neem seed kernel extract (NSKE 5%) as preventive measure",
+        "Rotate with pulses or cereals"
+      ],
+      "source": "ICAR - DOGR Pune",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Basal Rot": {
+      "explanation": "Fusarium Basal Rot (Fusarium oxysporum f. sp. cepae) attacks the onion root plate and bulb base, causing root dieback, water-soaked brown decay, and storage rot.",
+      "symptoms": [
+        "Yellowing and progressive backward dieback of leaves starting from tips",
+        "Roots rot, turn dark brown to pinkish, and detach easily from the stem plate",
+        "Basal portion of the bulb softens and decays with whitish mycelial growth"
+      ],
+      "culturalActions": [
+        "Carefully sort and discard all wounded, bruised, or discolored bulbs before storage",
+        "Ensure prompt field curing under well-ventilated sheds",
+        "Avoid cultivating onion in fields with known basal rot history"
+      ],
+      "prevention": [
+        "Soil application of Trichoderma harzianum enriched FYM (2.5 kg/ton) prior to transplanting",
+        "Solarize nursery beds with clear polythene sheets during summer months",
+        "Follow a strict 4-5 year crop rotation with non-host graminaceous crops"
+      ],
+      "source": "ICAR - DOGR Pune & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    }
+  },
+  "Pigeon Pea": {
+    "Healthy": {
+      "explanation": "Pigeon Pea (Tur/Arhar) exhibits vigorous vegetative branching, healthy trifoliate leaves, active nodulation on roots, and prolific flowering without wilting or mosaic mottle.",
+      "symptoms": [
+        "Uniform green trifoliate foliage with intact leaflets",
+        "Sturdy erect branches with prolific bud and flower formation",
+        "Healthy root system with pink active nitrogen-fixing nodules"
+      ],
+      "culturalActions": [
+        "Intercrop with soybean, sorghum, or pearl millet (1:2 ratio) to reduce pest incidence",
+        "Ensure field surface drainage during high monsoon downpours",
+        "Nip apical terminal shoots at 45 days to stimulate prolific lateral branching"
+      ],
+      "prevention": [
+        "Inoculate seeds with certified Rhizobium and Trichoderma cultures prior to sowing",
+        "Plant wilt-resistant cultivars (BSMR 736, BDN 711, Maruti ICP 8863)",
+        "Deep summer plowing to expose resting pathogen pupae and spores to solar heat"
+      ],
+      "source": "ICAR - Indian Institute of Pulses Research (IIPR) & VNMKV Parbhani",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Fusarium Wilt": {
+      "explanation": "Fusarium Wilt (Fusarium udum) is the most destructive soil-borne vascular wilt disease of pigeon pea in Maharashtra, causing sudden flaccidity and xylem browning.",
+      "symptoms": [
+        "Gradual or sudden wilting of foliage, often progressing from one side of the plant",
+        "Leaves turn dull green, droop, yellow, and dry up while remaining attached to branches",
+        "Dark purple-to-black vascular browning visible beneath the bark along the lower stem"
+      ],
+      "culturalActions": [
+        "Immediately rogue and burn wilted plants to prevent micro-conidial buildup in soil",
+        "Do not cultivate ratoon crops in infested fields",
+        "Avoid flood irrigation that washes fungal spores across field rows"
+      ],
+      "prevention": [
+        "Grow certified wilt-resistant varieties (Asha, BSMR 736, BSMR 853)",
+        "Apply Trichoderma viride enriched farmyard manure at 5 kg/ha in seed furrows",
+        "Practice 3-year crop rotation with sorghum or tobacco which breaks the disease cycle"
+      ],
+      "source": "ICAR - IIPR Kanpur & VNMKV Parbhani",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Sterility Mosaic Disease": {
+      "explanation": "Sterility Mosaic Disease (SMD) - known as 'Green Plague' of Tur - is caused by Pigeonpea Sterility Mosaic Virus transmitted by the eriophyid mite (Aceria cajani).",
+      "symptoms": [
+        "Severe mosaic mottling with alternating light green and dark green leaf patches",
+        "Severe reduction in leaflet size and bushy bunchy appearance due to shortened internodes",
+        "Complete cessation of reproductive flowering, rendering the plant completely sterile"
+      ],
+      "culturalActions": [
+        "Rogue out and destroy infected plants at early vegetative stage",
+        "Eradicate wild perennial pigeon pea and volunteer plants along field borders",
+        "Monitor for eriophyid mite vectors on lower leaf surfaces"
+      ],
+      "prevention": [
+        "Cultivate SMD-resistant varieties such as BSMR 736, BDN 2, or ICPL 87119 (Asha)",
+        "Spray registered acaricide or wettable sulfur (3g/L) during early vegetative flush if mites appear",
+        "Maintain weed-free field boundaries"
+      ],
+      "source": "ICAR - IIPR Kanpur & ICRISAT",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    }
+  },
+  "Groundnut": {
+    "Healthy": {
+      "explanation": "Groundnut (Bhuimug) displays healthy tetrafoliate leaves with vibrant green coloration, prostrate or bunch canopy vigor, clean stems, and prolific pegging into soil.",
+      "symptoms": [
+        "Bright green 4-leaflet leaves with zero necrotic spots or rust pustules",
+        "Abundant yellow flower bloom and healthy subterranean gynophore peg entry",
+        "Sturdy stems free of collar rot or white fungal mycelium"
+      ],
+      "culturalActions": [
+        "Keep soil loose and friable around plant base through light hoeing prior to pegging",
+        "Maintain optimal soil moisture during flowering and pod development stages",
+        "Provide gypsum application (400-500 kg/ha) at 40-45 days for optimal shell development"
+      ],
+      "prevention": [
+        "Treat seeds with Trichoderma viride (4 g/kg seed) and certified Rhizobium culture",
+        "Grow high-yielding adapted cultivars (TAG 24, TG 37A, Phule Unnati, JL 24)",
+        "Rotate with cereals (pearl millet, sorghum, maize) every alternate season"
+      ],
+      "source": "ICAR - Directorate of Groundnut Research (DGR) Junagadh & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Tikka Leaf Spot": {
+      "explanation": "Tikka disease (Cercospora arachidicola / Cercosporidium personatum) causes widespread circular necrotic spotting and premature defoliation across groundnut fields in Maharashtra.",
+      "symptoms": [
+        "Early leaf spots: Circular reddish-brown to dark brown with a distinct yellow halo",
+        "Late leaf spots: Circular blackish spots without halo, concentrated on the lower leaf surface",
+        "Premature shedding of foliage leaving bare stems and resulting in small shriveled pods"
+      ],
+      "culturalActions": [
+        "Remove and burn plant debris and volunteer groundnut plants after harvest",
+        "Avoid overhead irrigation which splashes spores from lower to upper canopy",
+        "Adopt optimum row spacing (30 cm x 10 cm) to facilitate canopy aeration"
+      ],
+      "prevention": [
+        "Foliar spray of 5% Neem Seed Kernel Extract (NSKE) at early onset of disease",
+        "Seed treatment with captan or thiram at 3g/kg seed",
+        "Spray registered bio-protective formulations as recommended by local Krishi Vigyan Kendra"
+      ],
+      "source": "ICAR - DGR & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Rust": {
+      "explanation": "Groundnut Rust (Puccinia arachidis) produces numerous small orange-to-brown pustules on the lower leaf surfaces, causing leaves to curl and dry up.",
+      "symptoms": [
+        "Small, circular, reddish-orange pustules predominantly on lower leaf surfaces",
+        "Pustules rupture releasing masses of powdery rust-colored urediniospores",
+        "Leaves curl, turn brown, dry up, and remain attached to stems without defoliating"
+      ],
+      "culturalActions": [
+        "Intercrop with pigeon pea or pearl millet to slow airborne spore dispersal",
+        "Destroy all wild Arachis host species in field margins",
+        "Ensure field is cleared of all crop residues following harvest"
+      ],
+      "prevention": [
+        "Grow rust-tolerant groundnut cultivars (Phule Bharati, GPBD 4)",
+        "Spray wettable sulfur (3g/L) at 10-15 day intervals upon initial symptom detection",
+        "Follow crop rotation with non-leguminous cereals"
+      ],
+      "source": "ICAR - DGR Junagadh & ICRISAT",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    }
+  },
+  "Pomegranate": {
+    "Healthy": {
+      "explanation": "Pomegranate (Dalimb - Bhagwa GI) exhibits glossy green lanceolate foliage, strong canes, abundant bright red flower buds, and clean developing fruit with intact calyxes.",
+      "symptoms": [
+        "Glossy, leathery oblong foliage with vibrant green pigmentation",
+        "Sturdy canes without water-soaked lesions or bacterial weeping",
+        "Smooth, unblemished fruit rind with characteristic deep red color"
+      ],
+      "culturalActions": [
+        "Prune dead, criss-crossed, and diseased twigs cleanly and paste cuts with copper oxychloride",
+        "Regulate irrigation using drip emitters positioned outside the tree canopy line",
+        "Follow recommended bahar treatment (Ambe, Hasta, or Mrig) adapted to regional water availability"
+      ],
+      "prevention": [
+        "Plant certified tissue-cultured or disease-free air-layered Bhagwa saplings",
+        "Spray biostimulants and bio-agents (Pseudomonas fluorescens) as preventive barriers",
+        "Sterilize secateurs and pruning shears with sodium hypochlorite between trees"
+      ],
+      "source": "ICAR - National Research Centre on Pomegranate (NRCP), Solapur",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Bacterial Blight": {
+      "explanation": "Bacterial Blight or 'Telya / Oily Spot' (Xanthomonas axonopodis pv. punicae) is the most destructive disease of pomegranate in Solapur and Maharashtra, producing greasy black lesions and fruit cracking.",
+      "symptoms": [
+        "Small water-soaked, translucent spots on leaves that turn dark brown to black and oily",
+        "Leaves turn yellow, wither, and prematurely drop, causing severe canopy thinning",
+        "Distinctive brown-to-black L-shaped or Y-shaped cracks with oozing bacterial exudate on fruits"
+      ],
+      "culturalActions": [
+        "Strictly prune and burn all blighted twigs 5 cm below the infected zone, sterilizing shears",
+        "Apply Bordeaux paste (10%) on main trunk and major branch crotches",
+        "Defoliate and destroy fallen leaves completely during rest period"
+      ],
+      "prevention": [
+        "Spray certified bactericide-copper formulations (Streptocycline 0.5g/L + Copper Oxychloride 2.5g/L) under extension supervision",
+        "Avoid overhead irrigation or high nitrogen fertigation during humid rainy periods",
+        "Quarantine planting material and source exclusively from certified blight-free nurseries"
+      ],
+      "source": "ICAR - NRCP Solapur & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Anthracnose": {
+      "explanation": "Pomegranate Anthracnose (Colletotrichum gloeosporioides) causes dark brown circular spots with concentric rings on leaves and small sunken spots on ripening fruit.",
+      "symptoms": [
+        "Circular to angular brown necrotic spots with yellow halos on leaves",
+        "Sunken dark brown to black spots on fruit rind, expanding into leathery lesions",
+        "Premature leaf yellowing and unmarketable blemished fruit"
+      ],
+      "culturalActions": [
+        "Prune internal canopy to allow maximum sunlight penetration and rapid foliage drying",
+        "Collect and bury fallen infected fruit and mummified rinds",
+        "Avoid mechanical wounding of fruit rind during bagging or spraying"
+      ],
+      "prevention": [
+        "Preventive spray of copper hydroxide or mancozeb at 2.5g/L during cloudy rainy days",
+        "Maintain balanced potassium and micronutrient nutrition",
+        "Apply botanical neem oil (3ml/L) as protective coating"
+      ],
+      "source": "ICAR - NRCP Solapur",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    }
+  },
+  "Grapes": {
+    "Healthy": {
+      "explanation": "Grapevine (Draksha) exhibits vigorous trellised cordons, vibrant green palmate foliage, healthy tendrils, and uniform berry clusters without fungal powder or mildew patches.",
+      "symptoms": [
+        "Uniform green palmate leaves with sharp defined serrations",
+        "Firm green berries with natural waxy bloom on skin",
+        "Strong shoots and canes free of cankers or necrotic cracking"
+      ],
+      "culturalActions": [
+        "Practice systematic canopy thinning and sub-shoot pinching to optimize airflow and sunlight",
+        "Maintain drip irrigation and schedule canopy rest pruning according to October pruning calendar",
+        "Ensure balanced gibberellic acid (GA3) and bio-stimulant fertigation for uniform berry spacing"
+      ],
+      "prevention": [
+        "Use certified disease-free rootstocks (e.g., Dog Ridge, 110R)",
+        "Apply Trichoderma viride enriched compost around the root zone",
+        "Erect protective weather-monitoring stations for early microclimate disease warning"
+      ],
+      "source": "ICAR - National Research Centre for Grapes (NRCG), Pune",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Downy Mildew": {
+      "explanation": "Downy Mildew (Plasmopara viticola) is the most destructive disease of grapevines in Nashik and Sangli, producing translucent 'oil spots' on leaf uppers and white cottony down beneath.",
+      "symptoms": [
+        "Yellowish, oily translucent spots ('oil spots') on the upper leaf surface",
+        "Dense white downy cottony fungal growth on the corresponding lower surface in high humidity",
+        "Browning, drying, and dropping of flower clusters and young infected berries"
+      ],
+      "culturalActions": [
+        "Prune lower canopy leaves within 30 cm of soil level to prevent ground-splash infection",
+        "Avoid overhead irrigation; maintain drip lines strictly along the vine rows",
+        "Remove and burn fallen infected leaves and dried mummified berry bunches"
+      ],
+      "prevention": [
+        "Spray Bordeaux mixture (1%) or copper oxychloride as preventive shield before rains",
+        "Follow NRCG weather-based advisory bulletin for systemic fungicide timing",
+        "Apply potassium phosphonate at 3ml/L as systemic disease inducer"
+      ],
+      "source": "ICAR - NRCG Pune",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Powdery Mildew": {
+      "explanation": "Powdery Mildew (Erysiphe necator) coats leaves, shoots, and developing berries with an ash-grey powdery growth, causing berry cracking and unmarketable fruit.",
+      "symptoms": [
+        "Ash-gray to white powdery fungal patches on upper and lower leaf surfaces",
+        "Young leaves become distorted, curled upwards, and dwarfed",
+        "Berries develop a webbed russeting, fail to expand, and crack open, exposing seeds"
+      ],
+      "culturalActions": [
+        "Ensure good canopy aeration by de-shooting and shoot positioning on bower/trellis",
+        "Avoid excessive application of vegetative nitrogen fertilizers",
+        "Prune infected flag shoots during winter dormancy"
+      ],
+      "prevention": [
+        "Dust or spray sulfur (wettable sulfur at 2g/L) during cool morning hours",
+        "Apply bio-protective ampelomyces or Bacillus subtilis cultures",
+        "Rotate with registered fungicides having different modes of action to manage resistance"
+      ],
+      "source": "ICAR - NRCG Pune & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    }
+  },
+  "Banana": {
+    "Healthy": {
+      "explanation": "Banana (Keli) exhibits wide, upright emerald-green leaf laminas with intact midribs, sturdy pseudostem girth, and clean, vigorous hanging fruit bunches without sigatoka streaking.",
+      "symptoms": [
+        "Vibrant green wide paddle-shaped leaf blades with uniform parallel venation",
+        "Firm pseudostem without vascular discoloration or gummy exudation",
+        "Healthy emergent heart and uniform fingers on hanging bunch"
+      ],
+      "culturalActions": [
+        "De-sucker regularly, maintaining only one follower sucker per mother plant",
+        "Bag fruit bunches with non-woven polypropylene sleeves to protect against sunburn and insect pests",
+        "Ensure effective surface drainage trenches to prevent waterlogging during monsoon"
+      ],
+      "prevention": [
+        "Plant certified disease-free tissue-cultured plantlets (Grand Naine / Robusta)",
+        "Solarize and treat pits with Trichoderma and neem cake (250g/pit) before planting",
+        "Maintain clean field sanitation and eradicate weeds"
+      ],
+      "source": "ICAR - National Research Centre for Banana (NRCB) & Dr. PDKV Akola",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Sigatoka Leaf Spot": {
+      "explanation": "Yellow and Black Sigatoka (Pseudocercospora musae / fijiensis) causes severe foliar necrosis, reducing photosynthetic leaf area and leading to premature fruit ripening.",
+      "symptoms": [
+        "Small yellowish or chlorotic streaks parallel to leaf veins",
+        "Streaks expand into spindle-shaped brown-to-black lesions with grayish-white centers",
+        "Coalescence of lesions causes extensive leaf blighting, premature leaf collapse, and small fingers"
+      ],
+      "culturalActions": [
+        "De-leaf and chop severely infected leaves, burying them face down or mulching between rows",
+        "Maintain wide planting geometry (1.8m x 1.8m) to facilitate breeze and canopy drying",
+        "Avoid sprinkler or overhead wetting"
+      ],
+      "prevention": [
+        "Foliar spray of mineral oil or neem oil (10ml/L) emulsified with detergent as preventive coating",
+        "Apply copper-based fungicides at onset of monsoon rains",
+        "Maintain optimal plant nutrition with balanced potassium and silica fertigation"
+      ],
+      "source": "ICAR - NRCB Trichy & Dr. PDKV Akola",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Panama Wilt": {
+      "explanation": "Panama Wilt (Fusarium oxysporum f. sp. cubense) is a devastating vascular disease causing yellowing of lower leaves, skirt-like drooping, and internal pseudostem browning.",
+      "symptoms": [
+        "Progressive yellowing of lower older leaves from petiole upwards",
+        "Leaves buckle at the petiole base and hang down skirt-like around the pseudostem",
+        "Reddish-brown to dark purple vascular discoloration visible inside the split pseudostem"
+      ],
+      "culturalActions": [
+        "Uproot and burn infected plants along with root corms; drench pit with lime",
+        "Do not use suckers from infected plantations for propagation",
+        "Strictly avoid moving contaminated soil or irrigation water to healthy plots"
+      ],
+      "prevention": [
+        "Grow resistant or tolerant Cavendish cultivars (Grand Naine)",
+        "Incorporate bio-agent Trichoderma viride with farmyard manure (2 kg/plant) at pit preparation",
+        "Crop rotation with sugarcane or paddy in wet fields to suppress Fusarium chlamydospores"
+      ],
+      "source": "ICAR - NRCB & Dr. PDKV Akola",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    }
+  },
+  "Mango": {
+    "Healthy": {
+      "explanation": "Mango (Alphonso / Hapus GI) foliage exhibits dark green leathery lanceolate leaves, vigorous terminal flushes, healthy panicle blossoms, and clean developing fruitlets.",
+      "symptoms": [
+        "Deep green glossy lanceolate leaves without spotting or leaf roll",
+        "Sturdy branches with healthy terminal buds free of dieback",
+        "Abundant clean flowering panicles with high fruit set"
+      ],
+      "culturalActions": [
+        "Prune deadwood, criss-cross branches, and water shoots after harvesting in June",
+        "Paste main tree trunks with Bordeaux paste (10%) to protect against gummosis and borers",
+        "Withhold irrigation 2-3 months prior to flowering to encourage uniform vegetative bud dormancy"
+      ],
+      "prevention": [
+        "Spray neem oil (3ml/L) during new vegetative leaf flushes to repel hopper vectors",
+        "Apply paclobutrazol (Cultar) strictly according to tree canopy diameter and DBSKKV recommendations",
+        "Maintain clean orchard floor free of leaf litter"
+      ],
+      "source": "ICAR - Central Institute for Subtropical Horticulture (CISH) & DBSKKV Dapoli",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Anthracnose": {
+      "explanation": "Mango Anthracnose (Colletotrichum gloeosporioides) causes leaf spotting, panicle blight, and post-harvest tear-drop black rot on fruit skins across coastal Konkan orchards.",
+      "symptoms": [
+        "Small, dark brown, circular to angular spots with raised margins on young leaves",
+        "Blighting of blossom panicles causing blossom drop and failure of fruit set",
+        "Sunken, dark brown to black circular lesions on ripening fruit developing characteristic tear-stain streaks"
+      ],
+      "culturalActions": [
+        "Prune and destroy all blighted twigs and dried mummified panicles post-harvest",
+        "Thin dense canopy branches to improve interior sunlight and aeration",
+        "Submerge harvested fruits in hot water (52°C) for 10 minutes for post-harvest decay control"
+      ],
+      "prevention": [
+        "Pre-blossom spray of Copper Oxychloride (2.5g/L) or Carbendazim (1g/L)",
+        "Repeat protective spray during fruitlet development stage (marble size)",
+        "Avoid overhead irrigation during flowering and fruit ripening"
+      ],
+      "source": "ICAR - CISH & DBSKKV Dapoli",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Powdery Mildew": {
+      "explanation": "Mango Powdery Mildew (Oidium mangiferae) attacks tender panicles, leaves, and fruitlets, coating them with a white powdery fungal bloom and causing total flower drop.",
+      "symptoms": [
+        "White powdery superficial fungal patches on inflorescence panicles and young leaves",
+        "Infected panicles turn brown, dry up, and shatter without fruit set",
+        "Tender leaves curl, exhibit distorted margins, and drop prematurely"
+      ],
+      "culturalActions": [
+        "Prune overcrowded shoots to ensure thorough penetration of spray solutions",
+        "Collect and burn fallen inflorescences and blighted leaf litter",
+        "Keep orchard floor cleanly disked during spring months"
+      ],
+      "prevention": [
+        "First preventive spray of wettable sulfur (2g/L) at flower panicle emergence",
+        "Second spray of systemic fungicide (dinocap or hexaconazole) during full bloom",
+        "Spray during calm early morning or late afternoon hours"
+      ],
+      "source": "ICAR - CISH Lucknow & DBSKKV Dapoli",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    }
+  },
+  "Orange": {
+    "Healthy": {
+      "explanation": "Nagpur Mandarin Orange (Santra GI) displays healthy dark-green leathery leaves, sturdy green shoots with short thorns, clean fragrant white blossoms, and smooth green/golden fruit.",
+      "symptoms": [
+        "Vibrant dark green foliage with smooth intact margins and glossy cuticle",
+        "Sturdy branches without gummy gum-weeping bark or twig dieback",
+        "Smooth, unblemished fruit rind with tight attachment"
+      ],
+      "culturalActions": [
+        "Follow standard bahar regulation (Ambe Bahar or Mrig Bahar) based on soil depth and water supply",
+        "Paint tree trunks up to 60 cm from ground level with Bordeaux paste twice annually (May and October)",
+        "Ensure basin or ring irrigation system that keeps water from directly touching the trunk bark"
+      ],
+      "prevention": [
+        "Use certified disease-free budded saplings on resistant rootstocks (Rangpur Lime, Rough Lemon)",
+        "Apply Trichoderma harzianum enriched neem cake around the root drip line",
+        "Maintain optimal micronutrient spraying (Zinc, Iron, Manganese) during active flush stages"
+      ],
+      "source": "ICAR - Central Citrus Research Institute (CCRI), Nagpur",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Citrus Canker": {
+      "explanation": "Citrus Canker (Xanthomonas citri subsp. citri) is an endemic bacterial disease causing raised, corky, crater-like lesions surrounded by yellow halos on leaves, twigs, and fruit.",
+      "symptoms": [
+        "Small, round, blister-like raised corky lesions on both leaf surfaces",
+        "Corky lesions develop rough, crater-like centers surrounded by prominent oily yellow halos",
+        "Crater-like rough scabby brown spots on fruit rind, reducing commercial market value"
+      ],
+      "culturalActions": [
+        "Prune and burn cankered twigs before onset of monsoon rains",
+        "Erect windbreaks (Casuarina, Shevri) around orchards to reduce wind-driven rain transmission",
+        "Sterilize pruning equipment between trees with 1% sodium hypochlorite"
+      ],
+      "prevention": [
+        "Foliar spray of Streptocycline (1g/10L) + Copper Oxychloride (25g/10L) at vegetative flush",
+        "Control leaf miner (Phyllocnistis citrella) whose feeding galleries allow bacterial entry",
+        "Plant certified disease-free nursery stock from government accredited nurseries"
+      ],
+      "source": "ICAR - CCRI Nagpur & Dr. PDKV Akola",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Phytophthora Gummosis": {
+      "explanation": "Phytophthora Foot Rot and Gummosis (Phytophthora nicotianae / citrophthora) attacks tree collars and root systems, causing bark cracking, profuse gum oozing, and branch dieback.",
+      "symptoms": [
+        "Dark, water-soaked patches on the bark near the soil line that crack and ooze copious amber-colored gum",
+        "Bark rots, dries, and strips away longitudinally in shredded strips, girdling the trunk",
+        "Yellowing of foliage veins followed by sudden leaf drop and staghead twig dieback"
+      ],
+      "culturalActions": [
+        "Scrape infected dead bark cleanly down to healthy wood and paste with Bordeaux paste",
+        "Form high mounds or ridges around tree bases to ensure water drains away from trunks",
+        "Avoid deep soil tilling near trunks that could sever feeder roots"
+      ],
+      "prevention": [
+        "Bud scions high on the rootstock (at least 25-30 cm above ground level)",
+        "Drench soil basin with Fosetyl-Al (2.5g/L) or Metalaxyl-Mancozeb (2g/L) before monsoon",
+        "Use Phytophthora-tolerant rootstocks (Rangpur Lime, Alemow)"
+      ],
+      "source": "ICAR - CCRI Nagpur",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    }
+  },
+  "Sorghum": {
+    "Healthy": {
+      "explanation": "Sorghum (Jowar - Maldandi) shows robust erect stalks, broad arching green leaves with white midribs, strong prop roots, and dense compact grain-bearing panicles.",
+      "symptoms": [
+        "Clean green leaves with healthy white midrib and intact margins",
+        "Sturdy thick stalk with healthy prop/brace roots at lower nodes",
+        "Well-filled, uniform cream/white grain head without mold or smutting"
+      ],
+      "culturalActions": [
+        "Follow timely sowing in Rabi (mid-September to first week of October) for optimal Maldandi grain filling",
+        "Ensure proper weed control during the first 30 days of seedling establishment",
+        "Intercrop with pulses like pigeon pea or chickpea to improve soil fertility and reduce insect pressure"
+      ],
+      "prevention": [
+        "Use certified seed of high-yielding adapted cultivars (M 35-1 / Maldandi, Phule Yashodha, CSV 22)",
+        "Treat seeds with Azotobacter and PSB biofertilizers (250g/10kg seed) before sowing",
+        "Deep summer plowing to eliminate stubbles harboring charcoal rot and shoot fly pupae"
+      ],
+      "source": "ICAR - Indian Institute of Millets Research (IIMR) & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Grain Mold": {
+      "explanation": "Grain Mold complex (Fusarium, Curvularia, Phoma) infects developing sorghum grains during humid wet weather at heading, causing black/pink discoloration and loss of seed viability.",
+      "symptoms": [
+        "Floret and grain discoloration ranging from pink, white, orange to velvety black",
+        "Grains become soft, chalky, lightweight, and crumble under thumb pressure",
+        "Severe loss of grain market value and potential contamination with mycotoxins"
+      ],
+      "culturalActions": [
+        "Time sowing so grain maturation coincides with drier post-monsoon weather",
+        "Harvest crop promptly at physiological maturity without delaying in wet fields",
+        "Dry harvested heads quickly to below 10% moisture before threshing and storage"
+      ],
+      "prevention": [
+        "Grow mold-tolerant varieties with open or semi-loose panicles",
+        "Foliar spray of Propiconazole (1ml/L) or Mancozeb (2.5g/L) at 50% flowering if heavy rains persist",
+        "Clean and treat saved seed with thiram or captan (3g/kg seed)"
+      ],
+      "source": "ICAR - IIMR Hyderabad & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Anthracnose": {
+      "explanation": "Sorghum Anthracnose (Colletotrichum sublineolum) causes circular to elliptical red/tan spots with distinct dark margins on foliage and stalk red rot.",
+      "symptoms": [
+        "Small, circular to elliptic spots on leaf blades with tan/gray centers and prominent red-to-purple margins",
+        "Abundant tiny black fruiting bodies (acervuli) visible with a hand lens inside necrotic spots",
+        "Midrib red rot and stalk lodging during high wind storms"
+      ],
+      "culturalActions": [
+        "Chop and incorporate or burn infected sorghum crop residues after harvest",
+        "Rotate with non-grass broadleaf crops (soybean, cotton, sunflower)",
+        "Avoid high plant densities that trap humidity in the lower canopy"
+      ],
+      "prevention": [
+        "Seed treatment with certified fungicide (Carbendazim + Mancozeb at 2g/kg)",
+        "Plant anthracnose-tolerant hybrids",
+        "Ensure balanced potash application to strengthen stalk rind strength"
+      ],
+      "source": "ICAR - IIMR & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    }
+  },
+  "Pearl Millet": {
+    "Healthy": {
+      "explanation": "Pearl Millet (Bajra) exhibits vigorous drought-tolerant tillering, erect narrow leaves, sturdy culms, and long, densely packed cylindrical bristled earheads with uniform pearly grains.",
+      "symptoms": [
+        "Clean erect narrow green leaf blades with no downy mildew or rust pustules",
+        "Uniform, tightly packed cylindrical earhead with healthy bristled spikelets",
+        "Sturdy culms with active tillers and clean root crown"
+      ],
+      "culturalActions": [
+        "Sow on ridges and furrows to optimize rainwater harvesting and prevent root waterlogging",
+        "Thin seedlings at 15-20 days to maintain 10-15 cm spacing between plants",
+        "Intercrop with moth bean, cowpea, or pigeon pea for drought resilience"
+      ],
+      "prevention": [
+        "Use certified hybrid seeds (Shraddha, Saburi, ICTP 8203, GHB 558)",
+        "Seed treatment with metalaxyl (Apron 35 SD at 6g/kg seed) to prevent downy mildew",
+        "Practice clean field cultivation and rogue out volunteer plants"
+      ],
+      "source": "ICAR - AICRP on Pearl Millet (Jodhpur) & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Downy Mildew": {
+      "explanation": "Downy Mildew or 'Green Ear' disease (Sclerospora graminicola) is the most destructive disease of bajra in Maharashtra, transforming floral parts into leafy structures.",
+      "symptoms": [
+        "Yellowing and chlorotic striping on young leaves, with white downy growth on undersides in early morning",
+        "Infected plants are stunted and produce excessive malformed tillers",
+        "Earhead transformed completely or partially into a mass of green leafy structures ('Green Ear')"
+      ],
+      "culturalActions": [
+        "Rogue and bury infected plants showing green ear symptoms before oospores mature in soil",
+        "Deep plow field immediately after harvest to bury oospores below the plow layer",
+        "Rotate with non-cereal crops for at least 2-3 years"
+      ],
+      "prevention": [
+        "Strict seed treatment with Metalaxyl-M (Apron XL at 2ml/kg seed)",
+        "Cultivate downy-mildew resistant hybrids certified by ICAR/State Universities",
+        "Foliar spray with Metalaxyl + Mancozeb (2g/L) at 20-25 days after sowing if leaf striping appears"
+      ],
+      "source": "ICAR - AICRP on Pearl Millet & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Rust": {
+      "explanation": "Bajra Rust (Puccinia substriata) produces reddish-orange to dark brown pustules on both leaf surfaces, drying up foliage during grain filling.",
+      "symptoms": [
+        "Small, round to elliptical reddish-brown pustules on upper and lower leaf surfaces",
+        "Pustules rupture shedding powdery brown urediniospores",
+        "Leaves dry and wither prematurely, resulting in reduced grain weight and poor fodder quality"
+      ],
+      "culturalActions": [
+        "Eradicate alternate host brinjal (Solanum melongena) and weed species in vicinity",
+        "Harvest crop promptly once physiological maturity is attained",
+        "Avoid late Kharif or late summer sowings"
+      ],
+      "prevention": [
+        "Sow certified rust-tolerant bajra varieties",
+        "Foliar spray of wettable sulfur (3g/L) or Mancozeb (2g/L) upon early appearance of pustules",
+        "Maintain balanced crop nutrition"
+      ],
+      "source": "ICAR - AICRP on Pearl Millet & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    }
+  },
+  "Turmeric": {
+    "Healthy": {
+      "explanation": "Turmeric (Halad - Salem/Pratibha) displays broad, lush green lanceolate leaves with long petioles, erect pseudostems, and vigorous underground rhizome clusters with bright orange/yellow flesh.",
+      "symptoms": [
+        "Lush green, broad oblong foliage without leaf spots, blotches, or margins curling",
+        "Sturdy erect pseudostem free of water-soaked basal collar rotting",
+        "Healthy, plump mother and finger rhizomes with deep golden-yellow core"
+      ],
+      "culturalActions": [
+        "Plant on raised beds (1.2m wide, 15-20 cm high) with deep drainage furrows to prevent waterlogging",
+        "Apply abundant organic neem cake (2 tons/ha) and well-decomposed FYM at bed preparation",
+        "Mulch beds heavily with green leaves or sugarcane trash immediately after planting"
+      ],
+      "prevention": [
+        "Select disease-free healthy seed rhizomes from certified seed plots",
+        "Treat seed rhizomes before planting by dipping in Trichoderma viride (10g/L) suspension for 30 minutes",
+        "Crop rotation with maize, soybean, or sugarcane every 2-3 years"
+      ],
+      "source": "ICAR - Indian Institute of Spices Research (IISR) & VNMKV Parbhani",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Rhizome Rot": {
+      "explanation": "Rhizome Rot or 'Kuj/Rot' (Pythium aphanidermatum / Fusarium solani) is the most destructive disease of turmeric in Sangli and Hingoli, causing basal soft rot and plant collapse.",
+      "symptoms": [
+        "Yellowing of lower leaves progressing upwards along leaf margins",
+        "Basal collar region becomes soft, water-soaked, and decays with foul odor",
+        "Entire pseudostem pulls out easily from the rotting subterranean rhizome"
+      ],
+      "culturalActions": [
+        "Ensure perfect surface drainage; water stagnation even for 24 hours induces rapid rot",
+        "Carefully rogue out and destroy rotting clumps along with surrounding soil",
+        "Avoid injuring roots and rhizomes during weeding and earthing up"
+      ],
+      "prevention": [
+        "Dip seed rhizomes in Metalaxyl-Mancozeb (2g/L) + bio-formulation for 30 minutes before planting",
+        "Drench affected patches and surrounding beds with Metalaxyl + Mancozeb (2.5g/L) or Copper Oxychloride (3g/L)",
+        "Solarize soil and incorporate Trichoderma harzianum enriched FYM"
+      ],
+      "source": "ICAR - IISR Calicut & VNMKV Parbhani",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Leaf Spot": {
+      "explanation": "Turmeric Leaf Spot (Colletotrichum capsici) causes elliptical to oblong brown spots with gray centers and yellow halos on upper leaves, leading to leaf scorching.",
+      "symptoms": [
+        "Elliptical to oblong necrotic spots on both leaf surfaces, mostly on upper foliage",
+        "Spots have distinct grayish-white centers with dark brown raised margins and yellow halos",
+        "Coalescence of numerous spots leads to extensive leaf drying and premature defoliation"
+      ],
+      "culturalActions": [
+        "Collect and burn infected dried leaves after harvest to reduce resting fungal perithecia",
+        "Ensure proper shade regulation if turmeric is grown as an intercrop in fruit orchards",
+        "Provide adequate potassium nutrition to improve foliage resistance"
+      ],
+      "prevention": [
+        "Preventive foliar spray of Mancozeb (2.5g/L) or Carbendazim (1g/L) at first onset of spots",
+        "Dip seed rhizomes in bio-protective Trichoderma suspension before sowing",
+        "Follow 2-year crop rotation with non-host crops"
+      ],
+      "source": "ICAR - IISR & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    }
+  },
+  "Potato": {
+    "Healthy": {
+      "explanation": "Potato plants exhibit vigorous compound foliage, sturdy stems, healthy stolons, and active tuberization without foliar blight or ring rot.",
+      "symptoms": [
+        "Vibrant green compound leaves with healthy leaflets",
+        "Erect sturdy stems with no blackleg or bacterial wilting",
+        "Healthy subterranean stolons and clean tubers with intact skin"
+      ],
+      "culturalActions": [
+        "Earth up soil properly around plant base to prevent tuber greening from sunlight",
+        "Maintain uniform soil moisture using drip or furrow irrigation without waterlogging",
+        "Harvest during dry weather and cure tubers in well-ventilated shade for 10-15 days"
+      ],
+      "prevention": [
+        "Plant certified disease-free seed tubers certified by ICAR-CPRI",
+        "Treat seed tubers before planting with Trichoderma viride (5g/kg) or boric acid (3%)",
+        "Follow 3-year crop rotation avoiding tomato, brinjal, and chili"
+      ],
+      "source": "ICAR - Central Potato Research Institute (CPRI) & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Early Blight": {
+      "explanation": "Early Blight (Alternaria solani) causes target-board dark brown spots with concentric rings on older potato leaves.",
+      "symptoms": [
+        "Circular to irregular dark brown spots with characteristic concentric rings",
+        "Chlorotic yellowing around lesions leading to premature leaf shedding",
+        "Dark sunken leathery lesions on potato tuber skin"
+      ],
+      "culturalActions": [
+        "Remove and destroy infected lower leaves promptly",
+        "Avoid overhead sprinkler irrigation that splashes fungal spores",
+        "Maintain wide row spacing to allow canopy air movement"
+      ],
+      "prevention": [
+        "Spray Mancozeb (2.5g/L) or Chlorothalonil (2g/L) preventively during warm humid periods",
+        "Apply balanced fertilizer avoiding excessive vegetative nitrogen",
+        "Deep plow crop residues after harvesting"
+      ],
+      "source": "ICAR - CPRI Shimla & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Late Blight": {
+      "explanation": "Late Blight (Phytophthora infestans) is a catastrophic water mold causing rapid water-soaked brown lesions and white downy mildew on leaf undersides.",
+      "symptoms": [
+        "Water-soaked irregular pale green patches turning rapidly dark brown to purplish-black",
+        "Fine white downy mildew growth on underside of leaves under humid cool conditions",
+        "Foul-smelling rotting of foliage and brown granular rot inside tubers"
+      ],
+      "culturalActions": [
+        "Destroy all volunteer potato plants and cull piles near fields",
+        "Hill up soil well over potato ridges to prevent zoospores washing down into tubers",
+        "Cut and destroy haulms 10-12 days prior to harvesting to prevent tuber infection"
+      ],
+      "prevention": [
+        "Spray systemic-contact fungicide (Metalaxyl + Mancozeb at 2.5g/L) upon disease forecast warning",
+        "Plant late blight resistant cultivars (Kufri Pukhraj, Kufri Jyoti, Kufri Khyati)",
+        "Store only clean, completely dry, cured tubers in cold storage"
+      ],
+      "source": "ICAR - CPRI & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    }
+  },
+  "Brinjal": {
+    "Healthy": {
+      "symptoms": [
+        "Broad, vibrant green leaves with intact velvet texture",
+        "Sturdy central shoot without shoot-borer frass",
+        "Zero chlorosis or yellow vein distortion"
+      ],
+      "explanation": "The brinjal plant exhibits strong physiological growth, healthy leaf expansion, and no signs of bacterial wilt or shoot and fruit borer damage.",
+      "culturalActions": [
+        "Maintain regular ridge-and-furrow irrigation avoiding water stagnation",
+        "Earth up soil around root bases 30 days after transplanting",
+        "Install pheromone traps (Lucinlure) at 12 traps/ha for pest surveillance"
+      ],
+      "prevention": [
+        "Practice 3-year crop rotation with non-solanaceous crops like maize or pulses",
+        "Use certified resistant varieties such as Utkal Anushree or Pant Rituraj",
+        "Apply neem cake @ 250 kg/ha during field preparation to suppress soil pathogens"
+      ],
+      "source": "ICAR - Indian Institute of Vegetable Research (IIVR) & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to label and local agricultural extension guidance."
+    },
+    "Bacterial Wilt": {
+      "symptoms": [
+        "Sudden daytime wilting of younger leaves without initial yellowing",
+        "Foliage remains dull green while wilting rapidly",
+        "Vascular browning inside stem with white bacterial streaming in water vial test"
+      ],
+      "explanation": "Ralstonia solanacearum infection leading to blocked xylem vessels, rapid foliar collapse, and vascular breakdown.",
+      "culturalActions": [
+        "Immediately rogue out and destroy severely infected wilted plants with soil rootball",
+        "Drench root zone of surrounding plants with Copper Hydroxide (2 g/L) + Streptocycline (1 g/10 L)",
+        "Avoid furrow irrigation flowing from diseased sectors into healthy crop rows"
+      ],
+      "prevention": [
+        "Plant grafted seedlings on wild resistant Solanum torvum rootstock",
+        "Maintain soil pH between 6.5-7.2 with lime application in acidic plots",
+        "Incorporate Trichoderma harzianum @ 5 kg/ha mixed with FYM at planting"
+      ],
+      "source": "ICAR - Indian Institute of Vegetable Research (IIVR) & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to label and local agricultural extension guidance."
+    }
+  },
+  "Chili": {
+    "Healthy": {
+      "symptoms": [
+        "Glossy dark green lanceolate leaves with smooth margins",
+        "Active apical shoot growth with upright white star-like blossoms",
+        "Sturdy stems without anthracnose dark lesions or mite curling"
+      ],
+      "explanation": "The chili crop is in prime health with vigorous shoot canopy, balanced node elongation, and complete absence of thrip curl or anthracnose spots.",
+      "culturalActions": [
+        "Adopt drip fertigation to keep foliage completely dry",
+        "Stake tall fruiting branches to avoid lodging under wind stress",
+        "Install blue and yellow sticky traps (15 each/acre) for early vector monitoring"
+      ],
+      "prevention": [
+        "Raise nursery seedlings under 40-mesh insect-proof nylon net",
+        "Treat seed with Trichoderma viride @ 4 g/kg seed before sowing",
+        "Spray prophylactic neem oil (10,000 ppm @ 2 ml/L) during early vegetative flush"
+      ],
+      "source": "ICAR - Indian Institute of Horticultural Research (IIHR) & Dr. PDKV Akola",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to label and local agricultural extension guidance."
+    },
+    "Anthracnose": {
+      "symptoms": [
+        "Sunken circular or oblong necrotic spots with concentric rings on ripe chili pods",
+        "Velvety salmon-pink acervuli or black speckles within lesions during humid weather",
+        "Dieback of apical twigs with straw-colored blighting"
+      ],
+      "explanation": "Colletotrichum capsici fungal infection causing fruit rot and post-harvest deterioration.",
+      "culturalActions": [
+        "Collect and burn fallen diseased fruits and dry blighted twigs",
+        "Spray Azoxystrobin 23% SC @ 1 ml/L or Difenoconazole 25% EC @ 0.5 ml/L at first appearance of spots",
+        "Ensure rapid air circulation through optimal 60x45 cm plant spacing"
+      ],
+      "prevention": [
+        "Use hot water seed treatment at 52°C for 20 minutes before nursery sowing",
+        "Avoid flood irrigation during fruiting phase; switch to drip lines",
+        "Rotate fields with non-host cereals every 2 seasons"
+      ],
+      "source": "ICAR - Indian Institute of Horticultural Research (IIHR) & Dr. PDKV Akola",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to label and local agricultural extension guidance."
+    }
+  },
+  "Cabbage": {
+    "Healthy": {
+      "symptoms": [
+        "Waxy blue-green wrapper leaves forming compact, firm central head",
+        "Intact epidermal wax layer resisting excessive transpiration",
+        "Clear white root systems without clubroot swellings or black rot veins"
+      ],
+      "explanation": "The cabbage crop demonstrates excellent head firmness, robust wrapper leaf formation, and zero signs of black rot or diamondback moth feeding.",
+      "culturalActions": [
+        "Maintain uniform soil moisture during head formation to prevent splitting",
+        "Top-dress with nitrogenous fertilizer at 30 and 45 days after transplanting",
+        "Install yellow sticky traps and pheromone traps for Spodoptera and DBM"
+      ],
+      "prevention": [
+        "Practice 3-year rotation with non-brassica crops",
+        "Raise seedlings on raised nursery beds with solarized soil",
+        "Incorporate well-decomposed FYM enriched with Pseudomonas fluorescens"
+      ],
+      "source": "ICAR - Indian Agricultural Research Institute (IARI) & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to label and local agricultural extension guidance."
+    }
+  },
+  "Cauliflower": {
+    "Healthy": {
+      "symptoms": [
+        "Dense, creamy white curd shielded by protective wrapper leaves",
+        "Crisp upright inner leaves without riciness or buttoning",
+        "Strong central stem without hollow-stem boron deficiency cavities"
+      ],
+      "explanation": "The cauliflower curd is solid, pristine white, and shows optimal wrapper protection with zero curding blemishes or alternaria blights.",
+      "culturalActions": [
+        "Perform leaf blanching (tying wrapper leaves over curd) 4-6 days before harvest to prevent curd yellowing",
+        "Apply Solubor (Boron 20%) @ 1.5 g/L foliar spray during curd initiation to prevent browning",
+        "Ensure soil moisture remains consistently moist without flooding"
+      ],
+      "prevention": [
+        "Select heat-tolerant hybrid cultivars suited for regional climate",
+        "Dip seedling roots in Trichoderma suspension before transplanting",
+        "Rotate with solanaceous or leguminous crops"
+      ],
+      "source": "ICAR - Indian Agricultural Research Institute (IARI) & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to label and local agricultural extension guidance."
+    }
+  },
+  "Okra": {
+    "Healthy": {
+      "symptoms": [
+        "Vigorous palmately lobed green leaves without chlorotic network",
+        "Smooth erect pentagonal green pods tender to touch",
+        "Stout central stem with strong basal branching and healthy nodes"
+      ],
+      "explanation": "The okra plant exhibits prime vegetative and reproductive vigor with complete freedom from yellow vein mosaic virus and fruit borer damage.",
+      "culturalActions": [
+        "Harvest tender pods every 2-3 days to stimulate continuous flowering",
+        "Provide furrow irrigation at 4-5 day intervals in summer and 8-10 days in winter",
+        "Install yellow sticky traps (10/acre) to trap whitefly vectors"
+      ],
+      "prevention": [
+        "Plant YVMV-resistant varieties like Parbhani Kranti, Arka Anamika, or Pusa Sawani",
+        "Treat seeds with Imidacloprid 70 WS @ 5 g/kg seed to prevent early vector transmission",
+        "Destroy wild abutilon and malvaceous weed hosts along field boundaries"
+      ],
+      "source": "ICAR - Indian Institute of Vegetable Research (IIVR) & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to label and local agricultural extension guidance."
+    }
+  },
+  "Mustard": {
+    "Healthy": {
+      "symptoms": [
+        "Broad green lyrate-pinnatifid lower leaves with healthy basal rosette",
+        "Abundant golden-yellow inflorescence blooming profusely",
+        "Elongating cylindrical siliques (seed pods) filling evenly with seed"
+      ],
+      "explanation": "The mustard crop is flourishing with vibrant floral panicles, balanced silique development, and zero white rust pustules or aphid clusters.",
+      "culturalActions": [
+        "Provide two critical irrigations at flower initiation (30-35 DAS) and silique filling (60-65 DAS)",
+        "Thin crowded seedlings at 15-20 DAS to maintain 30x10 cm spacing",
+        "Spray 2% Urea at 50% flowering to boost grain filling and oil content"
+      ],
+      "prevention": [
+        "Treat seeds with Apron 35 SD @ 6 g/kg seed to ward off downy mildew and damping off",
+        "Adopt timely sowing during early October to escape heavy aphid incidence",
+        "Rotate with pulses or cereals to minimize soil sclerotinia inoculum"
+      ],
+      "source": "ICAR - Directorate of Rapeseed-Mustard Research (DRMR) & Dr. PDKV Akola",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to label and local agricultural extension guidance."
+    }
+  },
+  "Sunflower": {
+    "Healthy": {
+      "symptoms": [
+        "Large heart-shaped rough leaves oriented symmetrically towards sunlight",
+        "Robust erect thick stem capable of supporting heavy flower head",
+        "Broad disc floret developing uniform golden ray petals with zero head rot"
+      ],
+      "explanation": "The sunflower crop shows remarkable heliotropic vigor, stout stalk caliber, and healthy disc capitulum without alternaria blight or sclerotinia rot.",
+      "culturalActions": [
+        "Maintain optimal soil moisture during capitulum bud opening and seed filling stages",
+        "Conserve pollinating honeybees by avoiding pesticide sprays during morning bloom (8 AM - 11 AM)",
+        "Apply Boron (Solubor) @ 2 g/L at star-bud stage to enhance seed setting and reduce chaffiness"
+      ],
+      "prevention": [
+        "Use certified hybrid seeds (e.g. KBSH-44, DRSH-1) treated with Thiram @ 3 g/kg seed",
+        "Maintain 60x30 cm plant geometry for adequate solar radiation penetration",
+        "Rotate crop with non-asteraceous legumes or cereals"
+      ],
+      "source": "ICAR - Indian Institute of Oilseeds Research (IIOR) & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to label and local agricultural extension guidance."
+    }
+  }
+}

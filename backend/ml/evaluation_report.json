@@ -1,0 +1,770 @@
+{
+  "evaluation_timestamp": "2026-09-20T17:30:00Z",
+  "crops_evaluated": 8,
+  "crops": {
+    "Sugarcane": {
+      "crop": "Sugarcane",
+      "accuracy": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0,
+      "weighted_f1": 1.0,
+      "total_samples": 25,
+      "class_metrics": {
+        "Healthy": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Red Rot": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Rust": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Mosaic": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Yellow Disease": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        }
+      },
+      "confusion_matrix": [
+        [
+          5,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          5,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          5,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          5,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          5
+        ]
+      ],
+      "class_names": [
+        "Healthy",
+        "Red Rot",
+        "Rust",
+        "Mosaic",
+        "Yellow Disease"
+      ]
+    },
+    "Soybean": {
+      "crop": "Soybean",
+      "accuracy": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0,
+      "weighted_f1": 1.0,
+      "total_samples": 25,
+      "class_metrics": {
+        "Healthy": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Cercospora Leaf Blight": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Frogeye Leaf Spot": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Rust": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Yellow Mosaic": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        }
+      },
+      "confusion_matrix": [
+        [
+          5,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          5,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          5,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          5,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          5
+        ]
+      ],
+      "class_names": [
+        "Healthy",
+        "Cercospora Leaf Blight",
+        "Frogeye Leaf Spot",
+        "Rust",
+        "Yellow Mosaic"
+      ]
+    },
+    "Rice": {
+      "crop": "Rice",
+      "accuracy": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0,
+      "weighted_f1": 1.0,
+      "total_samples": 25,
+      "class_metrics": {
+        "Healthy": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Bacterial Leaf Blight": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Blast": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Brown Spot": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Tungro": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        }
+      },
+      "confusion_matrix": [
+        [
+          5,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          5,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          5,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          5,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          5
+        ]
+      ],
+      "class_names": [
+        "Healthy",
+        "Bacterial Leaf Blight",
+        "Blast",
+        "Brown Spot",
+        "Tungro"
+      ]
+    },
+    "Wheat": {
+      "crop": "Wheat",
+      "accuracy": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0,
+      "weighted_f1": 1.0,
+      "total_samples": 25,
+      "class_metrics": {
+        "Healthy": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Brown Rust": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Yellow Rust": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Powdery Mildew": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Septoria": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        }
+      },
+      "confusion_matrix": [
+        [
+          5,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          5,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          5,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          5,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          5
+        ]
+      ],
+      "class_names": [
+        "Healthy",
+        "Brown Rust",
+        "Yellow Rust",
+        "Powdery Mildew",
+        "Septoria"
+      ]
+    },
+    "Maize": {
+      "crop": "Maize",
+      "accuracy": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0,
+      "weighted_f1": 1.0,
+      "total_samples": 25,
+      "class_metrics": {
+        "Healthy": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Common Rust": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Gray Leaf Spot": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Northern Leaf Blight": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Maize Streak Virus": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        }
+      },
+      "confusion_matrix": [
+        [
+          5,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          5,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          5,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          5,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          5
+        ]
+      ],
+      "class_names": [
+        "Healthy",
+        "Common Rust",
+        "Gray Leaf Spot",
+        "Northern Leaf Blight",
+        "Maize Streak Virus"
+      ]
+    },
+    "Cotton": {
+      "crop": "Cotton",
+      "accuracy": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0,
+      "weighted_f1": 1.0,
+      "total_samples": 25,
+      "class_metrics": {
+        "Healthy": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Bacterial Blight": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Curl Virus": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Fusarium Wilt": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Target Spot": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        }
+      },
+      "confusion_matrix": [
+        [
+          5,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          5,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          5,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          5,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          5
+        ]
+      ],
+      "class_names": [
+        "Healthy",
+        "Bacterial Blight",
+        "Curl Virus",
+        "Fusarium Wilt",
+        "Target Spot"
+      ]
+    },
+    "Tomato": {
+      "crop": "Tomato",
+      "accuracy": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0,
+      "weighted_f1": 1.0,
+      "total_samples": 25,
+      "class_metrics": {
+        "Healthy": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Bacterial Spot": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Early Blight": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Late Blight": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Yellow Leaf Curl Virus": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        }
+      },
+      "confusion_matrix": [
+        [
+          5,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          5,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          5,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          5,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          5
+        ]
+      ],
+      "class_names": [
+        "Healthy",
+        "Bacterial Spot",
+        "Early Blight",
+        "Late Blight",
+        "Yellow Leaf Curl Virus"
+      ]
+    },
+    "Chickpea": {
+      "crop": "Chickpea",
+      "accuracy": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0,
+      "weighted_f1": 1.0,
+      "total_samples": 25,
+      "class_metrics": {
+        "Healthy": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Ascochyta Blight": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Fusarium Wilt": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Dry Root Rot": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        },
+        "Stunt Virus": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "accuracy": 1.0,
+          "samples": 5,
+          "predicted": 5
+        }
+      },
+      "confusion_matrix": [
+        [
+          5,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          5,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          5,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          5,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          5
+        ]
+      ],
+      "class_names": [
+        "Healthy",
+        "Ascochyta Blight",
+        "Fusarium Wilt",
+        "Dry Root Rot",
+        "Stunt Virus"
+      ]
+    }
+  },
+  "summary": {
+    "overall_accuracy": 1.0,
+    "total_evaluated_samples": 200
+  }
+}

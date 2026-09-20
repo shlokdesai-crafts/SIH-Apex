@@ -35,6 +35,18 @@ TARGET_CROPS = [
     "Sugarcane",
     "Tomato",
     "Chickpea",
+    "Onion",
+    "Potato",
+    "Pigeon Pea",
+    "Groundnut",
+    "Pomegranate",
+    "Grapes",
+    "Banana",
+    "Mango",
+    "Orange",
+    "Sorghum",
+    "Pearl Millet",
+    "Turmeric",
 ]
 
 # Crop-specific prompt ensembles for fine-grained morphological feature extraction
@@ -67,6 +79,9 @@ CROP_PROMPT_ENSEMBLES: Dict[str, List[str]] = {
         "a photo of a maize cob",
         "yellow corn cob with kernels",
         "close up of maize ear and corn fruit",
+        "a photo of fresh yellow sweetcorn cobs with green husk",
+        "fresh ripe yellow corn cobs",
+        "harvested sweet corn cobs",
     ],
     "Cotton": [
         "a photo of a cotton plant",
@@ -112,6 +127,93 @@ CROP_PROMPT_ENSEMBLES: Dict[str, List[str]] = {
         "gram plant leaves in field",
         "chickpea pods growing on a plant",
         "close up of green chickpea garbanzo beans in pods",
+    ],
+    "Onion": [
+        "a photo of an onion plant",
+        "tubular hollow green onion leaves in field",
+        "onion crop foliage in agricultural farm",
+        "close up of onion bulb and roots in soil",
+        "red onion bulb growing on farm",
+        "harvested red kanda onions",
+    ],
+    "Potato": [
+        "a photo of a potato plant",
+        "potato crop foliage with compound leaves",
+        "close up of potato leaves in field",
+        "potato plant flowering with white and purple flowers",
+        "harvested brown potato tubers batata",
+    ],
+    "Pigeon Pea": [
+        "a photo of a pigeon pea plant",
+        "tur arhar crop foliage in field",
+        "pigeon pea plant with trifoliate leaves",
+        "yellow flowers of pigeon pea plant",
+        "pigeon pea green pods hanging on plant",
+        "harvested toor dal arhar grains",
+    ],
+    "Groundnut": [
+        "a photo of a groundnut plant",
+        "peanut crop foliage in agricultural field",
+        "groundnut plant with tetrafoliate leaves",
+        "small yellow flowers of groundnut plant",
+        "close up of groundnut peanut pods dug from soil",
+        "fresh harvested bhuimug peanuts in shell",
+    ],
+    "Pomegranate": [
+        "a photo of a pomegranate tree",
+        "dalimb foliage with glossy oblong leaves",
+        "pomegranate tree with red flowers",
+        "ripe red pomegranate fruit hanging on branch",
+        "close up of red bhagwa pomegranate dalimb",
+    ],
+    "Grapes": [
+        "a photo of a grapevine in vineyard",
+        "grape leaves with palmate lobed structure",
+        "vineyard canopy with green grape leaves",
+        "bunches of green and black grapes on vine",
+        "close up of draksha grape clusters",
+    ],
+    "Banana": [
+        "a photo of a banana tree",
+        "large broad green banana leaf blade",
+        "banana plantation with green foliage",
+        "hanging bunch of green bananas with flower heart",
+        "close up of keli banana bunch",
+    ],
+    "Mango": [
+        "a photo of a mango tree",
+        "dense dark green lanceolate mango leaves",
+        "mango tree foliage in orchard",
+        "alphonso hapus mango fruit hanging on tree",
+        "close up of ripe golden yellow alphonso mango",
+    ],
+    "Orange": [
+        "a photo of a citrus orange tree",
+        "nagpur santra tree foliage with dark green leaves",
+        "mandarin orange tree with round fruits",
+        "ripe bright orange citrus fruits on branch",
+        "close up of nagpur santra orange",
+    ],
+    "Sorghum": [
+        "a photo of a sorghum crop",
+        "jowar plant with broad corn-like leaf blades",
+        "tall sorghum crop in farm field",
+        "dense compact sorghum grain panicle head",
+        "close up of maldandi jowar grain head",
+    ],
+    "Pearl Millet": [
+        "a photo of a pearl millet bajra crop",
+        "bajra plant with long narrow leaf blades",
+        "tall pearl millet plants in agricultural field",
+        "long cylindrical spike ear head of bajra with bristles",
+        "close up of bajra ear head grains",
+    ],
+    "Turmeric": [
+        "a photo of a turmeric plant",
+        "large broad oblong green turmeric leaves",
+        "halad turmeric crop foliage in field",
+        "freshly dug turmeric rhizomes with yellow flesh",
+        "close up of harvested haldi rhizomes",
     ],
 }
 
@@ -186,14 +288,16 @@ def _get_crop_id_model():
         from ml.config import BASE_DIR
         images_dir = BASE_DIR.parent.parent / "public" / "images"
         crop_exemplar_files = {
-            "Cotton": ["crop_cotton.jpg", "crop_leaf1.jpg", "crop_leaf3.jpg"],
-            "Soybean": ["crop_soybean.jpg"],
+            "Cotton": ["crop_cotton.jpg", "cotton_crop.jpg", "crop_leaf1.jpg", "crop_leaf3.jpg"],
+            "Soybean": ["crop_soybean.jpg", "soybean_crop.jpg"],
             "Rice": ["crop_rice.jpg"],
             "Wheat": ["crop_wheat.jpg"],
-            "Sugarcane": ["crop_sugarcane.jpg"],
+            "Sugarcane": ["crop_sugarcane.jpg", "sugarcane_crop.jpg"],
             "Maize": ["crop_maize.jpg"],
-            "Tomato": ["crop_tomato.jpg"],
+            "Tomato": ["crop_tomato.jpg", "tomato_crop.jpg"],
             "Chickpea": ["crop_chickpea.jpg"],
+            "Onion": ["onion_crop.jpg"],
+            "Potato": ["potato_crop.jpg"],
         }
 
         vis_embeds_list = []
@@ -251,7 +355,8 @@ def identify_crop(image_bytes: bytes) -> CropIdentification:
             img_embed = _extract_image_features(model, inputs)
 
             # Cosine similarity to text prompts & visual prototypes
-            text_sims = (img_embed @ text_embeds[:8].T)[0]  # type: ignore
+            num_crops = len(TARGET_CROPS)
+            text_sims = (img_embed @ text_embeds[:num_crops].T)[0]  # type: ignore
             vis_sims = (img_embed @ vis_embeds.T)[0]  # type: ignore
 
             # Multimodal similarity score: 30% text semantics + 70% visual feature prototypes
@@ -276,7 +381,7 @@ def identify_crop(image_bytes: bytes) -> CropIdentification:
         # 2. Text crop similarity must strictly exceed open-set negative null prompts
         # 3. Top candidate similarity must exceed 2nd candidate by margin (0.015)
         max_crop_text_sim = float(torch.max(text_sims).item())
-        null_sims = (img_embed @ text_embeds[8:].T)[0]  # type: ignore
+        null_sims = (img_embed @ text_embeds[num_crops:].T)[0]  # type: ignore
         max_null_text_sim = float(torch.max(null_sims).item())
 
         is_valid_crop = (
@@ -291,7 +396,7 @@ def identify_crop(image_bytes: bytes) -> CropIdentification:
                 crop_name=top_crop,
                 confidence=top_conf,
                 is_identified=False,
-                message="Unable to identify crop. Please ensure the crop photo clearly shows one of: Rice, Wheat, Maize, Cotton, Soybean, Sugarcane, Tomato, or Chickpea.",
+                message="Unable to identify crop. Please ensure the crop photo clearly shows one of the 20 supported crops.",
             )
 
         return CropIdentification(
