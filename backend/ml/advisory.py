@@ -706,16 +706,45 @@ EXPERT_VERIFICATION_ADVISORY = {
     ]
 }
 
+# ── Load Structured Knowledge Base from JSON ──────────────────────────────────
+import json
+from pathlib import Path
+
+_KNOWLEDGE_JSON_PATH = Path(__file__).resolve().parent.parent / "data" / "crop_disease_knowledge.json"
+try:
+    if _KNOWLEDGE_JSON_PATH.exists():
+        with open(_KNOWLEDGE_JSON_PATH, "r", encoding="utf-8") as _f:
+            _kb_data = json.load(_f)
+            for _c, _conds in _kb_data.items():
+                if _c not in ADVISORY_DATABASE:
+                    ADVISORY_DATABASE[_c] = {}
+                for _d, _info in _conds.items():
+                    ADVISORY_DATABASE[_c][_d] = {
+                        "explanation": _info.get("explanation", ""),
+                        "symptoms": _info.get("symptoms", []),
+                        "recommended_actions": _info.get("culturalActions", _info.get("recommended_actions", [])),
+                        "prevention": _info.get("prevention", []),
+                        "source": _info.get("source", "ICAR"),
+                        "source_type": _info.get("sourceType", "ICAR"),
+                        "pesticide_note": _info.get("pesticideNote", "Use only registered crop-protection products according to the label and local agricultural guidance.")
+                    }
+except Exception as _kb_err:
+    pass
+
 
 def get_disease_advisory(crop_name: str, disease_name: str) -> Dict[str, Any]:
     """
     Retrieves controlled advisory data for a given crop and disease.
     Returns EXPERT_VERIFICATION_ADVISORY if disease is unverified or unknown.
     """
-    crop_data = ADVISORY_DATABASE.get(crop_name, {})
+    from data.canonical_mapping import normalize_crop_name
+    canonical_crop = normalize_crop_name(crop_name)
+
+    crop_data = ADVISORY_DATABASE.get(canonical_crop, ADVISORY_DATABASE.get(crop_name, {}))
     advisory = crop_data.get(disease_name)
 
     if not advisory or disease_name == "Needs expert verification":
         return EXPERT_VERIFICATION_ADVISORY
 
     return advisory
+
