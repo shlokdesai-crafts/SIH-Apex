@@ -1,0 +1,68 @@
+crop_id,crop,sage_crop_label,disease,images_downloaded,images_failed,images_skipped,source_dataset,status
+41,Turmeric,None,None,0,0,0,tirtho149/SAGE,Unavailable in SAGE (Replacement: Onion)
+41,Onion (Replacement for Turmeric),Onion,Alternaria Embellisia Togashi,24,0,0,tirtho149/SAGE,Downloaded
+41,Onion (Replacement for Turmeric),Onion,Anthracnose,13,0,0,tirtho149/SAGE,Downloaded
+41,Onion (Replacement for Turmeric),Onion,Aspergillus Fungi,21,0,0,tirtho149/SAGE,Downloaded
+41,Onion (Replacement for Turmeric),Onion,Aster Yellows Phytoplasma,25,0,0,tirtho149/SAGE,Downloaded
+41,Onion (Replacement for Turmeric),Onion,Bacterial Soft Rot,3,0,0,tirtho149/SAGE,Downloaded
+41,Onion (Replacement for Turmeric),Onion,Botrytis Aclada Fresen,29,0,0,tirtho149/SAGE,Downloaded
+41,Onion (Replacement for Turmeric),Onion,Bread Mold,13,0,0,tirtho149/SAGE,Downloaded
+41,Onion (Replacement for Turmeric),Onion,Downy Mildew,21,0,0,tirtho149/SAGE,Downloaded
+41,Onion (Replacement for Turmeric),Onion,Fusarium Damping-Off,11,0,0,tirtho149/SAGE,Downloaded
+41,Onion (Replacement for Turmeric),Onion,Iris Yellow Spot Virus,14,0,0,tirtho149/SAGE,Downloaded
+41,Onion (Replacement for Turmeric),Onion,Leaf Spot,10,0,0,tirtho149/SAGE,Downloaded
+41,Onion (Replacement for Turmeric),Onion,Onion Smudge,4,0,0,tirtho149/SAGE,Downloaded
+41,Onion (Replacement for Turmeric),Onion,Root Rot,15,0,0,tirtho149/SAGE,Downloaded
+41,Onion (Replacement for Turmeric),Onion,Smut,1,0,0,tirtho149/SAGE,Downloaded
+41,Onion (Replacement for Turmeric),Onion,Sour Skin Of Onion,1,0,0,tirtho149/SAGE,Downloaded
+41,Onion (Replacement for Turmeric),Onion,Southern Blight,3,0,0,tirtho149/SAGE,Downloaded
+41,Onion (Replacement for Turmeric),Onion,White Rot,14,0,0,tirtho149/SAGE,Downloaded
+42,Ginger,Ginger,Leaf Spot,25,0,0,tirtho149/SAGE,Downloaded
+43,Garlic,Garlic,Leaf Blight,40,0,52,tirtho149/SAGE,Downloaded
+43,Garlic,Garlic,Rust,40,0,66,tirtho149/SAGE,Downloaded
+44,Black Pepper,Pepper,Bacterial Spot,40,0,2951,tirtho149/SAGE,Downloaded
+45,Cardamom,None,None,0,0,0,tirtho149/SAGE,Unavailable in SAGE (Replacement: Cauliflower)
+45,Cauliflower (Replacement for Cardamom),Cauliflower,Alternaria Leaf Spot,5,0,0,tirtho149/SAGE,Downloaded
+45,Cauliflower (Replacement for Cardamom),Cauliflower,Black Rot,40,0,3199,tirtho149/SAGE,Downloaded
+45,Cauliflower (Replacement for Cardamom),Cauliflower,Downy Mildew,40,0,4273,tirtho149/SAGE,Downloaded
+46,Cumin,None,None,0,0,0,tirtho149/SAGE,Unavailable in SAGE (Replacement: Cucumber)
+46,Cucumber (Replacement for Cumin),Cucumber,Angular Leaf Spot,40,0,120,tirtho149/SAGE,Downloaded
+46,Cucumber (Replacement for Cumin),Cucumber,Anthracnose,40,0,216,tirtho149/SAGE,Downloaded
+46,Cucumber (Replacement for Cumin),Cucumber,Bacterial Wilt,40,0,355,tirtho149/SAGE,Downloaded
+46,Cucumber (Replacement for Cumin),Cucumber,Phytophthora Blight,36,0,0,tirtho149/SAGE,Downloaded
+46,Cucumber (Replacement for Cumin),Cucumber,Powdery Mildew,40,0,144,tirtho149/SAGE,Downloaded
+47,Coriander,None,None,0,0,0,tirtho149/SAGE,Unavailable in SAGE (Replacement: Mango)
+47,Mango (Replacement for Coriander),Mango,Anthracnose,40,0,2559,tirtho149/SAGE,Downloaded
+47,Mango (Replacement for Coriander),Mango,Bacterial Canker,40,0,467,tirtho149/SAGE,Downloaded
+48,Fenugreek,None,None,0,0,0,tirtho149/SAGE,Unavailable in SAGE (Replacement: Banana)
+48,Banana (Replacement for Fenugreek),Banana,Cigar End Rot,40,0,2,tirtho149/SAGE,Downloaded
+48,Banana (Replacement for Fenugreek),Banana,Cordana Leaf Spot,40,0,757,tirtho149/SAGE,Downloaded
+48,Banana (Replacement for Fenugreek),Banana,Panama Disease,40,0,1425,tirtho149/SAGE,Downloaded
+49,Tea,Tea,Leaf Blight,40,0,307,tirtho149/SAGE,Downloaded
+49,Tea,Tea,Red Leaf Spot,40,0,1110,tirtho149/SAGE,Downloaded
+50,Coffee,Coffee,Berry Blotch,40,0,78,tirtho149/SAGE,Downloaded
+50,Coffee,Coffee,Phoma,40,0,4559,tirtho149/SAGE,Downloaded
+50,Coffee,Coffee,Rust,40,0,6396,tirtho149/SAGE,Downloaded
+51,Cashew,Cashew,Anthracnose,40,0,1129,tirtho149/SAGE,Downloaded
+51,Cashew,Cashew,Red Rust,40,0,1127,tirtho149/SAGE,Downloaded
+52,Arecanut / Betel Nut,None,None,0,0,0,tirtho149/SAGE,Unavailable in SAGE (Replacement: Papaya)
+52,Papaya (Replacement for Arecanut / Betel Nut),Papaya,Alternaria Black Molds Stem Cankers,2,0,0,tirtho149/SAGE,Downloaded
+52,Papaya (Replacement for Arecanut / Betel Nut),Papaya,Anthracnose,40,0,1115,tirtho149/SAGE,Downloaded
+52,Papaya (Replacement for Arecanut / Betel Nut),Papaya,Black Spot,7,0,0,tirtho149/SAGE,Downloaded
+52,Papaya (Replacement for Arecanut / Betel Nut),Papaya,Brown Spot,2,0,0,tirtho149/SAGE,Downloaded
+52,Papaya (Replacement for Arecanut / Betel Nut),Papaya,Papaya Mosaic Virus,40,0,2372,tirtho149/SAGE,Downloaded
+53,Rubber,None,None,0,0,0,tirtho149/SAGE,Unavailable in SAGE (Replacement: Grape)
+53,Grape (Replacement for Rubber),Grape,Black Measles,40,0,9430,tirtho149/SAGE,Downloaded
+53,Grape (Replacement for Rubber),Grape,Black Rot,40,0,2083,tirtho149/SAGE,Downloaded
+53,Grape (Replacement for Rubber),Grape,Leafroll Disease,40,0,31,tirtho149/SAGE,Downloaded
+54,Cocoa,None,None,0,0,0,tirtho149/SAGE,Unavailable in SAGE (Replacement: Eggplant)
+54,Eggplant (Replacement for Cocoa),Eggplant,Cercospora Leaf Spot,40,0,67,tirtho149/SAGE,Downloaded
+54,Eggplant (Replacement for Cocoa),Eggplant,Phytophthora Blight,23,0,0,tirtho149/SAGE,Downloaded
+54,Eggplant (Replacement for Cocoa),Eggplant,Wilt Disease,40,0,22,tirtho149/SAGE,Downloaded
+55,Oil Palm,None,None,0,0,0,tirtho149/SAGE,Unavailable in SAGE (Replacement: Melon)
+55,Melon (Replacement for Oil Palm),Melon,Anthracnose,40,0,65,tirtho149/SAGE,Downloaded
+55,Melon (Replacement for Oil Palm),Melon,Bacterial Fruit Blotch,40,0,3,tirtho149/SAGE,Downloaded
+55,Melon (Replacement for Oil Palm),Melon,Downy Mildew,40,0,37,tirtho149/SAGE,Downloaded
+55,Melon (Replacement for Oil Palm),Melon,Gummy Stem Blight,40,0,99,tirtho149/SAGE,Downloaded
+55,Melon (Replacement for Oil Palm),Melon,Phytophthora Blight,40,0,163,tirtho149/SAGE,Downloaded
+55,Melon (Replacement for Oil Palm),Melon,Powdery Mildew,40,0,22,tirtho149/SAGE,Downloaded

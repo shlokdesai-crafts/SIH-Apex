@@ -85,6 +85,7 @@ async def scan_crop(
     file: UploadFile = File(..., description="JPG or PNG crop image, max 10 MB"),
     farmer_name: Optional[str] = Form(default="Anonymous"),
     farmer_id: Optional[str] = Form(default="default_farmer"),
+    crop: Optional[str] = Form(default=None),
     location: Optional[str] = Form(default="Unknown"),
     latitude: Optional[float] = Form(default=None),
     longitude: Optional[float] = Form(default=None),
@@ -166,7 +167,13 @@ async def scan_crop(
     crop_id: CropIdentification = identify_crop(contents)
     crop_analysis.crop_identification = crop_id
 
-    if not crop_id.is_identified:
+    # If the farmer explicitly pre-selected a crop, honor the farmer's selection
+    if crop and crop.strip():
+        canonical_crop = normalize_crop_name(crop.strip())
+        display_crop = get_display_crop_name(canonical_crop)
+        crop_id.crop_name = display_crop
+        crop_id.is_identified = True
+    elif not crop_id.is_identified:
         unsupported_msg = crop_id.message or "This crop is not currently supported by the CropGuard recognition model."
         all_errors.append(unsupported_msg)
         return ScanResponse(
@@ -182,11 +189,12 @@ async def scan_crop(
             image_quality=image_quality,
             crop_analysis=crop_analysis,
         )
+    else:
+        # Normalise canonical and display crop names from image identification
+        canonical_crop = normalize_crop_name(crop_id.crop_name)
+        display_crop = get_display_crop_name(canonical_crop)
+        crop_id.crop_name = display_crop
 
-    # Normalise canonical and display crop names
-    canonical_crop = normalize_crop_name(crop_id.crop_name)
-    display_crop = get_display_crop_name(canonical_crop)
-    crop_id.crop_name = display_crop
     crop_conf_pct = round(crop_id.confidence * 100, 1)
 
     # ── Step 5: Phase 3B Real Crop Disease Detection ──────────────────────────

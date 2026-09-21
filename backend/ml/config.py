@@ -479,3 +479,21 @@ MODEL_PATH = CROP_CONFIGS["Sugarcane"]["model_path"]
 DATASET_DIR = CROP_CONFIGS["Sugarcane"]["data_dir"]
 SEVERITY_MAP = CROP_CONFIGS["Sugarcane"]["severity_map"]
 STATUS_MAP = CROP_CONFIGS["Sugarcane"]["status_map"]
+
+# ── SAGE Dataset Registration (Independent Expansion Dataset) ────────────────
+SAGE_DATA_DIR = BASE_DIR / "data_sage"
+SAGE_METADATA_PATH = SAGE_DATA_DIR / "sage_metadata.csv"
+SAGE_DATASET_INFO: Dict[str, Any] = {
+    "name": "SAGE (tirtho149/SAGE)",
+    "data_dir": SAGE_DATA_DIR,
+    "metadata_path": SAGE_METADATA_PATH,
+    "available_crops": ["Ginger", "Garlic", "Pepper", "Tea", "Coffee", "Cashew"],
+    "is_integrated_in_training": False,
+    "notice": (
+        "SAGE dataset images are saved separately in backend/ml/data_sage/ and "
+        "have not yet been trained into existing models. Existing models serve "
+        "the 8 primary crops (Chickpea, Cotton, Maize, Rice, Soybean, Sugarcane, "
+        "Tomato, Wheat)."
+    ),
+}
+

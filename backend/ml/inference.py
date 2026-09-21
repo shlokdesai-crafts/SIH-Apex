@@ -86,17 +86,16 @@ def _get_crop_inference_model(crop_name: str) -> Tuple[torch.nn.Module, torch.de
         if model_path.exists():
             logger.info(f"Loading {crop_name} disease model from {model_path}…")
             model = load_crop_checkpoint(model_path, num_classes=len(classes), device=_device)
+            _models_cache[crop_name] = model
         else:
             logger.warning(
                 f"No checkpoint found for {crop_name} at {model_path}. "
-                f"Training a fresh model (requires real data)…"
+                f"On-the-fly training during inference is disabled."
             )
-            from ml.train import train_crop_model
-            model = train_crop_model(crop_name=crop_name, epochs=20)
-            model.to(_device)
-            model.eval()
-
-        _models_cache[crop_name] = model
+            raise FileNotFoundError(
+                f"Model checkpoint for '{crop_name}' not found at {model_path}. "
+                f"Please train and save the model checkpoint before running inference."
+            )
 
     return _models_cache[crop_name], _device  # type: ignore[return-value]
 

@@ -167,10 +167,12 @@ export async function scanCropImage(
     longitude?: number | null;
     farmerName?: string;
     farmerId?: string;
+    crop?: string;
   }
 ): Promise<ScanResponseData> {
   const form = new FormData();
   form.append('file', file);
+  if (options?.crop) form.append('crop', options.crop);
   if (options?.farmerName) form.append('farmer_name', options.farmerName);
   if (options?.farmerId) form.append('farmer_id', options.farmerId);
   if (options?.latitude != null && options?.longitude != null) {

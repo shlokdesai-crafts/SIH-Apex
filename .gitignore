@@ -36,3 +36,14 @@ scratch/
 # Python
 __pycache__/
 *.pyc
+
+# Datasets and experiment artifacts
+backend/ml/data_sage/
+backend/ml/data_external/
+backend/ml/experiments/
+
+# Stray files and nested directories
+SIH-Apex/
+Data
+'
+

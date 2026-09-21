@@ -828,6 +828,12 @@
   padding: 4px 10px;
   border-radius: 14px;
   white-space: nowrap;
+  border: none;
+  transition: background 0.15s, transform 0.1s;
+}
+.sc-view-all:hover {
+  background: #c8e6c9;
+  transform: translateY(-1px);
 }
 
 .sc-crops-scroll {
@@ -835,6 +841,19 @@
   gap: 8px;
   overflow-x: auto;
   padding-bottom: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: #c8e6c9 transparent;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sc-crops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 12px 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 6px 2px;
   scrollbar-width: thin;
   scrollbar-color: #c8e6c9 transparent;
 }
