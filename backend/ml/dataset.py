@@ -164,27 +164,68 @@ def _stratified_split(
     return tr_p, tr_l, va_p, va_l, te_p, te_l
 
 
+import hashlib
+
+def compute_md5(p: Path) -> str:
+    hasher = hashlib.md5()
+    with open(p, "rb") as f:
+        while chunk := f.read(65536):
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+
 # ── Public API ────────────────────────────────────────────────────────────────
 
 def _collect_images(data_dir: Path, classes: List[str]) -> Tuple[List[Path], List[int]]:
-    """Scans data_dir/<ClassName>/ folders and returns (paths, labels)."""
+    """
+    Scans data_dir/<ClassName>/ folders, performs rigorous validation and deduplication,
+    and returns (paths, labels).
+    Fails loudly if any mock/synthetic procedural images or zero-byte files are found.
+    """
     all_paths: List[Path] = []
     all_labels: List[int] = []
+    seen_hashes: Dict[str, Path] = {}
     class_to_idx = {cls: i for i, cls in enumerate(classes)}
 
     for cls_name in classes:
         cls_dir = data_dir / cls_name
         if not cls_dir.exists():
-            logger.warning(f"Missing class directory: {cls_dir}")
-            continue
+            raise FileNotFoundError(f"Missing required class directory: {cls_dir}")
+
         idx = class_to_idx[cls_name]
         n_before = len(all_paths)
-        for ext in ("*.jpg", "*.jpeg", "*.png", "*.JPG", "*.JPEG", "*.PNG"):
+        found_paths = set()
+        for ext in ("*.jpg", "*.jpeg", "*.png", "*.JPG", "*.JPEG", "*.PNG", "*.webp"):
             for p in cls_dir.glob(ext):
-                all_paths.append(p)
-                all_labels.append(idx)
+                found_paths.add(p.resolve())
+
+        for p in sorted(found_paths):
+            size = p.stat().st_size
+            if size == 0:
+                raise ValueError(f"Corrupt/empty image found: {p}")
+
+            # Check for synthetic naming + small file size (< 10 KB)
+            name_parts = p.stem.split("_")
+            if len(name_parts) >= 2 and name_parts[-1].isdigit() and len(name_parts[-1]) == 3 and size < 10 * 1024:
+                raise ValueError(
+                    f"Mock/synthetic procedural image detected at {p} (size {size} bytes). "
+                    f"CropGuard ML pipeline strictly forbids synthetic/mock images in training."
+                )
+
+            # Deduplication
+            h = compute_md5(p)
+            if h in seen_hashes:
+                logger.warning(f"Skipping duplicate image {p.name} (duplicate of {seen_hashes[h].name})")
+                continue
+            seen_hashes[h] = p
+
+            all_paths.append(p)
+            all_labels.append(idx)
+
         n_found = len(all_paths) - n_before
-        logger.info(f"  {cls_name}: {n_found} images")
+        if n_found == 0:
+            raise ValueError(f"Class '{cls_name}' has 0 valid images in {cls_dir}.")
+        logger.info(f"  {cls_name}: {n_found} verified real images")
 
     return all_paths, all_labels
 
@@ -196,15 +237,26 @@ def load_dataset_splits(
 ) -> Tuple[CropImageDataset, CropImageDataset, CropImageDataset]:
     """
     Loads real labeled images from disk and returns stratified train/val/test splits.
+    Guarantees:
+      - Only verified real-world agricultural datasets can be loaded
+      - No synthetic/mock images are present
+      - No duplicate images across train/val/test
+      - Deterministic evaluation transforms on val/test, data augmentation only on train
 
     Raises:
-        FileNotFoundError: If the data directory is missing or empty — tells the user
-                           to run `python -m ml.download_data` instead of silently
-                           generating synthetic images.
+        ValueError: If crop is unverified or data is mock/synthetic.
+        FileNotFoundError: If the data directory is missing or empty.
     """
     crop_cfg = CROP_CONFIGS.get(crop_name)
     if not crop_cfg or not crop_cfg.get("classes"):
         raise ValueError(f"Crop '{crop_name}' is not configured.")
+
+    if not crop_cfg.get("verified_real", False):
+        raise ValueError(
+            f"Crop '{crop_name}' does not have a verified real agricultural dataset. "
+            f"Training on mock/unverified data is strictly disabled.\n"
+            f"Status: {crop_cfg.get('dataset_source', 'Awaiting verified data')}."
+        )
 
     classes: List[str] = crop_cfg["classes"]
     data_dir: Path = crop_cfg["data_dir"]
@@ -212,37 +264,29 @@ def load_dataset_splits(
     if not data_dir.exists():
         raise FileNotFoundError(
             f"Data directory not found: {data_dir}\n"
-            f"Run:  python -m ml.download_data --crop {crop_name}\n"
-            f"to download real labeled images before training."
+            f"Ensure genuine real-world agricultural dataset is populated."
         )
 
-    logger.info(f"Loading {crop_name} dataset from {data_dir}")
+    logger.info(f"Loading verified {crop_name} dataset from {data_dir} (Source: {crop_cfg.get('dataset_source')})")
     all_paths, all_labels = _collect_images(data_dir, classes)
 
     if len(all_paths) == 0:
-        raise FileNotFoundError(
-            f"No images found in {data_dir}.\n"
-            f"Run:  python -m ml.download_data --crop {crop_name}\n"
-            f"to populate this directory with real labeled images."
-        )
-
-    # Warn if any class is suspiciously small (likely still has synthetic fakes)
-    counts = Counter(all_labels)
-    for i, cls in enumerate(classes):
-        n = counts.get(i, 0)
-        if n < 30:
-            logger.warning(
-                f"[{crop_name}] Class '{cls}' has only {n} images. "
-                f"Models trained on fewer than ~30 real images per class are unreliable. "
-                f"Run python -m ml.download_data --crop {crop_name} to get more data."
-            )
+        raise FileNotFoundError(f"No images found in {data_dir}.")
 
     tr_p, tr_l, va_p, va_l, te_p, te_l = _stratified_split(
         all_paths, all_labels, val_frac=val_split, test_frac=test_split
     )
 
+    # Sanity check: Ensure no duplicate paths across splits
+    train_set = set(tr_p)
+    val_set = set(va_p)
+    test_set = set(te_p)
+    assert len(train_set.intersection(val_set)) == 0, "Data leakage: train and val overlap!"
+    assert len(train_set.intersection(test_set)) == 0, "Data leakage: train and test overlap!"
+    assert len(val_set.intersection(test_set)) == 0, "Data leakage: val and test overlap!"
+
     logger.info(
-        f"[{crop_name}] Split → train={len(tr_p)}, val={len(va_p)}, test={len(te_p)}"
+        f"[{crop_name}] Stratified split -> train={len(tr_p)}, val={len(va_p)}, test={len(te_p)}"
     )
 
     train_tf, val_tf = get_transforms()

@@ -1,0 +1,1252 @@
+crop,disease,image_count
+Hornbeam,Diaporthe Revellens Sacc,4
+Pistachio,Alternaria Black Molds Stem Cankers,10
+Banana,Phoma Blight,1
+Banana,Phyllosticta Leaf Spot,2
+Banana,Panama Disease,1465
+Banana,Pseudocercospora Leaf Spot,3696
+Banana,Anthracnose,75
+Banana,Phaeoseptoria Leaf Spot,2
+Banana,Banana Bunchy Top Virus,166
+Banana,Rust,3967
+Banana,Cordana Leaf Spot,797
+Banana,Pestalotiopsis Leaf Spot,1
+Banana,Cigar End Rot,60
+Cabbage,Leptosphaerulina Leaf Blight,1
+Cabbage,Alternaria Black Molds Stem Cankers,82
+Cabbage,Downy Mildew,94
+Cabbage,Turnip Mosaic Virus,2
+Cabbage,Club Root Of Crucifers,2
+Cabbage,Black Rot,135
+Oak,Fuscoporia Fungus,1
+Oak,Dog S Nose Fungus,7
+Oak,Bacterial Wetwood,3
+Oak,Phytophthora Root And Crown Rots,23
+Oak,Bacterial Leaf Scorch,29
+Oak,Botryosphaeria Rots And Cankers,33
+Oak,Monochaetia Fungi,10
+Oak,Lion S Mane Hericium,1
+Oak,Polypore,19
+Oak,Sulfur Shelf,7
+Oak,Ganoderma Root And Butt Rot,22
+Oak,Leaf Blister,55
+Oak,Oak Wilt,58
+Oak,Armillaria Root Rot,12
+Oak,Hypoxylon Canker,16
+Oak,Powdery Mildew,4
+Oak,Canker Rot,11
+Oak,Anthracnose,17
+Oak,Coryneum Twig Blight,15
+Oak,Drippy Blight,47
+Oak,Bur Oak Blight,1
+Oak,Cryptocline Fungus,10
+Oak,Mock Oyster,3
+Oak,Bondarzewia Berkeleyi,2
+Oak,Jack-O-Lantern Mushroom,5
+Oak,Nectria Canker,17
+Oak,Turkey Tail,2
+Oak,Black Spot,1
+Oak,Orange Hobnail Canker,1
+Oak,Marssonina Leaf Spot,15
+Oak,Smooth Patch Of Oak,6
+Oak,Leaf Spot,33
+Oak,Cytospora Cankers,11
+Oak,Dryad S Saddle,2
+Oak,Weeping Conk,5
+Oak,Hairy Stereum,2
+Oak,Basal Cankers,1
+Oak,Tar Spot,8
+Ginkgo,Bacterial Leaf Scorch,3
+Pansy,Pythium Diseases,7
+Pansy,Berkeleyomyces Basicola,7
+Eucalyptus,Leaf Spot,5
+Lentil,Pythium Diseases,6
+Lentil,Leaf Spot,6
+Lentil,Ascochyta Blight,10
+Piedmont Azalea,Leaf And Flower Gall,32
+Vetch,Rust,2
+Dahlia,Dahlia Mosaic Virus,2
+Dahlia,Maryland Aster Yellows,3
+Kentucky Yellowwood,Anthracnose,1
+Ivy,Anthracnose,3
+Morning-Glory,White Rust,9
+Beardtongue,Impatiens Necrotic Spot Virus,1
+Virginia Bluebells,Tobacco Rattle Virus,1
+American Bittersweet,Marssonina Leaf Spot,1
+Ophiopogon,Anthracnose,3
+Grape,Grape Anthracnose,12
+Grape,Bacterial Leaf Scorch,4
+Grape,Leaf Blight,22200
+Grape,Leafroll Disease,71
+Grape,Powdery Mildew,593
+Grape,Black Measles,18795
+Grape,Black Rot,35616
+Grape,Crown Gall,3
+Grape,Downy Mildew,314
+Grape,Gray Mold,33
+Alpinia,Paraleptosphaeria Macrospora,6
+Sunflower,Septoria Leaf Blotch,10
+Sunflower,Rust,16
+Sunflower,Sclerotinia Timber Rot,20
+Sunflower,Downy Mildew,13
+Chickpea,Ascochyta Blight,29
+Mayapple,Mayapple Rust,6
+Daphne,Tubercularia Cankers,10
+Tobacco,Leaf Mosaic Virus,77
+Tobacco,Wildfire Of Tobacco,4
+Tobacco,Pythium Diseases,41
+Tobacco,Phytophthora Blight,84
+Tobacco,Frogeye Leaf Spot,28
+Tobacco,Sclerotinia Timber Rot,5
+Tobacco,Blue Mold,76
+Tobacco,Bacterial Soft Rot,8
+Tobacco,Brown Spot,66
+Raspberry,Leaf Spot,19
+Raspberry,Gray Mold,40
+Raspberry,Rust,66
+Raspberry,Gnomonia Cane Canker,10
+Raspberry,Phytophthora Root And Crown Rots,3
+Raspberry,Fire Blight,34
+Common Hackberry,Bacterial Leaf Scorch,3
+Double Impatiens,Downy Mildew,31
+Double Impatiens,Alternaria Black Molds Stem Cankers,2
+Barley,Cochliobolus Leaf Spot,15
+Barley,Barley Scald,3
+Barley,Septoria Leaf Spot And Cankers,2
+Barley,Rhizoctonia Damping-Off,5
+Barley,Ascochyta Leaf Spot,2
+Pawpaw,Phyllosticta Leaf Spot,4
+Elm,Phomopsis Cankers And Twig Blights,6
+Elm,Bacterial Wetwood,17
+Elm,Armillaria Root Rot,5
+Elm,Dutch Elm Disease,40
+Elm,Black Spot,13
+Sweetgum,Bacterial Leaf Scorch,1
+Sweetgum,Northern Tooth,1
+Sweetgum,Cylindrocladium Root Diseases,1
+Cedar,Needle Blight Of Cedar,47
+Cedar,Phytophthora Root Disease Of Port Orford Cedar,2
+Cedar,Cryptosporiopsis Canker,11
+Cedar,Incense Cedar Broom Rust,2
+Cedar,American Hawthorn Rust,40
+Cedar,Seiridium Cankers,15
+Cedar,Diaporthe Juniperivora Sacc,5
+Cedar,Annosum Root Disease,1
+Zucchini,Powdery Mildew,223
+Zucchini,Downy Mildew,45
+Zucchini,Yellow Mosaic Virus,95
+Zucchini,Choanephora Fruit Rot,2
+Zucchini,Bacterial Wilt,81
+Zucchini,Gummy Stem Blight,9
+Poinsettia,Cercospora Leaf Spot,3
+Poinsettia,Gray Mold,4
+Poinsettia,Berkeleyomyces Basicola,3
+Poinsettia,Pythium Diseases,9
+Poinsettia,Bacterial Leaf Spot,3
+Blackberry,Crown Gall,4
+Blackberry,Bramble Leaf Rust,9
+Iris,Anthracnose,1
+Iris,Impatiens Necrotic Spot Virus,4
+Iris,Heterosporium Leaf Spot On Iris,27
+Spindletree,Crown Gall,3
+Spindletree,Phomopsis Cankers And Twig Blights,3
+Spindletree,Powdery Mildew,14
+Broccoli,Alternaria Leaf Spot,81
+Broccoli,Downy Mildew,29
+Lily,Botrytis Blight,3
+Lily,Lily Symptomless Virus,2
+Lily,Tobacco Rattle Virus,2
+Lily,Cucumber Mosaic Virus,2
+Lily,Pythium Diseases,5
+Lily,Lily Mottle Potyvirus,4
+Ash,Ash Rusts,14
+Ash,Verticillium Wilt,2
+Ash,Ash Leaf Spot,2
+Ash,Anthracnose,6
+Ash,Armillaria Root Rot,7
+Ash,Ash Heart Rot,7
+Ash,Cytospora Cankers,2
+Holly,Ascochyta Fungi,3
+Artichoke,Gray Mold,4
+Hawthorn,American Hawthorn Rust,35
+Hawthorn,Phomopsis Cankers And Twig Blights,3
+Hawthorn,Entomosporium Fungus,14
+Hawthorn,Fire Blight,2
+Jacob S-Ladder,Impatiens Necrotic Spot Virus,3
+Brazilian Gloxinia,Tomato Spotted Wilt Virus,14
+Armeria,Fusarium Wilts,1
+Periwinkle,Phoma Blight,4
+Currant,White Pine Blister Rust,4
+Horseradish,Tobacco Rattle Virus,1
+Lisianthius Gentians,Fusarium Wilts,2
+Palms,Mycosphaerella Fungi,2
+Rice,Nakataea Oryzae,5
+Rice,Pythium Diseases,22
+Rice,Blast,7411
+Rice,Tungro,4412
+Rice,Kernel Smut,3
+Rice,White Leaf Streak Of Rice,8
+Rice,Leaf Smut,40
+Rice,Bacterial Panicle Blight,351
+Rice,Aggregate Sheath Spot,8
+Rice,Bacterial Leaf Blight,4696
+Rice,Brown Spot,5495
+Rice,Narrow Brown Leaf Spot,10
+Rice,Bacteria Wilt And Soft Rot,1
+Rice,Leaf Blight,80
+Rice,Alternaria Leaf Spot,4
+Rice,Sheath Blight,76
+Rice,Sheath Rot Of Rice,7
+Rice,Curvularia Lunata,3
+Rice,False Smut,6
+Rice,Neopyrenochaeta Acicola,1
+Garden Rhubarb,Tobacco Streak Virus,1
+Garden Rhubarb,Ascochyta Fungi,5
+Celosia,Epicoccum Fungi,2
+Monarda,Impatiens Necrotic Spot Virus,3
+Monarda,Powdery Mildew,1
+London Planetree,Septoria Leaf Blotch,9
+Ceylon Bowstring-Hemp,Anthracnose,5
+Orchid,Tomato Spotted Wilt Virus,4
+Orchid,Fusarium Wilts,1
+Orchid,Anthracnose,13
+Orchid,Cladosporium Fungi,1
+Orchid,Blossom Rot,3
+Honeylocust,Sulfur Shelf,1
+Honeylocust,Thyronectria Canker,1
+Rye,Anthracnose,2
+Rye,Ergot,11
+Hemp Marijuana,Rust,1
+Hemp Marijuana,Powdery Mildew,5
+Hemp Marijuana,Beet Curly Top Virus,26
+Hemp Marijuana,Cercospora Leaf Spot,2
+Peace Lily,Cylindrocladium Root Diseases,1
+Japanese Pieris,Pestalotiopsis Leaf Spot,7
+Japanese Pieris,Phytophthora Root And Crown Rots,1
+Bloodflower Milkweed,Sooty Mold,2
+Bacopa,Gray Mold,4
+Turnip,White Rust,1
+Turnip,Club Root Of Crucifers,14
+Turnip,Black Rot,2
+Turnip,Black Spot,16
+Corn,Charcoal Rot,46
+Corn,Ear Rots,526
+Corn,Southern Rust,309
+Corn,Southern Corn Leaf Blight,64
+Corn,Pythium,14
+Corn,Crazy Top,136
+Corn,Alternaria Black Molds Stem Cankers,5
+Corn,Bacterial Rot And Blight,1157
+Corn,Maize White Line Mosaic,4
+Corn,Diplodia Stalk Rot,45
+Corn,Genetic Flecking Or Striping,51
+Corn,Maize Lethal Necrosis,2786
+Corn,Physoderma Stalk Rot,78
+Corn,Pantoea,98
+Corn,Aspergillus Ear And Kernel Rot,33
+Corn,Cladosporium Ear Rot,7
+Corn,Nigrospora Ear Rot,6
+Corn,Penicillium Ear Rot,8
+Corn,Common Rust,20487
+Corn,Fusarium Wilts,8
+Corn,Goss,227
+Corn,Bacterial Leaf Streak,17
+Corn,Anthracnose,129
+Corn,Damping Off,10
+Corn,Tar Spot,150
+Corn,Barley Yellow Dwarf Virus,7
+Corn,Smut,505
+Corn,Head Smut,228
+Corn,Downy Mildew,30
+Corn,Leaf Blight,8147
+Corn,Crown Rot,5
+Corn,Epicoccum Fungus,6
+Corn,Corn Stunt Spiroplasma,29
+Corn,Maize Dwarf Mosaic Virus,27
+Corn,Brown Spot,176
+Corn,Carbonum Leaf Spot,30
+Corn,Rhizopus Stolonifer,4
+Corn,Fusarium Disease,207
+Corn,Leaf Spot,520
+Corn,Gray Leaf Spot,9604
+Corn,Green Mold,7
+Corn,Northern Leaf Blight,10764
+Corn,Holcus Spot,49
+Corn,Eyespot,119
+Corn,General And Mixed Stalk Rots,22
+Corn,Diplodia,105
+Corn,Root Rot,7
+Corn,Maize Streak Virus,5076
+Corn,Maize Chlorotic Dwarf Virus,105
+Corn,Sugarcane Mosaic Virus,3
+Corn,Trichoderma Ear Rot,67
+Corn,Bacterial Stalk Rot,76
+Corn,Purple Leaf Sheath,11
+Tea,Leaf Blight,347
+Tea,Red Leaf Spot,1243
+Yucca,Microsphaeropsis Concentrica,2
+Lilyturf,Anthracnose,5
+Lilyturf,Fusarium Wilts,1
+Celery,Cercospora Leaf Spot,45
+Celery,Anthracnose,29
+Celery,Septoria Leaf Blotch,2
+Yarrow,Bacterial Leaf Spot,1
+Rhododendrons And Azaleas,Exobasidium Fungus,14
+Rhododendrons And Azaleas,Sudden Oak Death,1
+Rhododendrons And Azaleas,Guignardia Blotch,12
+Rhododendrons And Azaleas,Pestalotiopsis Leaf Spot,16
+Rhododendrons And Azaleas,Botryosphaeria Rots And Cankers,6
+Rhododendrons And Azaleas,Bitter Rot And Anthracnose,12
+Rhododendrons And Azaleas,Seifertia Azaleae,1
+Sage Herbs,Downy Mildew,4
+Sage Herbs,Alfalfa Mosaic Virus,1
+Sage Herbs,Anthracnose,2
+Sage Herbs,Bacterial Leaf Spot,3
+Sage Herbs,Gray Mold,8
+Eggplant,Small Leaf Disease,50
+Eggplant,Phytophthora Blight,87
+Eggplant,Cercospora Leaf Spot,171
+Eggplant,Wilt Disease,62
+Bleeding Heart,Tobacco Rattle Virus,13
+Orange,Blue Mold,23
+Orange,Huanglongbing,90437
+Orange,Citrus Blight Disease,1
+Honeysuckle,Powdery Mildew,11
+Porcelainflower,Impatiens Necrotic Spot Virus,2
+Pachystachys,Phoma Blight,1
+Dill,Curvularia Lunata,11
+Oriental Poppy,Alternaria Fungus,6
+Oriental Poppy,Anthracnose,14
+Pumpkin,Bacterial Leaf Spot,5780
+Pumpkin,Downy Mildew,13395
+Pumpkin,Mosaic Disease,5780
+Onion,Alternaria Embellisia Togashi,24
+Onion,Aster Yellows Phytoplasma,25
+Onion,Bread Mold,13
+Onion,Leaf Spot,10
+Onion,Smut,1
+Onion,Fusarium Damping-Off,11
+Onion,Anthracnose,13
+Onion,Sour Skin Of Onion,1
+Onion,Southern Blight,3
+Onion,Botrytis Aclada Fresen,29
+Onion,Iris Yellow Spot Virus,14
+Onion,Root Rot,15
+Onion,Aspergillus Fungi,21
+Onion,Downy Mildew,21
+Onion,White Rot,14
+Onion,Onion Rust,16
+Onion,Onion Smudge,4
+Onion,Bacterial Soft Rot,3
+Peach,Anthracnose,16
+Peach,Brown Rot,220
+Peach,Peach Scab,91
+Peach,Leaf Curl,222
+Peach,X-Disease,4
+Peach,Crown Gall,1
+Peach,Fusicoccum Canker,4
+Peach,Rust,8
+Peach,Bacterial Leaf Spot,21823
+Peach,Armillaria Root Rot,7
+Peach,Botryosphaeria Canker,14
+Peach,Peach Mosaic Virus,10
+Peach,Stigmina Fungus,19
+Peach,Powdery Mildew,8
+Winter-Flowering Begonia,Bacterial Streak,5
+Willow,Melampsora Rust,3
+Willow,Cytospora Cankers,4
+Willow,Marssonina Leaf Spot,14
+Willow,Cercospora Fungi,4
+Benincasa,Downy Mildew,1
+Bird-Of-Paradise,Leptosphaeria Leaf Blight,1
+Bamboo,Java Black Rot,4
+Bamboo,Anthracnose,2
+Bell Pepper,Blossom End Rot,112
+Bell Pepper,Bacterial Leaf Spot,1307
+Bell Pepper,Powdery Mildew,28
+Tomato,Bacterial Pith Necrosis,9
+Tomato,Anthracnose,30
+Tomato,Southern Blight,70
+Tomato,Alternaria Black Molds Stem Cankers,65
+Tomato,Tomato Spotted Wilt Virus,189
+Tomato,Tomato Leaf Curl Virus,50027
+Tomato,Septoria Leaf Blotch,33627
+Tomato,Tomato Necrotic Dwarf Virus,5
+Tomato,Rhizopus Soft Rots,15
+Tomato,Fusarium Damping-Off,13
+Tomato,Phytophthora Blight,208
+Tomato,Leaf Mold,16578
+Tomato,Alfalfa Mosaic Virus,1129
+Tomato,Clover Proliferation Phytoplasma,1
+Tomato,Blossom End Rot,17
+Tomato,Fusarium Wilt,17
+Tomato,Cucumber Mosaic Virus,19
+Tomato,Bacterial Wilt,27
+Tomato,Phytophthora Root And Crown Rots,10
+Tomato,Phytoplasma,1
+Tomato,Leaf Mosaic Virus,9604
+Tomato,Tomato Ringspot Virus,1
+Tomato,Bacterial Canker And Wilt Of Tomato,20
+Tomato,Gray Mold,32
+Tomato,Sclerotinia Rots,25
+Tomato,Brown Spot,2
+Tomato,Bacterial Leaf Spot,27205
+Tomato,Early Blight,20584
+Tomato,Verticillium Wilt,1333
+Tomato,Bacterial Soft Rot,7
+Tomato,Target Spot,22821
+Tomato,Phoma Blight,2
+Tomato,Bacterial Speck Of Tomato,19
+Tomato,Beet Curly Top Virus,2
+Tomato,Powdery Mildew,1256
+Tomato,Late Blight,23469
+Agapanthus,Bitter Rot And Anthracnose,2
+Basil,Downy Mildew,102
+Basil,Curvularia Lunata,2
+Cherry,Black Knot,40
+Cherry,Powdery Mildew,9195
+Cherry,Milk-White Toothed Polypore,9
+Cherry,Little Cherry Virus 2,1
+Cherry,Bacterial Brown Spot Of Beancanker Of Stone Fruit,2
+Cherry,Brown Rot,13
+Cherry,Cherry Rusty Mottle Virus,3
+Cherry,Blumeriella Leaf Spot Of Cherry And Plum,117
+Cherry,X-Disease,2
+Buddha S Hand,Green Mold,5
+Almond,Rust,4
+Almond,Brown Spot,42
+Almond,Brown Rot,37
+Verbena,Acidovorax Bacteria,5
+Verbena,Impatiens Necrotic Spot Virus,2
+Verbena,Powdery Mildew,1
+Guava,Pestalotiopsis Leaf Spot,2
+Hemlock,Dermea,2
+Beet,Southern Blight,4
+Beet,Aphanomyces Root Rot,34
+Beet,Cercospora Fungi,36
+Beet,Beet Curly Top Virus,8
+Beet,Crown Gall,5
+Beet,Powdery Mildew,23
+Beet,Beet Necrotic Yellow Vein Virus,11
+Beet,Beet Western Yellows Virus,6
+Geranium,Gray Mold,6
+Geranium,Bacterial Blight,13
+Geranium,Brown Spot,2
+Geranium,Rust,13
+Geranium,Pelargonium Flower Break Virus,2
+Geranium,Pythium Diseases,3
+American Basswood,Yellow Cap Fungi,1
+Eastern Hemlock,Hemlock Tip Blight,19
+Eastern Hemlock,Hemlock Varnish Shelf,8
+Eastern Hemlock,Hemlock Rust,8
+Solenostemon,Downy Mildew,25
+American Chestnut,Basal Cankers,47
+Nepenthes Pitcher Plants,Pestalotiopsis Leaf Spot,1
+Soybean,Alfalfa Mosaic Virus,36
+Soybean,White Mold,594
+Soybean,Bacterial Pustule,6112
+Soybean,Cercospora,193
+Soybean,Herbicide Injury,5918
+Soybean,Phyllosticta Leaf Spot,292
+Soybean,Phymatotrichum Root Rot,3
+Soybean,Diaporthe,510
+Soybean,Brown Spot,6125
+Soybean,Soybean Cyst Nematode,36
+Soybean,Top Dieback,45
+Soybean,Fusarium Disease,6480
+Soybean,Rhizoctonia,108
+Soybean,Taproot Decline On Soybean,19
+Soybean,Phytophthora,78
+Soybean,Soybean Dwarf Virus,117
+Soybean,Soybean Mosaic Virus,125
+Soybean,Iron Deficiency Chlorosis,5937
+Soybean,Tobacco Ringspot Virus,5
+Soybean,Target Spot,5
+Soybean,Green Stem,416
+Soybean,Rust,400
+Soybean,Brown Stem Rot,217
+Soybean,Pythium,8
+Soybean,Soybean Vein Necrosis Virus,225
+Soybean,Bacterial Blight,6336
+Soybean,Red Crown Rot Of Soybean,6
+Soybean,Bean Pod Mottle Virus,42
+Soybean,Downy Mildew,433
+Soybean,Southern Blight,25
+Soybean,Potassium Deficiency,5872
+Soybean,Tobacco Streak Virus,148
+Soybean,Anthracnose,88
+Soybean,Charcoal Rot,149
+Soybean,Powdery Mildew,111
+Soybean,Frogeye Leaf Spot,6458
+Balloon-Flower,Tomato Spotted Wilt Virus,3
+Lady S-Mantle,Cercospora Fungi,4
+Leucospermum,Pestalotia Fungi,3
+Viburnum,Downy Mildew,6
+Mango,Phaeoramularia Fungus,3
+Mango,Anthracnose,2600
+Mango,Bacterial Canker,3384
+Mango,Powdery Mildew,1625
+Mango,Sooty Mould,2175
+Mango,Pestalotiopsis Blight,1
+Mango,Die Back,2130
+Rosemary,Powdery Mildew,9
+Carnation,Bacterial Leaf Spot,3
+Carnation,Rust,5
+Alfalfa,Downy Mildew,14
+Alfalfa,Sooty Mold,1
+Alfalfa,Fusarium Wilt,9
+Alfalfa,Violet Root Rot,4
+Alfalfa,Phytophthora Root And Stem Rot,18
+Alfalfa,Spring Blackstem,8
+Alfalfa,Leptosphaerulina Leaf Blight,8
+Alfalfa,Summer Black Stem,19
+Alfalfa,Leptotrochila Fungus,6
+Alfalfa,Rust,1
+Alfalfa,Bacterial Wilt,13
+Alfalfa,Verticillium Wilt,21
+Alfalfa,Damping-Offroot Rot,13
+Alfalfa,Crown Wart,1
+Alfalfa,Sclerotinia Stem Rot,13
+Alfalfa,Aster Yellows,1
+Alfalfa,Anthracnose,15
+Alfalfa,Alfalfa Mosaic Virus,7
+Alfalfa,Stemphylium Leaf Spot,10
+Birch,Birch Conk,11
+Birch,Cryptocline Fungus,59
+Birch,Neonectria Canker,1
+Birch,Powdery Mildew,10
+Wheat,Head Scab,365
+Wheat,Septoria Leaf Blotch,577
+Wheat,Alternaria Blight,3
+Wheat,Smut,1242
+Wheat,Wheat Streak Mosaic Virus,21
+Wheat,Barley Yellow Dwarf Virus,20
+Wheat,Powdery Mildew,318
+Wheat,Glume Blotch,21
+Wheat,Root Rot,829
+Wheat,Bacterial Leaf Streak Black Chaff,129
+Wheat,Downy Mildew,7
+Wheat,Leaf Spot,1
+Wheat,Rust,5579
+Wheat,Tan Spot,20
+Wheat,Eyespot,13
+Wheat,Cephalosporium Stripe,12
+Wheat,Sooty Mold,3
+Wheat,Penicillium Fungi,2
+Wheat,Cochliobolus Leaf Spot,4
+Wheat,Septoria Leaf Spot And Cankers,4
+Yew,Cryptocline Needle Blight,25
+Yew,Phytophthora Root Rot,2
+Yew,Pestalotiopsis Leaf Spot,5
+Cucumber,Bacterial Wilt,395
+Cucumber,Southern Blight,4
+Cucumber,Phytophthora Blight,85
+Cucumber,Charcoal Rot,1
+Cucumber,Cucumber Mosaic Virus,1
+Cucumber,Angular Leaf Spot,230
+Cucumber,Alternaria Black Molds Stem Cankers,8
+Cucumber,Pythium Diseases,199
+Cucumber,Anthracnose,397
+Cucumber,Powdery Mildew,204
+Cucumber,Choanephora Fruit Rot,1
+Cucumber,Downy Mildew,557
+Cucumber,Belly Rot,178
+Cucumber,Gray Mold,1
+Cucumber,Phytoplasma,3
+Cucumber,Tomato Ringspot Virus,6
+Cucumber,Gummy Stem Blight,138
+Cucumber,Corynespora Leaf Spot,32
+Cucumber,Fusarium Wilts,1
+Florist S Spiraea,Tobacco Rattle Virus,3
+Florist S Spiraea,Leaf Spot,6
+Peanut,Tomato Spotted Wilt Virus,5
+Peanut,Leptosphaerulina Leaf Blight,6
+Peanut,Phyllosticta Leaf Spot,1
+Peanut,Southern Blight,27
+Peanut,Cercospora Fungi,41
+Peanut,Sclerotinia Stem Rot,18
+Peanut,Peanut Rust,1
+Peanut,Java Black Rot,5
+Papaya,Anthracnose,1157
+Papaya,Alternaria Black Molds Stem Cankers,2
+Papaya,Black Spot,7
+Papaya,Corynespora Leaf Spot,2
+Papaya,Papaya Mosaic Virus,2732
+Meserve Holly,Root Rot,4
+Meserve Holly,Black Stem,3
+Cauliflower,Black Rot,3245
+Cauliflower,Bacterial Soft Rot,4266
+Cauliflower,Downy Mildew,4328
+Cauliflower,Alternaria Leaf Spot,54
+Nightblooming Cactus,Curvularia Cactivora,4
+Nightblooming Cactus,Epicoccum Fungi,5
+Pomegranate,Aspergillus Fungi,4
+Squash,Downy Mildew,15111
+Squash,Plectosphaerella Fungus,34
+Squash,Fusarium Damping-Off,22
+Squash,Phytophthora Blight,288
+Squash,Septoria Leaf Blotch,7
+Squash,Blossom End Rot,7
+Squash,Papaya Ringspot Virus,12
+Squash,Cercospora Fungi,10
+Squash,Fusarium Wilts,15
+Squash,Alternaria Black Molds Stem Cankers,1
+Squash,Gummy Stem Blight,18
+Squash,Southern Blight,14
+Squash,Brown Spot,4
+Squash,Choanephora Fruit Rot,39
+Squash,Bacterial Wilt,9
+Squash,Bacterial Leaf Spot,8
+Squash,Cucurbit Yellow Vine Decline,1
+Squash,Anthracnose,39
+Squash,Beet Curly Top Virus,1
+Squash,Flower Blights,10
+Apple,Black Rot,11912
+Apple,Cedar Apple Rust,13605
+Apple,Cherry Rasp Leaf Virus,1
+Apple,Ceratobasidium Ochroleucum,4
+Apple,Xylaria Root Rots,1
+Apple,Crown Gall,3
+Apple,Powdery Mildew,1193
+Apple,Bitter Rot And Anthracnose,23
+Apple,Phyllosticta Arbutifolia Ellis,5
+Apple,Grey Spot,4810
+Apple,Cytospora Cankers,1
+Apple,Sooty Blotch,3
+Apple,Tomato Ringspot Virus,1
+Apple,Phytophthora Root And Crown Rots,2
+Apple,Apple Scab,7583
+Apple,Blister Spot,2
+Apple,Flyspeck,3
+Apple,Alternaria Blotch,5343
+Apple,Apple Mosaic Virus,4965
+Apple,Southern Blight,5
+Apple,Apple Scar Skin Viroid,1
+Apple,Brown Spot,5655
+Apple,Armillaria Root Rot,1
+Apple,Blue Mold,17
+Apple,Fire Blight,21
+Strawberry,Leaf Scorch,11461
+Strawberry,Leaf Spot,1400
+Strawberry,Powdery Mildew,865
+Strawberry,Phytoplasma,1
+Strawberry,Angular Leaf Spot Of Strawberry,18
+Strawberry,Red Stele,1
+Strawberry,Phomopsis Leaf Blight And Fruit Rot,14
+Strawberry,Anthracnose,276
+Potato,Late Blight,11615
+Potato,Alternaria Black Molds Stem Cankers,11619
+Potato,Southern Blight,44
+Potato,Fusarium Damping-Off,80
+Potato,Bacteria Wilt And Soft Rot,616
+Potato,Charcoal Rot,11
+Potato,Slime Mold,7
+Potato,Common Scab Of Potato,69
+Potato,Tomato Spotted Wilt Virus,100
+Potato,Potato Virus Y,9
+Potato,Pythium Root And Stem Rot,39
+Potato,Sclerotinia Timber Rot,2
+Potato,Tobacco Rattle Virus,1
+Potato,Black Rot,25
+Potato,Penicillium Fungi,87
+Potato,Geotrichum Fungi,3
+Potato,Rhizoctonia Damping-Off,32
+Pepper,Bacterial Leaf Spot,10147
+Pepper,Zonate Leaf Spot,8
+Pepper,Yellow Mottle Virus,191
+Pepper,Septoria Leaf Blotch,25
+Pepper,Powdery Mildew,6
+Marigold,Gray Mold,2
+Lettuce,Tomato Spotted Wilt Virus,25
+Lettuce,Wilt And Leaf Blight On Lettuce,6
+Lettuce,Damping-Offroot Rot,16
+Lettuce,Bacterial Soft Rot,2
+Lettuce,Cercospora Leaf Spot,11
+Lettuce,Phytoplasma,1
+Lettuce,Alternaria Black Molds Stem Cankers,12
+Lettuce,Powdery Mildew,62
+Lettuce,Sclerotinia Stem Rot,151
+Lettuce,Gray Mold,22
+Lettuce,Leaf Mosaic Virus,41
+Lettuce,Black Spot,7
+Lettuce,Lettuce Big Vein-Associated Virus,22
+Lettuce,Downy Mildew,181
+Lettuce,Bacterial Leaf Spot,7
+Lettuce,Southern Blight,13
+Lettuce,Septoria Blight,19
+Lettuce,Lettuce Chlorosis Virus,23
+Chinese Lantern,Abutilon Mosaic Virus,4
+Pear,Pear Scab,17
+Pear,Entomosporium Leaf Spot,6
+Pear,Phytoplasma,8
+Pear,Juniper-Pear Rust,6
+Pear,Powdery Mildew,6
+Pear,Bitter Rot And Anthracnose,11
+Tricyrtis,Potyvirus,2
+Great Blue Lobelia,Tomato Spotted Wilt Virus,4
+Plum,Pruniphilomyces Circumscissus,6
+Plum,Cercospora Fungi,24
+Plum,Prune Dwarf Virus,2
+Plum,Black Knot,19
+Plum,Brown Rot,105
+Plum,Blumeriella Leaf Spot Of Cherry And Plum,27
+Plum,Leaf Curl,67
+Plum,Powdery Mildew,10
+Plum,Pox Virus,33
+Plum,Bacterial Leaf Spot,16
+Plum,Rust,44
+Alumroot,Rust,12
+Alumroot,Tobacco Rattle Virus,2
+Utah Serviceberry,Gynosporanium Rusts,10
+Japanese Pachysandra,Alfalfa Mosaic Virus,4
+Gardenia,Mycosphaerella Fungi,3
+Gardenia,Black Rot,4
+Canna,Canna Yellow Mottle Virus,5
+Leather Flower,Ascochyta Fungi,10
+Leather Flower,Leptosphaeria Leaf Blight,1
+Leather Flower,Clematis Chlorotic Mottle Virus,1
+Quinoa,Potato Virus X,1
+Tulip,Fusarium Wilts,16
+Tulip,Gray Mold,2
+Lemon Grass,Lemongrass Rust,5
+Lemon Grass,Leaf Blotch,1
+Lemon Grass,Ascochyta Fungi,2
+Cydonia,Quince Rust,7
+Ginger,Leaf Spot,25
+Vanilla,Black Spots,1000
+Vanilla,Rotten Stem,500
+Cyclamen,Fusarium Root Rot And Wilt,1
+Cyclamen,Impatiens Necrotic Spot Virus,2
+Cyclamen,Gray Mold,2
+Jerusalem Artichoke,Rust,3
+Jerusalem Artichoke,Powdery Mildew,1
+New Guinea Impatien,Gray Mold,1
+New Guinea Impatien,Myrothecium Leaf Spot,8
+Lilac,Anthracnose,28
+Lilac,Bacterial Leaf Speck,2
+Lilac,Armillaria Root Rot,2
+Lilac,Ascochyta Fungi,23
+Lilac,Powdery Mildew,1
+Moringa,Black Spot,2
+Brazilian Jasmine,Cucumber Mosaic Virus,5
+Mandevilla,Fusarium Wilts,5
+Fir,Indian Paint Fungus,2
+Fir,Phomopsis Stem Canker,3
+Fir,Gray Mold,3
+Fir,Annosum Root Disease,5
+Fir,Black Stain Root Disease,2
+Fir,Sulfur Shelf,5
+Fir,Phyllosticta Leaf Spot,28
+Fir,Rhizosphaera Needle Cast,26
+Fir,Armillaria Root Rot,1
+Fir,Anthracnose,7
+Fir,Phytophthora Root And Crown Rots,4
+Fir,Cylindrocarpon Fungi,8
+Fir,Diplodia Sapinea De Not,8
+Fir,Fir Needle Cast,17
+Fir,Fir-Fern Rust,12
+Fir,Sudden Oak Death,1
+Fir,Delphinella Shoot Blight,1
+Fir,Laminated Root Disease,1
+Fir,Scleroderris Canker Of Western Firs,4
+Fir,Fir Broom Rust,7
+Spinach,Downy Mildew,44
+Spinach,Cladosporium Fungi,23
+Spinach,White Rust,12
+Sycamore,Bacterial Leaf Scorch,1
+Citrus,Phytophthora Basal Canker,3
+Citrus,Pestalotiopsis Leaf Spot,2
+Citrus,Zasmidium Citrigriseum,3
+Citrus,Botryosphaeria Rots And Cankers,2
+Citrus,Penicillium Fungi,83
+Citrus,Alternaria Black Molds Stem Cankers,2
+Citrus,Canker,547
+Citrus,Sooty Mold,2
+Citrus,Greening Disease,145
+Citrus,Anthracnose,14
+Citrus,Phyllosticta Leaf Spot,3
+Citrus,Gray Mold,5
+Citrus,Citrus Psorosis Virus,1
+Citrus,Citrus Tristeza Virus,8
+Citrus,Coniothyrium Fungi,2
+Citrus,Sour Rot,1
+Citrus,Sour Orange Scab,9
+Citrus,Melanose,3
+Citrus,Green Alga Leaf Spot,5
+Berry,Rust,18
+Berry,Elsinoe Necator,1
+Berry,Coniothyrium Fungi,10
+Berry,Cercosporella Leaf Spots,4
+Berry,Entomosporium Fungus,30
+Berry,Downy Mildew,4
+Berry,Septoria Leaf Blotch,4
+Berry,Rhizopus Soft Rots,1
+Berry,Bacterial Black Stalk,1
+Berry,Tobacco Ringspot Virus,4
+Bromelia,Fungus,2
+Grape-Leaf Anemone,Tobacco Rattle Virus,3
+Koa,Rust,1
+Hazelnut,Eastern Filbert Blight,3
+Serviceberry,Anthracnose,10
+Serviceberry,Gynosporanium Rusts,6
+Serviceberry,Powdery Mildew,11
+Serviceberry,Pestalotiopsis Fungus,1
+Lobeliacardinalflower,Cucumber Mosaic Virus,3
+Lobeliacardinalflower,Tomato Spotted Wilt Virus,8
+Lobeliacardinalflower,Tobacco Rattle Virus,2
+Cabbage Kale,Club Root Of Crucifers,18
+Cabbage Kale,Black Rot,22
+Cabbage Kale,Downy Mildew,86
+Cabbage Kale,Plenodomus Lingam,21
+Cabbage Kale,Fusarium Wilts,7
+Cabbage Kale,Bacterial Soft Rot,23
+Cabbage Kale,Bacterial Streak,7
+Cabbage Kale,Leptosphaerulina Leaf Blight,11
+Cabbage Kale,Phytophthora Root And Stem Rot,15
+Cabbage Kale,Rhizoctonia Damping-Off,18
+Gladiolus,Cucumber Mosaic Virus,1
+Gladiolus,Gladiolus Rust,2
+Gladiolus,White Rot Fungus,5
+Black Locust,Fulvifomes Robiniae,5
+Cacti  Family Cactaceae,Pestalotiopsis Leaf Spot,2
+Maple,Hericium Fungus,9
+Maple,Cristulariella Leaf Spot,20
+Maple,Leaf Blister,12
+Maple,Sphaerulina Aceris,29
+Maple,Sapstreak Disease Of Sugar Maple,1
+Maple,Anthracnose,73
+Maple,Maple Cankers,36
+Maple,Elm Oyster,2
+Maple,Verticillium Wilt,10
+Maple,Bacterial Leaf Scorch,9
+Maple,Tar Spot,132
+Maple,Powdery Mildew,10
+Bouncingbet,Alternaria Black Molds Stem Cankers,8
+Rose,Rosisphaerella Rosicola,23166
+Rose,Phomopsis Cankers And Twig Blights,16
+Rose,Apple Mosaic Virus,4
+Rose,Crown Gall,3
+Rose,Powdery Mildew,11
+Rose,Downy Mildew,2896
+Rose,Rose Rust,11
+Rose,Gray Mold,1
+Rose,Rose Rosette Virus,229
+Sorghum  Type Unspecified,Ascochyta Fungi,6
+Alder,Sooty Mold,11
+Alder,Leaf Blister,1
+Alder,Ascochyta Fungi,9
+Fox Grape,Downy Mildew,5
+Schefflera,Anthracnose,1
+Pine,Lophodermium Needle Casts,68
+Pine,Phomopsis Cankers And Twig Blights,11
+Pine,Pine Needle Rust,38
+Pine,Stem Rot,40
+Pine,Southern Cone Rust,3
+Pine,Blue Stain,4
+Pine,Cronartium Gall Rusts,16
+Pine,Caliciopsis Canker,12
+Pine,Atropellis Canker,5
+Pine,Brown Felt Blight Of Pines,2
+Pine,Needle Cast,58
+Pine,Root Rot,98
+Pine,Sirococcus Blight,22
+Pine,Truncatella Fungi,8
+Pine,Indian Paint Fungus,1
+Pine,Leaf Blotch,12
+Pine,Limb Rust,5
+Pine,Diplodia Tip Blights,106
+Pine,Pitch Canker,12
+Pine,Septoria Leaf Spot And Cankers,18
+Pine,Dothiostroma Fungus,49
+Pine,Sarea Fungus,8
+Pine,Comandra Blister Rust,116
+Pine,Scleroderris Canker Of Pine And Spruce,6
+Pine,Sooty Mold,10
+Pine,Medusa Needle Blight,1
+Pine,Fusiform Rust,5
+Giant Sequoia,Botryosphaeria Canker,1
+Giant Sequoia,Annosum Root Disease,1
+Common Coleus,Downy Mildew,2
+Common Coleus,Impatiens Necrotic Spot Virus,8
+Laceleaf,Bitter Rot And Anthracnose,1
+Laceleaf,Pestalotiopsis Leaf Spot,2
+Okra,Choanephora Fruit Rot,18
+Okra,Powdery Mildew,5
+Asparagus,Cercospora Leaf Spot,2
+Asparagus,Phaeosphaeria Fungi,4
+Jade Plant,Fungi,8
+Giant Hyssop,Rust,5
+Giant Hyssop,Impatiens Necrotic Spot Virus,2
+Hosta,Cercospora Fungi,8
+Hosta,Arabis Mosaic Virus,57
+Hosta,Gray Mold,4
+Hosta,Southern Blight,10
+Hosta,Alternaria Black Molds Stem Cankers,5
+Cotoneaster,Phyllosticta Leaf Spot,8
+Cotoneaster,Ceratobasidium Ochroleucum,1
+Bride S Feathers,Cercospora Fungi,1
+Ohio Buckeye,Rust,11
+Primrose,Powdery Mildew,2
+Gentian,Epicoccum Fungi,1
+Gentian,Alternaria Black Molds Stem Cankers,2
+Blackberry Raspberry,Bramble Leaf Rust,6
+Blackberry Raspberry,Downy Mildew,10
+Blackberry Raspberry,Pythium Diseases,1
+Sweet Autumn Virginsbower,Calophoma Clematidina,9
+Redvein Enkianthus,Phyllosticta Leaf Spot,13
+Mimosa,Mimosa Wilt,18
+Cyamopsis,Anthracnose,3
+Common Filbert,Eastern Filbert Blight,36
+Plumeria,Rust,4
+Freesia,Freesia Sneak Virus,3
+Freesia,Freesia Mosaic Virus,1
+Hollyhock,Hollyhock Rust,22
+Hollyhock,Tobacco Rattle Virus,2
+Forsythia,Phomopsis Cankers And Twig Blights,12
+Forsythia,Armillaria Root Rot,2
+Forsythia,Sclerotinia Rots,5
+Rattlesnake Plant,Drechslera Leaf Spot,1
+Larkspur,Ascochyta Fungi,7
+Blackgum,Felt Fungus,2
+Common Ninebark,Powdery Mildew,12
+Purslane,Phoma Blight,4
+Purslane,Alternanthera Mosaic Virus,7
+Common Periwinkle,Phoma Blight,1
+Common Periwinkle,Pythium Diseases,4
+Common Periwinkle,Cucumber Mosaic Virus,1
+Cassava,Green Mite,710
+Cassava,Bacterial Blight,2315
+Cassava,Leaf Mosaic Virus,843
+Cassava,Brown Spot,1036
+Cassava,Black Rot,2
+Coffee,Brown Eye Spot,5396
+Coffee,Black Rot,7
+Coffee,Phoma,4599
+Coffee,Berry Blotch,118
+Coffee,Rust,6436
+Heather,Phytophthora Root And Crown Rots,2
+Yellow Pitcherplant,Anthracnose,1
+Gooseberry,White Pine Blister Rust,15
+Gooseberry,Anthracnose,4
+Hibiscus,Phomopsis Cankers And Twig Blights,1
+Beech,Nectria Canker,37
+Beech,Beech Leaf Disease,31
+Beech,Phytophthora Crown Rot,1
+Beech,Sooty Mold,5
+Beech,Anthracnose,2
+Avocado,Avocado Sunblotch Viroid,2
+Coco Yam  Wild Taro,Dasheen Mosaic Virus,2
+Walnut,Neonectria Canker,60
+Walnut,Cylindrocladium Root Diseases,2
+Walnut,Ophiognomonia Leptostyla,12
+Walnut,Phytophthora Crown Rot,4
+Walnut,Pseudomicrostroma Juglandis,4
+Oat,Sharp Eyespot,1
+Oat,Crown Rust,11
+Oat,Barley Yellow Dwarf Virus,2
+Cinnamon,Fungus,6
+Loquat,Fire Blight,6
+Maranta,Myrothecium Leaf Spot,1
+Maranta,Cucumber Mosaic Virus,1
+Pot Marigold,Fusarium Wilts,5
+German Iris,Tobacco Rattle Virus,1
+German Iris,Heterosporium Leaf Spot On Iris,1
+German Iris,Gray Mold,2
+Apricot,Cherry Twisted Leaf Virus,2
+Apricot,Tomato Ringspot Virus,1
+Apricot,Gray Mold,1
+Apricot,Stigmina Fungus,5
+Apricot,Brown Rot,9
+Magnolia,Green Alga Leaf Spot,5
+Magnolia,Phytophthora Root And Crown Rots,1
+Magnolia,Sooty Mold,10
+Celandine Poppy,Tobacco Rattle Virus,1
+Aster,Bacterial Leaf Spot,2
+False Spiraea,Tobacco Streak Virus,1
+Cape Primrose,Impatiens Necrotic Spot Virus,2
+Arborvitae,Pestalotiopsis Leaf Spot,7
+Arborvitae,Needlecast,1
+Arborvitae,Seiridium Cankers,13
+Privet,Mycosphaerella Leaf Spot,16
+Princesstree,Phyllosticta Leaf Spot,7
+Common Zinnia,Alternaria Black Molds Stem Cankers,6
+Larch,Larch Needle Cast,3
+Larch,Schweinitzii Root And Butt Disease,4
+Pincushions,Tobacco Rattle Virus,1
+Mountain Laurel,Pseudocercospora Leaf Spot,2
+Common Hop,Fusarium Wilts,28
+Common Hop,Downy Mildew,115
+Common Hop,Apple Mosaic Virus,11
+Common Hop,Hop Stunt Viroid,8
+Common Hop,Powdery Mildew,59
+Common Hop,Carnation Latent Virus,24
+Wisterias,Wisteria Vein Mosaic Virus,1
+Wisterias,Nectria Canker,3
+Philodendron,Root Rot,1
+Aralia,Anthracnose,1
+Spruce,Dothiostroma Fungus,4
+Spruce,Diplodia Sapinea De Not,4
+Spruce,Brown Felt Blight Of Pines,3
+Spruce,Ceropsora Weirii,50
+Spruce,Cytospora Cankers,15
+Spruce,Bud Blight Of Spruce,2
+Spruce,Tomentosus Root Disease,3
+Spruce,Rhizosphaera Needle Cast,51
+Spruce,Sirococcus Blight,20
+Spruce,Truncatella Fungi,9
+Spruce,Red-Belted Fungus,4
+Carrot,Alternaria Leaf Spot,79
+Carrot,Cavity Spot,72
+Garlic,Rust,106
+Garlic,Leaf Blight,92
+Durian,Algal Leaf Spot,2293
+Durian,Allocaridara Attack,822
+Dieffenbachia,Bitter Rot And Anthracnose,3
+Quince,Entomosporium Leaf Spot,2
+Zinnia,Alternaria Blight,5
+Zinnia,Berkeleyomyces Basicola,3
+Zinnia,Tomato Spotted Wilt Virus,2
+Zinnia,Cladosporium Fungi,9
+Zinnia,Powdery Mildew,6
+Dogwood,Cryptodiaporthe Fungus,18
+Dogwood,Powdery Mildew,20
+Dogwood,Dogwood Anthracnose,22
+Dogwood,Cylindrocladium Root Diseases,5
+Dogwood,Botryosphaeria Rots And Cankers,2
+Dogwood,Septoria Leaf Spot And Cankers,6
+Dogwood,Gray Mold,2
+Dogwood,Brown Rot,11
+Pineapple,Bacteria Wilt And Soft Rot,3
+Star Of Bethlehem,Rust,4
+Sugarcane,Yellow Leaf,1528
+Sugarcane,Banded Chlorosis,329
+Sugarcane,Leaf Mosaic Virus,1557
+Sugarcane,Smut,221
+Sugarcane,Eye Spot,527
+Sugarcane,Sett Rot,456
+Sugarcane,Brown Rust,1305
+Sugarcane,Leaf Scald,217
+Sugarcane,Red Spot,285
+Sugarcane,Pokkah Boeng,683
+Sugarcane,Brown Spot,1205
+Sugarcane,Grassy Shoot,242
+Phlox,Powdery Mildew,38
+Phlox,Alternanthera Mosaic Virus,15
+Phlox,Downy Mildew,17
+Phlox,Septoria Leaf Spot And Cankers,7
+Pea,Septoria Leaf Blotch,8
+Pea,Powdery Mildew,12
+Pea,Berkeleyomyces Basicola,4
+Pea,Bacterial Blight,8
+Pea,Ascochyta Blight,21
+Pea,Phytoplasma,8
+Pea,Fusarium Wilts,5
+Touch-Me-Not,Downy Mildew,15
+Touch-Me-Not,Impatiens Necrotic Spot Virus,2
+Toothache Plant,Aster Yellows Phytoplasma,3
+Anemone,Tobacco Mosaic Virus,4
+Murraya,Anthracnose,6
+Murraya,Alternaria Black Molds Stem Cankers,3
+Murraya,Phloeospora Leaf Spot,5
+Foamflower,Bacterial Leaf Speck,3
+Eastern Redbud,Pseudocercospora Leaf Spot,9
+Eastern Redbud,Verticillium Wilt,1
+Eastern Redbud,Botryosphaeria Rots And Cankers,4
+Sassafras,Laurel Wilt,3
+Firethorn,Apple Scab,1
+Calibrachoa,Berkeleyomyces Basicola,8
+Calibrachoa,Tobacco Mosaic Virus,1
+Calibrachoa,Acidovorax Bacteria,3
+Mountainmint,Mint Rust,1
+Hickory,Bitter Rot And Anthracnose,2
+Hickory,Ascochyta Fungi,41
+Hickory,Strumella Canker,1
+Hickory,Leaf Mold,1
+Hickory,Powdery Mildew,2
+Hickory,Pecan Bunch,28
+Hickory,Bacterial Leaf Scorch,7
+Hickory,Sooty Mold,3
+Gloxinia,Impatiens Necrotic Spot Virus,1
+Gloxinia,Phytophthora Blight,1
+St  Johnswort,Pestalotiopsis Leaf Spot,1
+St  Johnswort,Gray Mold,2
+Poplar,Hypoxylon Canker,5
+Poplar,Black Rot,4
+Poplar,Powdery Mildew,3
+Poplar,Macrophoma Rough Bark Disease,1
+Poplar,Bacterial Wetwood,3
+Poplar,Bronze Leaf Disease,7
+Poplar,Artist S Conk,5
+Poplar,Armillaria Root Rot,3
+Poplar,Drepanopeziza Populi Rimpau,8
+Poplar,Shepherd S Crook Leaf And Shoot Blight,1
+Poplar,Cytospora Cankers,2
+Poplar,Sooty Mold,2
+Beeblossom,Epicoccum Fungi,1
+Petunia,Tobacco Mosaic Virus,4
+Petunia,Powdery Mildew,2
+Petunia,Acidovorax Bacteria,6
+Astilbe,Tobacco Rattle Virus,1
+Sapote,Cercospora Fungus,2
+Hoya,Bitter Rot And Anthracnose,2
+American Holly,Berkeleyomyces Basicola,10
+Kale,Black Rot,4
+Ninebark,Powdery Mildew,8
+Satsuki Azalea,Exobasidium Fungus,6
+Stonecrop,Cucumber Mosaic Virus,2
+Stonecrop,Bacterial Black Stalk,1
+Mallows,Hollyhock Rust,16
+Elephant-Ear,Tobacco Rattle Virus,2
+Rocketsalad,Downy Mildew,8
+Camphortree,Laurel Wilt,3
+Honeydew,Anthracnose,8
+Honeydew,Bacterial Wilt,4
+Nectarine,Peach Leaf Curl,2
+Nectarine,Powdery Mildew,1
+Begonia,Cucumber Mosaic Virus,2
+Koelreuteria,Bitter Rot And Anthracnose,1
+Hellebore,Microsphaeropsis Hellebori,5
+Clematis,Tobacco Rattle Virus,1
+Japanese Spiraea,Spiraea Yellow Leaf Spot Virus,3
+Cashew,Anthracnose,1170
+Cashew,Red Rust,1177
+Boston Swordfern,Root Rot,4
+Thornless Honeylocust,Cercospora Fungi,7
+Peony,Phytophthora Crown Rot,10
+Peony,Cladosporium Fungi,8
+Peony,Botrytis Blight,24
+Peony,Tobacco Rattle Virus,8
+Peony,Cercospora Fungi,9
+Peony,Anthracnose,13
+Peony,Bacterial Blight,5
+Peony,Dothiorella Cankers,2
+Aspenpoplar,Cytospora Cankers,16
+Aspenpoplar,Poplar Rust,2
+Aspenpoplar,Marssonina Leaf Spot,14
+Aspenpoplar,Black Rot,1
+Aspenpoplar,Septoria Leaf Spot And Cankers,7
+Aspenpoplar,Fusarium Wilts,1
+Aspenpoplar,Bronze Leaf Disease,6
+Aspenpoplar,Dothichiza Canker Of Poplar,6
+Aspenpoplar,Armillaria Root Rot,2
+Acacia,Ravenelia Rusts,2
+Winged Burning Bush,Tubercularia Cankers,8
+Velvet Bentgrass,Rhizoctonia Damping-Off,1
+Edible Fig,Cercospora Fungi,2
+Edible Fig,Fig Rust,3
+American Boxwood,Boxwood Blight,31
+Tickseed,Potyvirus,3
+Tickseed,Bacterial Leaf Spot,1
+Tickseed,Downy Mildew,4
+Quickstick,Passalora Fungus,2
+American Pistachio,Brown Spot,8
+American Pistachio,Gray Mold,1
+American Pistachio,Botryosphaeria Canker,5
+English Ivy,Anthracnose,8
+English Ivy,Pythium Diseases,1
+Bottlebrush,Green Alga Leaf Spot,2
+Bottlebrush,Fusicoccum Canker,2
+Coneflower,Downy Mildew,14
+Coneflower,Septoria Leaf Blotch,1
+Coneflower,Aster Yellows Phytoplasma,10
+Cosmos,Smut,8
+Black Cohosh,Ascochyta Fungi,3
+Peperomia,Phyllosticta Leaf Spot,1
+Coleus,Impatiens Necrotic Spot Virus,8
+Coleus,Downy Mildew,18
+Bean,Fusarium Damping-Off,16
+Bean,Anthracnose,4
+Bean,Charcoal Rot,2
+Bean,Boeremia Exigua Var,1
+Bean,Phytophthora Blight,1
+Bean,Angular Leaf Spot,345
+Bean,Cucumber Mosaic Virus,60
+Bean,Choanephora Fruit Rot,3
+Bean,Sclerotinia Timber Rot,27
+Bean,Aspergillus Fungi,3
+Bean,Cercospora Blight,4
+Bean,Bacterial Leaf Speck,1
+Bean,Flower Blights,10
+Bean,Common Bacterial Blight Of Beans,115
+Bean,Frogeye Leaf Spot,6
+Bean,Bean Pod Mottle Virus,8
+Bean,Bacterial Wilt,9
+Bean,Fusarium Wilt,1
+Bean,Tomato Spotted Wilt Virus,6
+Bean,Beet Curly Top Virus,15
+Witch-Hazel,Gonatobotryum Fungus,20
+Witch-Hazel,Phyllosticta Leaf Spot,18
+White Mulberry,Phloeospora Leaf Spot,7
+White Mulberry,Bacterial Leaf Scorch,1
+White Mulberry,Nattrassia Fungus,2
+Blackberry Lily,Impatiens Necrotic Spot Virus,7
+American Sycamore,Sycamore Anthracnose,5
+American Sycamore,Bacterial Leaf Scorch,2
+American Sycamore,Powdery Mildew,1
+Common Horse Chestnut,Guignardia Blotch,2
+Columbine,Bacterial Leaf Speck,1
+Melon,Blossom End Rot,10
+Melon,Phytophthora Blight,203
+Melon,Anthracnose,105
+Melon,Fusarium Wilt,17
+Melon,Sour Rot,28
+Melon,Damping-Offroot Rot,37
+Melon,Berkeleyomyces Basicola,4
+Melon,Alternaria Black Molds Stem Cankers,50
+Melon,Charcoal Rot,62
+Melon,Southern Blight,15
+Melon,Downy Mildew,77
+Melon,Cercospora Fungi,17
+Melon,Choanephora Fruit Rot,5
+Melon,Powdery Mildew,62
+Melon,Watermelon Mosaic Virus,11
+Melon,Bacterial Wilt,13
+Melon,Cucurbit Yellow Vine Decline,10
+Melon,Gummy Stem Blight,139
+Melon,Rhizopus Soft Rots,9
+Melon,Bacterial Fruit Blotch,75
+Melon,Phytoplasma,9
+Costus,Pestalotiopsis Leaf Spot,3
+Microbiota,Phomopsis Cankers And Twig Blights,14
+Parsley,Carrot Powdery Mildew,9
+Parsley,Septoria Leaf Blotch,12
+Bellflower,Cucumber Mosaic Virus,1
+Italian Cypress,Phyllosticta Leaf Spot,13
+Common Elderberry,Cercospora Fungi,9
+Blueberry,Botryosphaeria Fungus,15
+Blueberry,Mummy Berry,120
+Blueberry,Leaf And Flower Gall,13
+Blueberry,Valdensia Leaf Blight,4
+Blueberry,Botrytis Blight,40
+Blueberry,Powdery Mildew,3
+Blueberry,Phomopsis Cankers And Twig Blights,33
+Blueberry,Seimatosporium Fungi,8
+Blueberry,Brown Rot,1
+Blueberry,Blueberry Leaf Rust,65
+Blueberry,Anthracnose,69
+Blueberry,Blueberry Stunt,2
+Blueberry,Cladosporium Fungi,1
+Blueberry,Scorch,43
+Blueberry,Septoria Leaf Blotch,3
+Dracaena,Fusarium Wilts,1
+Daisy,Brown Rust,10
+Daisy,Bacterial Leaf Spot,10
+Daisy,Phytophthora Root And Stem Rot,24
+Daisy,Aster Yellows Phytoplasma,1
+Asian Bayberry,Pestalotiopsis Leaf Spot,1
+Heliconia,Leptosphaeria Leaf Blight,3
+Heliconia,Bitter Rot And Anthracnose,1
+Mustard,Plenodomus Lingam,10
+Mustard,Cercosporella Leaf Spots,2
+Mustard,Downy Mildew,1
+Mustard,White Rust,10
+Mustard,Powdery Mildew,5
+Mustard,Sclerotinia Rots,11
+Mustard,Black Rot,4
+Cordyline,Epicoccum Draconis,3
+Hydrangea,Gray Mold,14
+Hydrangea,Fusarium Wilts,5
+Hydrangea,Wood Rot Fungi,5
+Hydrangea,Ascochyta Fungi,22
+Hydrangea,Bacterial Leaf Spot,4
+Hydrangea,Pestalotiopsis Leaf Spot,2

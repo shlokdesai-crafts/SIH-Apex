@@ -38,7 +38,7 @@ export async function generateAssistantResponse(prompt: string, languageCode: st
   const language = langMap[languageCode] || 'English';
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
     const systemPrompt = `You are an expert AI agricultural assistant. Please respond concisely and accurately. 
 CRITICAL: You MUST respond in ${language}. Do NOT mix languages. Ensure grammatical correctness in ${language}.`;
     

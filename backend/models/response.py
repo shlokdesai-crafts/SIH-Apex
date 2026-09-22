@@ -117,7 +117,9 @@ class ScanResponse(BaseModel):
     validation: ValidationResult
     image_quality: Optional[ImageQuality] = None
     crop_analysis: Optional[CropAnalysis] = None
-    disease_detection: Optional[DiseaseDetectionResult] = None
-    severity: Optional[str] = None
-    risk_score: Optional[Any] = None
-    advisory: Optional[Any] = None
+    disease_detection: Optional[DiseaseDetectionResult] = None  # Crop + Disease + Confidence + Severity + Status
+    severity: Optional[str] = None           # Severity level (None/Mild/Moderate/Severe)
+    risk_score: Optional[Any] = None         # 0-100 risk index
+    advisory: Optional[Any] = None           # Treatment recommendations
+    scan_id: Optional[str] = None            # MongoDB persistent scan ID
+

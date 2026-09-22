@@ -4,32 +4,54 @@
   align-items: center;
   background-color: #084f27;
   color: #ffffff;
-  padding: 8px 24px;
+  padding: 8px 20px;
   height: 60px;
   border-bottom: 1px solid #063e1e;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
   box-sizing: border-box;
+  position: relative;
+  z-index: 1000;
+  width: 100%;
 }
 
 .gov-header-left {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .gov-logo-container {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
-.gov-logo-icon {
-  font-size: 28px;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+.gov-hamburger-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  margin-right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 6px;
+  transition: background-color 0.15s;
+}
+
+.gov-hamburger-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.gov-logo-leaf {
+  display: flex;
+  align-items: center;
 }
 
 .gov-logo-text h2 {
   margin: 0;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 800;
   color: #ffffff;
   letter-spacing: -0.2px;
@@ -38,7 +60,7 @@
 
 .gov-logo-text p {
   margin: 0;
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 500;
   color: #a8d5ba;
   line-height: 1.2;
@@ -46,39 +68,46 @@
 }
 
 .gov-logo-text .gov-logo-dept {
-  font-size: 9.5px;
-  color: #92caa5;
+  font-size: 9px;
+  color: #86efac;
 }
 
 .gov-header-nav {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 10px;
+}
+
+.gov-header-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .gov-nav-btn {
   background: transparent;
   border: none;
   color: #d1fae5;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 11px;
+  padding: 5px 9px;
   border-radius: 6px;
   transition: all 0.15s ease;
   white-space: nowrap;
 }
 
 .gov-nav-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.12);
   color: #ffffff;
 }
 
 .gov-nav-btn.active {
-  background-color: rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.2);
   color: #ffffff;
   font-weight: 600;
 }
@@ -86,15 +115,16 @@
 .gov-header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
 .gov-region-select {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.25);
-  padding: 4px 10px 4px 14px;
+  padding: 3px 8px 3px 12px;
   border-radius: 20px;
 }
 
@@ -102,7 +132,7 @@
   background: transparent;
   color: #ffffff;
   border: none;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   outline: none;
@@ -118,119 +148,266 @@
 
 .gov-select-arrow {
   color: #a8d5ba;
-  font-size: 11px;
+  font-size: 9px;
   pointer-events: none;
 }
 
 .gov-notifications {
   position: relative;
   cursor: pointer;
-  font-size: 19px;
   display: flex;
   align-items: center;
+  justify-content: center;
   color: #ffffff;
-  padding: 2px;
+  padding: 6px;
+  border-radius: 50%;
+  transition: background-color 0.15s;
+}
+
+.gov-notifications:hover {
+  background-color: rgba(255, 255, 255, 0.12);
 }
 
 .gov-notifications .badge {
   position: absolute;
-  top: -4px;
-  right: -7px;
+  top: -2px;
+  right: -2px;
   background: #dc2626;
   color: white;
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 800;
-  padding: 1px 5px;
+  padding: 1px 4px;
   border-radius: 10px;
   border: 1.5px solid #084f27;
+  min-width: 14px;
+  text-align: center;
 }
 
-.gov-user-profile {
+/* ── Account Wrapper & Dropdown ── */
+.gov-account-wrapper {
+  position: relative;
+}
+
+.gov-account-btn {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 20px;
+  padding: 3px 10px 3px 4px;
   cursor: pointer;
-  padding: 3px 6px;
-  border-radius: 8px;
-  transition: background-color 0.15s;
+  color: #ffffff;
+  transition: all 0.18s ease;
+  outline: none;
 }
 
-.gov-user-profile:hover {
-  background-color: rgba(255, 255, 255, 0.08);
+.gov-account-btn:hover,
+.gov-account-btn.active {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: #ffffff;
 }
 
 .gov-avatar {
-  background: #f7e8b6;
-  color: #1e3a1e;
-  width: 34px;
-  height: 34px;
+  background: #fef08a;
+  color: #166534;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
   font-weight: 800;
-  font-size: 13px;
+  font-size: 11px;
   letter-spacing: 0.5px;
   flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
-.gov-user-info {
+.gov-account-text {
   display: flex;
   flex-direction: column;
+  text-align: left;
+  line-height: 1.15;
 }
 
-.gov-user-name {
-  font-size: 13px;
+.gov-account-title {
+  font-size: 9.5px;
   font-weight: 700;
-  color: #ffffff;
-  line-height: 1.2;
+  color: #86efac;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.gov-user-role {
-  font-size: 10.5px;
-  color: #a8d5ba;
-  font-weight: 500;
-}
-
-/* Switch to Farmer Portal button */
-.gov-switch-portal-btn {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  color: #ffffff;
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 11.5px;
+.gov-account-name {
+  font-size: 12px;
   font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  transition: all 0.2s;
+  color: #ffffff;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.gov-switch-portal-btn:hover {
-  background: rgba(255, 255, 255, 0.22);
-  border-color: #ffffff;
+.gov-chevron {
+  color: #a8d5ba;
+  transition: transform 0.2s ease;
 }
 
-.gov-logout-btn {
-  background-color: rgba(255, 77, 79, 0.1);
-  border: 1px solid rgba(255, 77, 79, 0.3);
-  color: #ff4d4f;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 12px;
+.gov-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* ── Dropdown Menu ── */
+.gov-account-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  width: 270px;
+  background: #ffffff;
+  color: #1e293b;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22), 0 4px 10px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  padding: 14px;
+  z-index: 1001;
+  animation: govDropdownFade 0.16s ease-out;
+}
+
+@keyframes govDropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gov-dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.gov-avatar-large {
+  background: #dcfce7;
+  color: #166534;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 800;
+  font-size: 15px;
+  flex-shrink: 0;
+  border: 2px solid #86efac;
+}
+
+.gov-dropdown-details {
+  overflow: hidden;
+}
+
+.gov-dropdown-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gov-dropdown-role {
+  font-size: 11.5px;
+  color: #15803d;
   font-weight: 600;
-  cursor: pointer;
+}
+
+.gov-dropdown-dept {
+  font-size: 10.5px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.gov-dropdown-phone {
+  font-size: 11px;
+  color: #475569;
+  margin-top: 2px;
+}
+
+.gov-dropdown-status {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-left: 8px;
-  transition: all 0.2s;
+  font-size: 11px;
+  color: #166534;
+  background: #f0fdf4;
+  padding: 5px 9px;
+  border-radius: 6px;
+  margin: 10px 0 6px 0;
+  font-weight: 600;
 }
 
-.gov-logout-btn:hover {
-  background-color: #ff4d4f;
-  color: white;
+.gov-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+}
+
+.gov-dropdown-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 8px 0;
+}
+
+.gov-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s;
+}
+
+.gov-dropdown-item:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+/* ── Functional Logout Button in Dropdown ── */
+.gov-dropdown-logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  margin-top: 4px;
+}
+
+.gov-dropdown-logout-btn:hover {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
 }

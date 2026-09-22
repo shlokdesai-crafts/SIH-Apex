@@ -1,0 +1,336 @@
+crop,total_images,disease_class_count
+Hornbeam,4,1
+Pistachio,10,1
+Banana,20865,11
+Cabbage,316,6
+Oak,518,38
+Ginkgo,3,1
+Pansy,14,2
+Eucalyptus,5,1
+Lentil,22,3
+Piedmont Azalea,32,1
+Vetch,2,1
+Dahlia,5,2
+Kentucky Yellowwood,1,1
+Ivy,3,1
+Morning-Glory,9,1
+Beardtongue,1,1
+Virginia Bluebells,1,1
+American Bittersweet,1,1
+Ophiopogon,3,1
+Grape,95296,10
+Alpinia,6,1
+Sunflower,59,4
+Chickpea,1206,1
+Mayapple,6,1
+Daphne,10,1
+Tobacco,389,9
+Raspberry,172,6
+Common Hackberry,3,1
+Double Impatiens,33,2
+Barley,27,5
+Pawpaw,4,1
+Elm,82,5
+Sweetgum,3,3
+Cedar,123,8
+Zucchini,455,6
+Poinsettia,22,5
+Blackberry,13,2
+Iris,32,3
+Spindletree,20,3
+Broccoli,110,2
+Lily,35,6
+Ash,49,7
+Holly,5,1
+Artichoke,4,1
+Hawthorn,54,4
+Jacob S-Ladder,3,1
+Brazilian Gloxinia,14,1
+Armeria,1,1
+Periwinkle,4,1
+Currant,4,1
+Horseradish,1,1
+Lisianthius Gentians,2,1
+Palms,3,1
+Rice,33840,20
+Garden Rhubarb,6,2
+Celosia,2,1
+Monarda,4,2
+London Planetree,9,1
+Ceylon Bowstring-Hemp,5,1
+Orchid,30,5
+Honeylocust,2,2
+Rye,13,2
+Hemp Marijuana,34,4
+Peace Lily,1,1
+Japanese Pieris,8,2
+Bloodflower Milkweed,2,1
+Bacopa,4,1
+Turnip,33,4
+Corn,70657,53
+Tea,3403,2
+Yucca,2,1
+Lilyturf,6,2
+Celery,80,3
+Yarrow,1,1
+Rhododendrons And Azaleas,70,7
+Sage Herbs,33,5
+Eggplant,370,4
+Bleeding Heart,13,1
+Orange,90461,3
+Honeysuckle,11,1
+Porcelainflower,2,1
+Pachystachys,1,1
+Dill,11,1
+Oriental Poppy,20,2
+Pumpkin,24955,3
+Onion,238,18
+Peach,22450,14
+Winter-Flowering Begonia,5,1
+Willow,25,4
+Benincasa,1,1
+Bird-Of-Paradise,1,1
+Bamboo,13,2
+Bell Pepper,1447,3
+Tomato,227661,36
+Agapanthus,2,1
+Basil,104,2
+Cherry,15183,9
+Buddha S Hand,5,1
+Almond,86,3
+Verbena,8,3
+Guava,20346,1
+Hemlock,2,1
+Beet,127,8
+Geranium,39,6
+American Basswood,1,1
+Eastern Hemlock,35,3
+Solenostemon,25,1
+American Chestnut,47,1
+Nepenthes Pitcher Plants,1,1
+Soybean,59210,36
+Balloon-Flower,3,1
+Lady S-Mantle,4,1
+Leucospermum,3,1
+Viburnum,6,1
+Mango,17051,7
+Rosemary,9,1
+Carnation,8,2
+Alfalfa,194,19
+Birch,88,4
+Wheat,16954,20
+Yew,32,3
+Cucumber,2801,19
+Florist S Spiraea,9,2
+Peanut,108,8
+Papaya,15180,5
+Meserve Holly,8,2
+Cauliflower,11893,4
+Nightblooming Cactus,9,2
+Pomegranate,276,1
+Squash,15661,20
+Apple,55174,25
+Strawberry,14948,8
+Potato,28003,17
+Pepper,16389,5
+Marigold,2,1
+Lettuce,621,18
+Chinese Lantern,4,1
+Pear,56,6
+Tricyrtis,2,1
+Great Blue Lobelia,4,1
+Plum,353,11
+Alumroot,14,2
+Utah Serviceberry,10,1
+Japanese Pachysandra,4,1
+Gardenia,7,2
+Canna,5,1
+Leather Flower,12,3
+Quinoa,1,1
+Tulip,18,2
+Lemon Grass,8,3
+Cydonia,7,1
+Ginger,93,1
+Vanilla,1500,2
+Cyclamen,5,3
+Jerusalem Artichoke,4,2
+New Guinea Impatien,9,2
+Lilac,56,5
+Moringa,2,1
+Brazilian Jasmine,5,1
+Mandevilla,5,1
+Fir,163,20
+Spinach,79,3
+Sycamore,1,1
+Citrus,850,19
+Berry,96,10
+Bromelia,2,1
+Grape-Leaf Anemone,3,1
+Koa,1,1
+Hazelnut,3,1
+Serviceberry,28,4
+Lobeliacardinalflower,13,3
+Cabbage Kale,237,10
+Gladiolus,8,3
+Black Locust,5,1
+Cacti  Family Cactaceae,2,1
+Maple,343,12
+Bouncingbet,8,1
+Rose,40889,9
+Sorghum  Type Unspecified,6,1
+Alder,23,3
+Fox Grape,5,1
+Schefflera,1,1
+Pine,749,27
+Giant Sequoia,2,2
+Common Coleus,10,2
+Laceleaf,3,2
+Okra,23,2
+Asparagus,6,2
+Jade Plant,8,1
+Giant Hyssop,7,2
+Hosta,84,5
+Cotoneaster,9,2
+Bride S Feathers,1,1
+Ohio Buckeye,11,1
+Primrose,2,1
+Gentian,3,2
+Blackberry Raspberry,17,3
+Sweet Autumn Virginsbower,9,1
+Redvein Enkianthus,13,1
+Mimosa,18,1
+Cyamopsis,3,1
+Common Filbert,36,1
+Plumeria,4,1
+Freesia,4,2
+Hollyhock,24,2
+Forsythia,19,3
+Rattlesnake Plant,1,1
+Larkspur,7,1
+Blackgum,2,1
+Common Ninebark,12,1
+Purslane,11,2
+Common Periwinkle,6,3
+Cassava,6379,5
+Coffee,28662,5
+Heather,2,1
+Yellow Pitcherplant,1,1
+Gooseberry,19,2
+Hibiscus,1,1
+Beech,77,5
+Avocado,2,1
+Coco Yam  Wild Taro,2,1
+Walnut,82,5
+Oat,21,3
+Cinnamon,6,1
+Loquat,6,1
+Maranta,2,2
+Pot Marigold,5,1
+German Iris,4,3
+Apricot,18,5
+Magnolia,16,3
+Celandine Poppy,1,1
+Aster,2,1
+False Spiraea,1,1
+Cape Primrose,2,1
+Arborvitae,21,3
+Privet,16,1
+Princesstree,7,1
+Common Zinnia,6,1
+Larch,7,2
+Pincushions,1,1
+Mountain Laurel,2,1
+Common Hop,245,6
+Wisterias,4,2
+Philodendron,1,1
+Aralia,1,1
+Spruce,168,11
+Carrot,151,2
+Garlic,198,2
+Durian,3115,2
+Dieffenbachia,3,1
+Quince,2,1
+Zinnia,25,5
+Dogwood,86,8
+Pineapple,8,1
+Star Of Bethlehem,4,1
+Sugarcane,9466,12
+Phlox,87,4
+Pea,66,7
+Touch-Me-Not,17,2
+Toothache Plant,3,1
+Anemone,4,1
+Murraya,14,3
+Foamflower,3,1
+Eastern Redbud,21,3
+Sassafras,3,1
+Firethorn,1,1
+Calibrachoa,12,3
+Mountainmint,1,1
+Hickory,90,8
+Gloxinia,2,2
+St  Johnswort,3,2
+Poplar,49,12
+Beeblossom,1,1
+Petunia,12,3
+Astilbe,1,1
+Sapote,2,1
+Hoya,2,1
+American Holly,10,1
+Kale,4,1
+Ninebark,8,1
+Satsuki Azalea,6,1
+Stonecrop,3,2
+Mallows,16,1
+Elephant-Ear,2,1
+Rocketsalad,8,1
+Camphortree,3,1
+Honeydew,12,2
+Nectarine,3,2
+Begonia,2,1
+Koelreuteria,1,1
+Hellebore,5,1
+Clematis,1,1
+Japanese Spiraea,3,1
+Cashew,3311,2
+Boston Swordfern,4,1
+Thornless Honeylocust,7,1
+Peony,79,8
+Aspenpoplar,55,9
+Acacia,2,1
+Winged Burning Bush,8,1
+Velvet Bentgrass,1,1
+Edible Fig,5,2
+American Boxwood,31,1
+Tickseed,8,3
+Quickstick,2,1
+American Pistachio,14,3
+English Ivy,9,2
+Bottlebrush,4,2
+Coneflower,28,3
+Cosmos,8,1
+Black Cohosh,3,1
+Peperomia,1,1
+Coleus,26,2
+Bean,1149,20
+Witch-Hazel,38,2
+White Mulberry,10,3
+Blackberry Lily,7,1
+American Sycamore,8,3
+Common Horse Chestnut,2,1
+Columbine,1,1
+Melon,958,21
+Costus,3,1
+Microbiota,14,1
+Parsley,21,2
+Bellflower,1,1
+Italian Cypress,13,1
+Common Elderberry,9,1
+Blueberry,432,15
+Dracaena,1,1
+Daisy,46,4
+Asian Bayberry,1,1
+Heliconia,6,2
+Mustard,43,7
+Cordyline,3,1
+Hydrangea,53,6

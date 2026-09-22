@@ -10,6 +10,7 @@ import { AuthContext } from '../auth/AuthContext';
 import type { FarmState } from '../types/farm';
 import {
   getFarmState,
+  fetchFarmStateFromBackend,
   recordScan as recordScanService,
   addCropRecord as addCropRecordService,
   scheduleFieldVisit as scheduleFieldVisitService,
@@ -45,16 +46,27 @@ export function FarmProvider({ children }: { children: ReactNode }) {
   const [farmState, setFarmState] = useState<FarmState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadFarm = useCallback(() => {
+  const loadFarm = useCallback(async () => {
     setIsLoading(true);
-    const state = getFarmState(farmerId, defaultLocation);
-    setFarmState(state);
-    setIsLoading(false);
+    const local = getFarmState(farmerId, defaultLocation);
+    setFarmState(local);
+
+    try {
+      const backendFarm = await fetchFarmStateFromBackend();
+      if (backendFarm) {
+        setFarmState(backendFarm);
+      }
+    } catch (e) {
+      console.warn('[FarmContext] Using local farm cache:', e);
+    } finally {
+      setIsLoading(false);
+    }
   }, [farmerId, defaultLocation]);
 
   useEffect(() => {
     loadFarm();
   }, [loadFarm]);
+
 
   const recordScan = useCallback(
     async (input: RecordScanInput): Promise<FarmState> => {

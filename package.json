@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "backend": "python -u backend/main.py",
+    "server": "node scripts/run-backend.cjs",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview"
@@ -15,6 +16,7 @@
     "@huggingface/inference": "^4.13.28",
     "@types/leaflet": "^1.9.22",
     "leaflet": "^1.9.4",
+    "mongodb": "^7.6.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-leaflet": "^5.0.0",

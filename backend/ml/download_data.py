@@ -229,7 +229,8 @@ def _download_via_huggingface(crop_name: str, dest_dir: Path, max_per_class: int
     logger.info(f"[{crop_name}] Downloading from HuggingFace PlantVillage dataset...")
     try:
         from datasets import load_dataset  # type: ignore
-        ds = load_dataset("osunlp/PlantVillage", split="train", trust_remote_code=True)
+        import typing
+        ds: typing.Any = load_dataset("osunlp/PlantVillage", split="train", trust_remote_code=True)
     except Exception as exc:
         logger.warning(f"[{crop_name}] HuggingFace download failed: {exc}")
         return False

@@ -1,0 +1,143 @@
+{
+  "model": "MobileNetV3-Large",
+  "crop": "Tomato",
+  "verified_real_dataset": true,
+  "dataset_source": "PlantVillage Open-Access Agricultural Pathology Dataset",
+  "dataset_path": "C:\\Users\\Shlok\\Downloads\\SIH\\SIH-Apex\\backend\\ml\\data\\tomato",
+  "classes": [
+    "Healthy",
+    "Bacterial Spot",
+    "Early Blight",
+    "Late Blight",
+    "Yellow Leaf Curl Virus"
+  ],
+  "image_count": 11970,
+  "train_count": 8981,
+  "validation_count": 1794,
+  "test_count": 1195,
+  "training_date": "2026-09-14T17:15:10.589349",
+  "preprocessing": {
+    "image_size": [
+      224,
+      224
+    ],
+    "normalization": {
+      "mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "std": [
+        0.229,
+        0.224,
+        0.225
+      ]
+    }
+  },
+  "augmentation": [
+    "RandomResizedCrop(224, scale=(0.6, 1.0))",
+    "RandomHorizontalFlip(p=0.5)",
+    "RandomVerticalFlip(p=0.2)",
+    "RandomRotation(20)",
+    "ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.05)",
+    "GaussianBlur(kernel_size=3)",
+    "RandomErasing(p=0.1)"
+  ],
+  "random_seed": 42,
+  "best_val_accuracy": 0.9844,
+  "evaluation_metrics": {
+    "crop": "Tomato",
+    "accuracy": 0.9732,
+    "macro_precision": 0.9614,
+    "macro_recall": 0.9652,
+    "macro_f1": 0.9632,
+    "weighted_f1": 0.9734,
+    "total_samples": 1195,
+    "class_metrics": {
+      "Healthy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "samples": 158,
+        "predicted": 158
+      },
+      "Bacterial Spot": {
+        "precision": 0.9493,
+        "recall": 0.9717,
+        "f1_score": 0.9604,
+        "accuracy": 0.9717,
+        "samples": 212,
+        "predicted": 217
+      },
+      "Early Blight": {
+        "precision": 0.9286,
+        "recall": 0.91,
+        "f1_score": 0.9192,
+        "accuracy": 0.91,
+        "samples": 100,
+        "predicted": 98
+      },
+      "Late Blight": {
+        "precision": 0.9289,
+        "recall": 0.9632,
+        "f1_score": 0.9457,
+        "accuracy": 0.9632,
+        "samples": 190,
+        "predicted": 197
+      },
+      "Yellow Leaf Curl Virus": {
+        "precision": 1.0,
+        "recall": 0.9813,
+        "f1_score": 0.9906,
+        "accuracy": 0.9813,
+        "samples": 535,
+        "predicted": 525
+      }
+    },
+    "confusion_matrix": [
+      [
+        158,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        206,
+        1,
+        5,
+        0
+      ],
+      [
+        0,
+        1,
+        91,
+        8,
+        0
+      ],
+      [
+        0,
+        1,
+        6,
+        183,
+        0
+      ],
+      [
+        0,
+        9,
+        0,
+        1,
+        525
+      ]
+    ],
+    "class_names": [
+      "Healthy",
+      "Bacterial Spot",
+      "Early Blight",
+      "Late Blight",
+      "Yellow Leaf Curl Virus"
+    ]
+  }
+}

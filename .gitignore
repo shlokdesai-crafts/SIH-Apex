@@ -36,3 +36,11 @@ scratch/
 # Python
 __pycache__/
 *.pyc
+
+# Machine Learning Datasets and Models
+backend/ml/data/
+backend/ml/data_sage/
+*.pth
+*.pt
+*.h5
+!backend/ml/data/dataset_metadata.json
