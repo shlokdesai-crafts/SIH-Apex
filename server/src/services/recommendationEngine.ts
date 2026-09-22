@@ -1,5 +1,13 @@
 import { query } from '../config/database.js';
-import { getCropProfile, type CropProfileData, type CropSourceMetadata } from './cropDataProvider.js';
+import { 
+  getCropProfile, 
+  normalizeCropName, 
+  getCropDisplayName,
+  type CropProfileData, 
+  type CropSourceMetadata 
+} from './cropDataProvider.js';
+import { getHfAdvisoryEvidence } from './hfAdvisoryLookup.js';
+import type { HfAdvisoryEvidence } from './hfAdvisoryEvidence.js';
 
 export interface CalculateAdvisoryInput {
   crop: string;
@@ -82,6 +90,7 @@ export interface NutrientRequirementItem {
 export interface AdvisoryCalculationResult {
   isAvailable?: boolean;
   sourceMetadata?: CropSourceMetadata;
+  hfEvidence?: HfAdvisoryEvidence[];
   inputSummary: {
     crop: string;
     state?: string;
@@ -251,13 +260,31 @@ export async function calculateFertilizerAdvisory(
 
   // If crop is unsupported or has no verified agronomic benchmark
   if (!profile) {
-    const rawCropName = input.crop.trim();
-    const displayName = rawCropName.charAt(0).toUpperCase() + rawCropName.slice(1);
+    const canonicalKey = normalizeCropName(input.crop);
+    const displayName = getCropDisplayName(input.crop);
+    const hfEvidence = getHfAdvisoryEvidence(input.crop);
+
+    const sourceMeta: CropSourceMetadata = hfEvidence.length > 0 ? {
+      sourceName: 'HindiKrishi Farmer Advisory Dataset (Hugging Face)',
+      sourceType: 'Supplementary-Agricultural-Evidence',
+      verificationStatus: 'unverified',
+      sourceNote: `Supplementary agricultural advisory evidence retrieved for ${displayName} from HindiKrishi dataset. Unverified supplementary evidence; use with local extension officer guidance.`,
+      sourceUrl: 'https://huggingface.co/datasets/me-nabi/hindikrishi-farmer-advisory-dataset',
+      lastVerified: new Date().toISOString().split('T')[0],
+    } : {
+      sourceName: 'CropGuard Agronomic Registry',
+      sourceType: 'Pending-Field-Verification',
+      verificationStatus: 'pending-field-verification',
+      sourceNote: `Authoritative benchmark for ${displayName} is currently pending field calibration. Real soil test parameters are preserved.`,
+      lastVerified: new Date().toISOString().split('T')[0],
+    };
 
     return {
       isAvailable: false,
+      sourceMetadata: sourceMeta,
+      hfEvidence,
       inputSummary: {
-        crop: input.crop,
+        crop: canonicalKey,
         state: input.state,
         district: input.district,
         cropDisplayName: displayName,
@@ -314,25 +341,23 @@ export async function calculateFertilizerAdvisory(
         costPerAcreInr: 0,
       },
       agronomicInsights: [
-        `Advisory benchmark data is currently not verified for "${displayName}".`,
-        `To avoid chemical burning, salinity stress, or fertilizer misapplication, fabricated dosages are not displayed.`,
+        ...(hfEvidence.length > 0
+          ? [
+              `Hugging Face agricultural advisory evidence available for ${displayName} (HindiKrishi Dataset):`,
+              ...hfEvidence.slice(0, 3).map(
+                (item) => `• ${item.advisory}`
+              ),
+              'Notice: This agricultural evidence is supplementary and unverified. Do not use as a definitive chemical prescription without local field verification.',
+            ]
+          : [
+              `Crop-specific fertilizer benchmarks are currently unavailable for "${displayName}".`,
+              `Advisory benchmark data is pending field calibration.`,
+              `To avoid chemical burning, salinity stress, or fertilizer misapplication, fabricated dosages are not displayed.`,
+              `Please consult your local Krishi Vigyan Kendra (KVK) or Block Agriculture Officer for certified recommendations for ${displayName}.`,
+            ]),
         `Your certified soil test parameters (N: ${soilN} kg/ac, P: ${soilP} kg/ac, K: ${soilK} kg/ac, pH: ${soilPh}) are preserved above.`,
-        `Please consult your local Krishi Vigyan Kendra (KVK) or Block Agriculture Officer for specific recommendations for ${displayName}.`,
       ],
-      organicAlternatives: [
-        {
-          name: 'Well-Decomposed FYM / Vermicompost',
-          type: 'Organic Soil Conditioner',
-          dosage: '2.5 - 3.0 Tonnes / Acre',
-          benefit: 'Safe baseline for all crops; builds soil organic carbon and microbial rhizosphere capacity.',
-        },
-        {
-          name: 'Jeevamrutha Microbial Drench',
-          type: 'Bio-Stimulant',
-          dosage: '200 Litres / Acre with irrigation',
-          benefit: 'Broad-spectrum soil biological activator enhancing native nutrient solubilization.',
-        },
-      ],
+      organicAlternatives: [],
     };
   }
 

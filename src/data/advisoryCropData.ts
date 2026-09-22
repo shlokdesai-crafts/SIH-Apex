@@ -102,25 +102,179 @@ export interface CropAdvisoryData {
   }[];
 }
 
+export interface SupportedCropMeta {
+  key: string;
+  name: string;
+  season: string;
+  defaultYield: number;
+  yieldUnit: string;
+  hasVerifiedProfile: boolean;
+  aliases: string[];
+}
+
+export const SUPPORTED_ADVISORY_CROPS: Record<string, SupportedCropMeta> = {
+  rice: { key: 'rice', name: 'Rice', season: 'Kharif', defaultYield: 2.5, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['rice', 'paddy', 'dhan', 'chawal', 'धान', 'चावल'] },
+  wheat: { key: 'wheat', name: 'Wheat', season: 'Rabi', defaultYield: 2.0, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['wheat', 'gehu', 'gehun', 'गेहूं', 'गेंहू'] },
+  maize: { key: 'maize', name: 'Maize', season: 'Kharif / Rabi', defaultYield: 2.5, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['maize', 'corn', 'makka', 'makkai', 'bhutta', 'मक्का', 'मकई', 'भुट्टा'] },
+  soybean: { key: 'soybean', name: 'Soybean', season: 'Kharif', defaultYield: 1.2, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['soybean', 'soya bean', 'soya', 'सोयाबीन', 'सोया'] },
+  cotton: { key: 'cotton', name: 'Cotton', season: 'Kharif', defaultYield: 1.5, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['cotton', 'kapas', 'kapaas', 'कपास'] },
+  sugarcane: { key: 'sugarcane', name: 'Sugarcane', season: 'Annual / Perennial', defaultYield: 45, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['sugarcane', 'sugar cane', 'ganna', 'गन्ना', 'गन्ने'] },
+  chickpea: { key: 'chickpea', name: 'Chickpea', season: 'Rabi', defaultYield: 0.9, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['chickpea', 'gram', 'chana', 'chhole', 'chole', 'bengal gram', 'चना', 'चने', 'छोले'] },
+  'pigeon-pea': { key: 'pigeon-pea', name: 'Pigeon Pea', season: 'Kharif', defaultYield: 0.8, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['pigeon pea', 'pigeonpea', 'tur', 'arhar', 'toor', 'red gram', 'तुअर', 'अरहर', 'तूर'] },
+  groundnut: { key: 'groundnut', name: 'Groundnut', season: 'Kharif / Rabi', defaultYield: 1.2, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['groundnut', 'ground nut', 'peanut', 'peanuts', 'moongfali', 'mungfali', 'मूंगफली', 'मूँगफली'] },
+  mustard: { key: 'mustard', name: 'Mustard', season: 'Rabi', defaultYield: 0.8, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['mustard', 'sarson', 'toriya', 'rai', 'सरसों', 'तोरिया', 'राई'] },
+  sorghum: { key: 'sorghum', name: 'Sorghum', season: 'Kharif / Rabi', defaultYield: 1.5, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['sorghum', 'jowar', 'jowari', 'great millet', 'ज्वार', 'ज्वारी'] },
+  'pearl-millet': { key: 'pearl-millet', name: 'Pearl Millet', season: 'Kharif', defaultYield: 1.4, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['pearl millet', 'pearlmillet', 'bajra', 'bajre', 'बाजरा', 'बाजरे'] },
+  'finger-millet': { key: 'finger-millet', name: 'Finger Millet', season: 'Kharif', defaultYield: 1.1, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['finger millet', 'fingermillet', 'ragi', 'mandua', 'रागी', 'मंडुआ'] },
+  potato: { key: 'potato', name: 'Potato', season: 'Rabi', defaultYield: 12, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['potato', 'aloo', 'alu', 'batata', 'आलू', 'बटाटा'] },
+  tomato: { key: 'tomato', name: 'Tomato', season: 'Kharif / Rabi', defaultYield: 25, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['tomato', 'tamatar', 'टमाटर'] },
+  onion: { key: 'onion', name: 'Onion', season: 'Rabi / Kharif', defaultYield: 10, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['onion', 'pyaz', 'pyaaz', 'kanda', 'प्याज', 'प्याज़', 'कांदा'] },
+  banana: { key: 'banana', name: 'Banana', season: 'Annual / Perennial', defaultYield: 20, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['banana', 'kela', 'kele', 'केला', 'केले'] },
+  mango: { key: 'mango', name: 'Mango', season: 'Perennial', defaultYield: 5, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['mango', 'aam', 'आम'] },
+  grape: { key: 'grape', name: 'Grape', season: 'Perennial', defaultYield: 8, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['grape', 'grapes', 'angoor', 'angur', 'अंगूर'] },
+  chilli: { key: 'chilli', name: 'Chilli', season: 'Kharif / Rabi', defaultYield: 5, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['chilli', 'chili', 'chili pepper', 'mirchi', 'mirch', 'green chilli', 'red chilli', 'मिर्च', 'हरी मिर्च', 'लाल मिर्च', 'चिली'] },
+  apple: { key: 'apple', name: 'Apple', season: 'Perennial', defaultYield: 6, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['apple', 'seb', 'सेब'] },
+  orange: { key: 'orange', name: 'Orange', season: 'Perennial', defaultYield: 7, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['orange', 'mandarin', 'santra', 'santre', 'narangi', 'संतरा', 'संतरे', 'नारंगी'] },
+  lemon: { key: 'lemon', name: 'Lemon', season: 'Perennial', defaultYield: 6, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['lemon', 'lime', 'nimbu', 'neebu', 'नींबू', 'नीबू'] },
+  guava: { key: 'guava', name: 'Guava', season: 'Perennial', defaultYield: 7, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['guava', 'amrood', 'amrud', 'जामफल', 'अमरूद', 'अमरुद'] },
+  papaya: { key: 'papaya', name: 'Papaya', season: 'Annual', defaultYield: 25, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['papaya', 'papita', 'पपीता', 'पपीते'] },
+  pomegranate: { key: 'pomegranate', name: 'Pomegranate', season: 'Perennial', defaultYield: 5, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['pomegranate', 'anar', 'अनार'] },
+  coconut: { key: 'coconut', name: 'Coconut', season: 'Perennial', defaultYield: 4000, yieldUnit: 'Nuts / Acre', hasVerifiedProfile: true, aliases: ['coconut', 'nariyal', 'नारियल'] },
+  cashew: { key: 'cashew', name: 'Cashew', season: 'Perennial', defaultYield: 1.0, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['cashew', 'kaju', 'काजू'] },
+  pineapple: { key: 'pineapple', name: 'Pineapple', season: 'Perennial', defaultYield: 15, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['pineapple', 'ananas', 'अनानास', 'अनन्नास'] },
+  watermelon: { key: 'watermelon', name: 'Watermelon', season: 'Zaid / Summer', defaultYield: 15, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['watermelon', 'tarbooj', 'tarbuj', 'तरबूज', 'तरबूज़'] },
+  cucumber: { key: 'cucumber', name: 'Cucumber', season: 'Zaid / Kharif', defaultYield: 8, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['cucumber', 'kheera', 'kakdi', 'खीरा', 'ककड़ी'] },
+  cabbage: { key: 'cabbage', name: 'Cabbage', season: 'Rabi', defaultYield: 12, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['cabbage', 'pattagobhi', 'patta gobhi', 'bandgobhi', 'पत्तागोभी', 'पत्ता गोभी', 'बंदगोभी'] },
+  cauliflower: { key: 'cauliflower', name: 'Cauliflower', season: 'Rabi', defaultYield: 10, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['cauliflower', 'phoolgobhi', 'phool gobhi', 'फूलगोभी', 'फूल गोभी'] },
+  brinjal: { key: 'brinjal', name: 'Brinjal', season: 'Kharif / Rabi', defaultYield: 12, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['brinjal', 'eggplant', 'aubergine', 'baingan', 'baigan', 'bhata', 'बैंगन', 'बैगन', 'भाटा'] },
+  okra: { key: 'okra', name: 'Okra', season: 'Kharif / Summer', defaultYield: 4.5, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ["okra", "lady's finger", "ladys finger", "lady finger", "ladies finger", "bhindi", "भिंडी", "भिण्डी"] },
+  peas: { key: 'peas', name: 'Peas', season: 'Rabi', defaultYield: 3.5, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['peas', 'pea', 'green pea', 'matar', 'मटर'] },
+  carrot: { key: 'carrot', name: 'Carrot', season: 'Rabi', defaultYield: 10, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['carrot', 'gajar', 'गाजर'] },
+  spinach: { key: 'spinach', name: 'Spinach', season: 'Rabi / Winter', defaultYield: 4.0, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['spinach', 'palak', 'पालक'] },
+  pumpkin: { key: 'pumpkin', name: 'Pumpkin', season: 'Kharif / Zaid', defaultYield: 10, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['pumpkin', 'kaddu', 'sitaphal', 'kumra', 'कद्दू', 'कुमड़ा', 'सीताफल'] },
+  'bottle-gourd': { key: 'bottle-gourd', name: 'Bottle Gourd', season: 'Kharif / Summer', defaultYield: 12, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['bottle gourd', 'bottlegourd', 'lauki', 'ghiya', 'doodhi', 'लौकी', 'घिया', 'दूधी'] },
+  turmeric: { key: 'turmeric', name: 'Turmeric', season: 'Kharif (Annual)', defaultYield: 8.0, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: false, aliases: ['turmeric', 'haldi', 'हल्दी'] },
+  ginger: { key: 'ginger', name: 'Ginger', season: 'Kharif (Annual)', defaultYield: 6.0, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: false, aliases: ['ginger', 'adrak', 'saunth', 'अदरक', 'सोंठ'] },
+  garlic: { key: 'garlic', name: 'Garlic', season: 'Rabi', defaultYield: 3.5, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: true, aliases: ['garlic', 'lahsun', 'lahsan', 'लहसुन', 'लहसन'] },
+  'black-pepper': { key: 'black-pepper', name: 'Black Pepper', season: 'Perennial', defaultYield: 1.0, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: false, aliases: ['black pepper', 'blackpepper', 'kali mirch', 'काली मिर्च'] },
+  cardamom: { key: 'cardamom', name: 'Cardamom', season: 'Perennial', defaultYield: 0.2, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: false, aliases: ['cardamom', 'elaichi', 'elaychi', 'इलायची', 'एलायची'] },
+  cumin: { key: 'cumin', name: 'Cumin', season: 'Rabi', defaultYield: 0.4, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: false, aliases: ['cumin', 'jeera', 'jira', 'जीरा'] },
+  coriander: { key: 'coriander', name: 'Coriander', season: 'Rabi', defaultYield: 0.6, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: false, aliases: ['coriander', 'dhaniya', 'धनिया'] },
+  fenugreek: { key: 'fenugreek', name: 'Fenugreek', season: 'Rabi', defaultYield: 0.7, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: false, aliases: ['fenugreek', 'methi', 'मेथी'] },
+  tea: { key: 'tea', name: 'Tea', season: 'Perennial', defaultYield: 2.0, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: false, aliases: ['tea', 'chai', 'चाय'] },
+  coffee: { key: 'coffee', name: 'Coffee', season: 'Perennial', defaultYield: 0.8, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: false, aliases: ['coffee', 'kafi', 'कॉफी', 'कॉफ़ी'] },
+  arecanut: { key: 'arecanut', name: 'Arecanut', season: 'Perennial', defaultYield: 1.5, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: false, aliases: ['arecanut', 'areca nut', 'betel nut', 'betelnut', 'supari', 'सुपारी'] },
+  rubber: { key: 'rubber', name: 'Rubber', season: 'Perennial', defaultYield: 0.8, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: false, aliases: ['rubber', 'रबर'] },
+  cocoa: { key: 'cocoa', name: 'Cocoa', season: 'Perennial', defaultYield: 0.5, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: false, aliases: ['cocoa', 'cacao', 'कोको'] },
+  'oil-palm': { key: 'oil-palm', name: 'Oil Palm', season: 'Perennial', defaultYield: 8.0, yieldUnit: 'Tonnes / Acre', hasVerifiedProfile: false, aliases: ['oil palm', 'oilpalm', 'ऑयल पाम', 'ताड़'] },
+};
+
 /**
  * Normalizes scanned crop or user input safely (case-insensitive, whitespace-trimmed, synonyms mapped)
  */
 export function normalizeCropKey(rawCrop: string): string {
   if (!rawCrop) return '';
   const cleaned = rawCrop.trim().toLowerCase();
-  if (cleaned.includes('rice') || cleaned.includes('paddy') || cleaned.includes('dhan') || cleaned.includes('chawal')) return 'rice';
-  if (cleaned.includes('wheat') || cleaned.includes('gehu') || cleaned.includes('gehun')) return 'wheat';
-  if (cleaned.includes('maize') || cleaned.includes('corn') || cleaned.includes('makka') || cleaned.includes('makkai')) return 'maize';
-  if (cleaned.includes('chickpea') || cleaned.includes('gram') || cleaned.includes('chana') || cleaned.includes('chhole') || cleaned.includes('chole')) return 'chickpea';
-  if (cleaned.includes('cotton') || cleaned.includes('kapas') || cleaned.includes('kapaas')) return 'cotton';
-  if (cleaned.includes('sugarcane') || cleaned.includes('sugar cane') || cleaned.includes('ganna')) return 'sugarcane';
-  if (cleaned.includes('soybean') || cleaned.includes('soy bean') || cleaned.includes('soya')) return 'soybean';
-  if (cleaned.includes('tomato') || cleaned.includes('tamatar')) return 'tomato';
-  if (cleaned.includes('potato') || cleaned.includes('aloo') || cleaned.includes('alu') || cleaned.includes('batata')) return 'potato';
-  if (cleaned.includes('chilli') || cleaned.includes('chili') || cleaned.includes('mirchi') || cleaned.includes('mirch')) return 'chilli';
-  if (cleaned.includes('onion') || cleaned.includes('pyaz') || cleaned.includes('pyaaz') || cleaned.includes('kanda')) return 'onion';
-  if (cleaned.includes('banana') || cleaned.includes('kela')) return 'banana';
-  return cleaned.replace(/[^a-z0-9]/g, '');
+
+  // 1. Exact canonical key match
+  if (SUPPORTED_ADVISORY_CROPS[cleaned]) {
+    return cleaned;
+  }
+
+  // 2. Exact match against display name
+  for (const [key, crop] of Object.entries(SUPPORTED_ADVISORY_CROPS)) {
+    if (crop.name.toLowerCase() === cleaned) {
+      return key;
+    }
+  }
+
+  // 3. Disambiguation
+  // Pineapple vs Apple disambiguation
+  if (cleaned.includes('pineapple') || cleaned.includes('ananas') || cleaned.includes('anannaas') || cleaned.includes('अनानास') || cleaned.includes('अनन्नास')) {
+    return 'pineapple';
+  }
+
+  if (cleaned.includes('black pepper') || cleaned.includes('blackpepper') || cleaned.includes('kali mirch') || cleaned.includes('kalimirch') || cleaned.includes('काली मिर्च')) {
+    return 'black-pepper';
+  }
+  if (cleaned.includes('cauliflower') || cleaned.includes('phool gobhi') || cleaned.includes('phoolgobhi') || cleaned.includes('फूलगोभी') || cleaned.includes('फूल गोभी')) {
+    return 'cauliflower';
+  }
+  if (cleaned.includes('cabbage') || cleaned.includes('patta gobhi') || cleaned.includes('pattagobhi') || cleaned.includes('bandgobhi') || cleaned.includes('पत्तागोभी') || cleaned.includes('पत्ता गोभी') || cleaned.includes('बंदगोभी')) {
+    return 'cabbage';
+  }
+
+  // Arecanut vs other nuts
+  if (cleaned.includes('arecanut') || cleaned.includes('areca nut') || cleaned.includes('betel nut') || cleaned.includes('betelnut') || cleaned.includes('supari') || cleaned.includes('सुपारी')) {
+    return 'arecanut';
+  }
+
+  // Groundnut vs other nuts
+  if (cleaned.includes('groundnut') || cleaned.includes('ground nut') || cleaned.includes('peanut') || cleaned.includes('peanuts') || cleaned.includes('moongfali') || cleaned.includes('mungfali') || cleaned.includes('मूंगफली')) {
+    return 'groundnut';
+  }
+
+  // Cashew vs other nuts
+  if (cleaned.includes('cashew') || cleaned.includes('kaju') || cleaned.includes('काजू')) {
+    return 'cashew';
+  }
+
+  // Bottle Gourd vs Pumpkin/Gourds
+  if (cleaned.includes('bottle gourd') || cleaned.includes('bottlegourd') || cleaned.includes('lauki') || cleaned.includes('ghiya') || cleaned.includes('doodhi') || cleaned.includes('लौकी')) {
+    return 'bottle-gourd';
+  }
+
+  // Watermelon vs Melon
+  if (cleaned.includes('watermelon') || cleaned.includes('tarbooj') || cleaned.includes('tarbuj') || cleaned.includes('तरबूज')) {
+    return 'watermelon';
+  }
+
+  // Pulse / Gram disambiguation:
+  if (cleaned.includes('red gram')) {
+    return 'pigeon-pea';
+  }
+  if (cleaned.includes('bengal gram')) {
+    return 'chickpea';
+  }
+
+  if (cleaned.includes('gajar ghas') || cleaned.includes('गाजर घास')) {
+    return '';
+  }
+
+  // 4. Aliases scan with regex word boundary
+  for (const [key, crop] of Object.entries(SUPPORTED_ADVISORY_CROPS)) {
+    for (const alias of crop.aliases) {
+      if (alias === cleaned) {
+        return key;
+      }
+      const escaped = alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(^|[\\s_\\-,/()])${escaped}($|[\\s_\\-,/()])`, 'i');
+      if (regex.test(cleaned)) {
+        return key;
+      }
+    }
+  }
+
+  // 5. Fallback slug
+  const slug = cleaned.replace(/[^a-z0-9]/g, '');
+  for (const [key, crop] of Object.entries(SUPPORTED_ADVISORY_CROPS)) {
+    if (slug === key.replace(/[^a-z0-9]/g, '') || slug === crop.name.toLowerCase().replace(/[^a-z0-9]/g, '')) {
+      return key;
+    }
+  }
+
+  return slug;
+}
+
+export function getCropDisplayName(crop: string): string {
+  const norm = normalizeCropKey(crop);
+  if (SUPPORTED_ADVISORY_CROPS[norm]) {
+    return SUPPORTED_ADVISORY_CROPS[norm].name;
+  }
+  if (crop) {
+    return crop.trim().charAt(0).toUpperCase() + crop.trim().slice(1);
+  }
+  return 'Crop';
 }
 
 export const ADVISORY_DATA: Record<string, CropAdvisoryData> = {
@@ -1971,11 +2125,26 @@ export function getDynamicCropAdvisory(
     };
   }
 
-  // 2. Unverified / unsupported crop: honest unavailable response preserving actual soil test values
+  // 2. Unverified / pending crop: display supplementary evidence if available, preserving actual soil test values
+  const hasHfEvidence = apiCalc?.agronomicInsights && apiCalc.agronomicInsights.length > 0;
+  const keyInsights = hasHfEvidence
+    ? apiCalc.agronomicInsights
+    : [
+        `Certified ICAR / Department of Agriculture package of practices is not currently cataloged for "${displayName}".`,
+        `To prevent fertilizer burn, nutrient lock-up, or soil toxicity, unverified dosages are not generated.`,
+        `Actual soil test parameters (N: ${soilN} kg/ac, P: ${soilP} kg/ac, K: ${soilK} kg/ac, pH: ${soilPh}) from your certified soil sample are preserved.`,
+        `Please contact your local Krishi Vigyan Kendra (KVK) or agricultural extension officer for certified fertilizer schedules.`,
+      ];
+
+  const calloutMessage = apiCalc?.sourceMetadata?.sourceName?.includes('Hugging Face')
+    ? `Supplementary agricultural evidence retrieved for ${displayName} from HindiKrishi dataset. Real soil test values preserved.`
+    : `Advisory data is currently unavailable for ${displayName}. Only certified agricultural recommendations are displayed.`;
+
   return {
     id: cropKey,
     name: displayName,
     isDataAvailable: false,
+    sourceMetadata: apiCalc?.sourceMetadata,
     image: '/images/default_crop.jpg',
     stage: farmerContext?.cropCycle?.currentStage || 'Active Growth Stage',
     stageDays: farmerContext?.cropCycle ? `Day ${farmerContext.cropCycle.stageDayCount} of ${farmerContext.cropCycle.totalCycleDays}` : 'Active Growth',
@@ -1983,7 +2152,7 @@ export function getDynamicCropAdvisory(
     acres: farmerContext?.cropCycle?.allocatedAcres || farmerContext?.farm?.totalArea || 3.5,
     location: farmerContext?.farmer ? `${farmerContext.farmer.district}, ${farmerContext.farmer.state}` : 'Akola, Maharashtra',
     soilType: farmerContext?.farm?.soilType || 'Medium Black Clay Loam',
-    todayAdvice: `Certified agronomic advisory is pending verification for ${displayName}. Please consult your local Krishi Vigyan Kendra (KVK).`,
+    todayAdvice: farmerContext?.cropCycle?.todayAdvice || (hasHfEvidence ? apiCalc.agronomicInsights[0] : `Certified agronomic advisory is pending verification for ${displayName}. Please consult your local Krishi Vigyan Kendra (KVK).`),
     soilNutrients: {
       nitrogen: {
         name: 'Nitrogen',
@@ -2014,13 +2183,8 @@ export function getDynamicCropAdvisory(
       micronutrients: { label: 'Needs Attention', elements: 'Zn, Fe' },
     },
     requirements: [],
-    keyInsights: [
-      `Certified ICAR / Department of Agriculture package of practices is not currently cataloged for "${displayName}".`,
-      `To prevent fertilizer burn, nutrient lock-up, or soil toxicity, unverified dosages are not generated.`,
-      `Actual soil test parameters (N: ${soilN} kg/ac, P: ${soilP} kg/ac, K: ${soilK} kg/ac, pH: ${soilPh}) from your certified soil sample are preserved.`,
-      `Please contact your local Krishi Vigyan Kendra (KVK) or agricultural extension officer for certified fertilizer schedules.`,
-    ],
-    calloutMessage: `Advisory data is currently unavailable for ${displayName}. Only certified agricultural recommendations are displayed.`,
+    keyInsights,
+    calloutMessage,
     products: [],
     calculatorRates: {
       ureaKgPerAcre: 0,
@@ -2034,20 +2198,7 @@ export function getDynamicCropAdvisory(
       'Wear protective gloves and footwear during fertilizer handling and spreading.',
       'Always follow label instructions and avoid mixing incompatible fertilizers.',
     ],
-    organicAlternatives: [
-      {
-        name: 'Well-Decomposed FYM / Vermicompost',
-        type: 'Organic Manure',
-        dosage: '2.5 - 3 Tonnes / Acre',
-        benefit: 'Enriches soil organic matter, improves water retention, and supplies balanced nutrients.',
-      },
-      {
-        name: 'Jeevamrutha',
-        type: 'Liquid Bio-Stimulant',
-        dosage: '200 Litres / Acre with irrigation',
-        benefit: 'Multiplies beneficial soil microbes and enhances nutrient availability in the root zone.',
-      },
-    ],
+    organicAlternatives: apiCalc?.organicAlternatives || [],
   };
 }
 
