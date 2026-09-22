@@ -4,7 +4,7 @@ import {
   calculateFertilizerAdvisory, 
   CalculateAdvisoryInput 
 } from '../services/recommendationEngine.js';
-import { normalizeCropName, VERIFIED_CROP_PROFILES } from '../services/cropDataProvider.js';
+import { normalizeCropName, VERIFIED_CROP_PROFILES, ALL_SUPPORTED_CROPS } from '../services/cropDataProvider.js';
 
 const router = Router();
 
@@ -279,14 +279,23 @@ router.get('/soil-tests/latest', async (req: Request, res: Response) => {
  * @access  Public
  */
 router.get('/crops', (_req: Request, res: Response) => {
-  const cropList = Object.values(VERIFIED_CROP_PROFILES).map((p) => ({
-    id: p.crop,
-    name: p.displayName,
-    season: p.crop === 'sugarcane' || p.crop === 'banana' ? 'Annual / Perennial' : p.crop === 'wheat' || p.crop === 'chickpea' ? 'Rabi' : 'Kharif / Rabi',
-    defaultYield: p.defaultYield,
-    yieldUnit: p.yieldUnit,
-    sourceMetadata: p.sourceMetadata,
-  }));
+  const cropList = Object.values(ALL_SUPPORTED_CROPS).map((entry) => {
+    const verified = VERIFIED_CROP_PROFILES[entry.key];
+    return {
+      id: entry.key,
+      name: entry.displayName,
+      season: entry.season,
+      defaultYield: entry.defaultYield,
+      yieldUnit: entry.yieldUnit,
+      hasVerifiedProfile: entry.hasVerifiedProfile,
+      sourceMetadata: verified?.sourceMetadata || {
+        sourceName: 'CropGuard Agronomic Registry',
+        sourceType: 'Supported-Crop',
+        verificationStatus: entry.hasVerifiedProfile ? 'verified' : 'pending-field-verification',
+        sourceNote: entry.hasVerifiedProfile ? 'ICAR/SAU verified package of practices' : 'Benchmarked from regional agriculture advisory dataset',
+      },
+    };
+  });
 
   res.status(200).json({
     status: 'success',

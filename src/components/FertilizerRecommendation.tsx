@@ -8,6 +8,7 @@ import {
   type FarmerContextData 
 } from '../services/advisoryApi';
 import type { DbFertilizerItem } from './AdvisoryOverview';
+import { getDynamicCropAdvisory } from '../data/advisoryCropData';
 
 interface FertilizerRecommendationProps {
   onBack?: () => void;
@@ -738,14 +739,22 @@ export default function FertilizerRecommendation({ onBack }: FertilizerRecommend
     return () => { isMounted = false; };
   }, [selectedCropId]);
 
-  const crop = CROPS_DATA[selectedCropId] || CROPS_DATA.tomato;
+  // Precision Fertilizer Advisory Calculation via POST /api/advisories/calculate
+  const [apiCalculation, setApiCalculation] = useState<ApiAdvisoryCalculationData | null>(null);
+  const [isCalculating, setIsCalculating] = useState<boolean>(false);
+  const [calcError, setCalcError] = useState<string | null>(null);
+
+  const crop = useMemo(() => {
+    return CROPS_DATA[selectedCropId] || (getDynamicCropAdvisory(selectedCropId, selectedCropId, farmerContext, apiCalculation) as any);
+  }, [selectedCropId, farmerContext, apiCalculation]);
 
   // Sync field size when crop changes
   const handleSelectCrop = (cropId: string) => {
     setSelectedCropId(cropId);
-    setFieldSize(CROPS_DATA[cropId]?.acres || 3.5);
+    const newCrop = CROPS_DATA[cropId] || (getDynamicCropAdvisory(cropId, cropId, farmerContext, apiCalculation) as any);
+    setFieldSize(newCrop?.acres || 3.5);
     setShowCropModal(false);
-    triggerToast(`Switched active advisory to ${CROPS_DATA[cropId].name}`);
+    triggerToast(`Switched active advisory to ${newCrop?.name || cropId}`);
   };
 
   const triggerToast = (msg: string) => {
@@ -791,11 +800,6 @@ export default function FertilizerRecommendation({ onBack }: FertilizerRecommend
   const multiplier = fieldUnit === 'Acres' ? 1 : fieldUnit === 'Hectares' ? 2.47 : 0.025;
   const effectiveAcres = Math.max(0.1, fieldSize * multiplier);
 
-  // Precision Fertilizer Advisory Calculation via POST /api/advisories/calculate
-  const [apiCalculation, setApiCalculation] = useState<ApiAdvisoryCalculationData | null>(null);
-  const [isCalculating, setIsCalculating] = useState<boolean>(false);
-  const [calcError, setCalcError] = useState<string | null>(null);
-
   useEffect(() => {
     let isCancelled = false;
 
@@ -803,10 +807,10 @@ export default function FertilizerRecommendation({ onBack }: FertilizerRecommend
       setIsCalculating(true);
       setCalcError(null);
       try {
-        const soilN = farmerContext?.soilTest ? farmerContext.soilTest.nitrogenVal : crop.soilNutrients.nitrogen.currentVal;
-        const soilP = farmerContext?.soilTest ? farmerContext.soilTest.phosphorusVal : crop.soilNutrients.phosphorus.currentVal;
-        const soilK = farmerContext?.soilTest ? farmerContext.soilTest.potassiumVal : crop.soilNutrients.potassium.currentVal;
-        const soilPh = farmerContext?.soilTest ? farmerContext.soilTest.phVal : crop.soilNutrients.ph.value;
+        const soilN = farmerContext?.soilTest ? farmerContext.soilTest.nitrogenVal : (crop?.soilNutrients?.nitrogen?.currentVal ?? 25);
+        const soilP = farmerContext?.soilTest ? farmerContext.soilTest.phosphorusVal : (crop?.soilNutrients?.phosphorus?.currentVal ?? 18);
+        const soilK = farmerContext?.soilTest ? farmerContext.soilTest.potassiumVal : (crop?.soilNutrients?.potassium?.currentVal ?? 220);
+        const soilPh = farmerContext?.soilTest ? farmerContext.soilTest.phVal : (crop?.soilNutrients?.ph?.value ?? 6.8);
 
         const result = await calculateAdvisory({
           crop: selectedCropId,
@@ -840,10 +844,10 @@ export default function FertilizerRecommendation({ onBack }: FertilizerRecommend
     selectedCropId,
     effectiveAcres,
     farmerContext,
-    crop.soilNutrients.nitrogen.currentVal,
-    crop.soilNutrients.phosphorus.currentVal,
-    crop.soilNutrients.potassium.currentVal,
-    crop.soilNutrients.ph.value,
+    crop?.soilNutrients?.nitrogen?.currentVal,
+    crop?.soilNutrients?.phosphorus?.currentVal,
+    crop?.soilNutrients?.potassium?.currentVal,
+    crop?.soilNutrients?.ph?.value,
   ]);
 
   // Derived live soil nutrients status
@@ -1797,25 +1801,33 @@ export default function FertilizerRecommendation({ onBack }: FertilizerRecommend
         </div>
 
         <div className="organic-cards-grid">
-          {crop.organicAlternatives.map((alt, i) => (
-            <div key={i} className="organic-alt-card">
-              <div className="organic-card-top">
-                <span className="organic-type-tag">{alt.type}</span>
-                <span className="organic-dosage-chip">Dosage: {alt.dosage}</span>
+          {crop?.organicAlternatives && crop.organicAlternatives.length > 0 ? (
+            crop.organicAlternatives.map((alt: any, i: number) => (
+              <div key={i} className="organic-alt-card">
+                <div className="organic-card-top">
+                  <span className="organic-type-tag">{alt.type}</span>
+                  <span className="organic-dosage-chip">Dosage: {alt.dosage}</span>
+                </div>
+                <h3 className="organic-name">{alt.name}</h3>
+                <p className="organic-benefit">{alt.benefit}</p>
+                <button 
+                  type="button"
+                  className="btn-learn-organic"
+                  onClick={() => setSelectedOrganicGuide(alt)}
+                  id={`btn-fert-guide-${i}`}
+                >
+                  <span>View Preparation Guide</span>
+                  <span>→</span>
+                </button>
               </div>
-              <h3 className="organic-name">{alt.name}</h3>
-              <p className="organic-benefit">{alt.benefit}</p>
-              <button 
-                type="button"
-                className="btn-learn-organic"
-                onClick={() => setSelectedOrganicGuide(alt)}
-                id={`btn-fert-guide-${i}`}
-              >
-                <span>View Preparation Guide</span>
-                <span>→</span>
-              </button>
+            ))
+          ) : (
+            <div style={{ gridColumn: '1 / -1', padding: '24px', background: '#f8fafc', borderRadius: '12px', textAlign: 'center', color: '#64748b', fontSize: '14px' }}>
+              <span style={{ fontSize: '24px', display: 'block', marginBottom: '8px' }}>🌾</span>
+              <strong>Crop-specific organic fertilizer benchmarks are pending field verification for {crop?.name || 'this crop'}.</strong>
+              <p style={{ margin: '6px 0 0', fontSize: '13px' }}>Please consult your local Krishi Vigyan Kendra (KVK) for verified biological amendments.</p>
             </div>
-          ))}
+          )}
         </div>
       </section>
 
@@ -1838,7 +1850,7 @@ export default function FertilizerRecommendation({ onBack }: FertilizerRecommend
 
             <div className="fert-modal-body">
               <div className="crop-options-grid">
-                {Object.values(CROPS_DATA).map((c) => (
+                {(crop && !CROPS_DATA[crop.id] ? [crop, ...Object.values(CROPS_DATA)] : Object.values(CROPS_DATA)).map((c: any) => (
                   <div
                     key={c.id}
                     className={`crop-option-item ${selectedCropId === c.id ? 'crop-option-selected' : ''}`}

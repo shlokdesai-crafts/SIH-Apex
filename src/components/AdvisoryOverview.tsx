@@ -101,7 +101,16 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
   const [toastMessage, setToastMessage] = useState<string>('');
 
   const activeCropId = selectedCropId;
-  const crop = ADVISORY_DATA[activeCropId] || getDynamicCropAdvisory(activeCropId, scanResult?.crop || activeCropId);
+  // Fetch live active farmer profile, farm parcel, crop cycle, and latest certified soil test from PostgreSQL
+  const [farmerContext, setFarmerContext] = useState<FarmerContextData | null>(null);
+  // Precision Fertilizer Advisory Calculation via POST /api/advisories/calculate
+  const [apiCalculation, setApiCalculation] = useState<ApiAdvisoryCalculationData | null>(null);
+  const [isCalculating, setIsCalculating] = useState<boolean>(false);
+  const [calcError, setCalcError] = useState<string | null>(null);
+
+  const crop = useMemo(() => {
+    return ADVISORY_DATA[activeCropId] || getDynamicCropAdvisory(activeCropId, scanResult?.crop || activeCropId, farmerContext, apiCalculation);
+  }, [activeCropId, scanResult?.crop, farmerContext, apiCalculation]);
 
   // Fetch live active fertilizer products from PostgreSQL API (/api/fertilizers)
   const [dbFertilizers, setDbFertilizers] = useState<DbFertilizerItem[]>([]);
@@ -140,8 +149,6 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
     };
   }, []);
 
-  // Fetch live active farmer profile, farm parcel, crop cycle, and latest certified soil test from PostgreSQL
-  const [farmerContext, setFarmerContext] = useState<FarmerContextData | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -202,7 +209,7 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
 
   const handleSelectCrop = (cropId: string) => {
     setSelectedCropId(cropId);
-    const newCrop = ADVISORY_DATA[cropId] || ADVISORY_DATA.tomato;
+    const newCrop = ADVISORY_DATA[cropId] || getDynamicCropAdvisory(cropId, cropId, farmerContext, apiCalculation);
     setFieldSize(newCrop.acres || 3.5);
     // Pre-select recommended fertilizers for the switched crop
     setSelectedFertilizers(newCrop.products.map((p) => p.id));
@@ -260,10 +267,6 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
   const multiplier = fieldUnit === 'Acres' ? 1 : fieldUnit === 'Hectares' ? 2.47 : 0.025;
   const effectiveAcres = Math.max(0.1, fieldSize * multiplier);
 
-  // Precision Fertilizer Advisory Calculation via POST /api/advisories/calculate
-  const [apiCalculation, setApiCalculation] = useState<ApiAdvisoryCalculationData | null>(null);
-  const [isCalculating, setIsCalculating] = useState<boolean>(false);
-  const [calcError, setCalcError] = useState<string | null>(null);
 
   useEffect(() => {
     let isCancelled = false;
@@ -272,10 +275,10 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
       setIsCalculating(true);
       setCalcError(null);
       try {
-        const soilN = farmerContext?.soilTest ? farmerContext.soilTest.nitrogenVal : crop.soilNutrients.nitrogen.currentVal;
-        const soilP = farmerContext?.soilTest ? farmerContext.soilTest.phosphorusVal : crop.soilNutrients.phosphorus.currentVal;
-        const soilK = farmerContext?.soilTest ? farmerContext.soilTest.potassiumVal : crop.soilNutrients.potassium.currentVal;
-        const soilPh = farmerContext?.soilTest ? farmerContext.soilTest.phVal : crop.soilNutrients.ph.value;
+        const soilN = farmerContext?.soilTest ? farmerContext.soilTest.nitrogenVal : 25;
+        const soilP = farmerContext?.soilTest ? farmerContext.soilTest.phosphorusVal : 18;
+        const soilK = farmerContext?.soilTest ? farmerContext.soilTest.potassiumVal : 20;
+        const soilPh = farmerContext?.soilTest ? farmerContext.soilTest.phVal : 7.2;
 
         const result = await calculateAdvisory({
           crop: activeCropId,
@@ -311,10 +314,6 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
     activeCropId,
     effectiveAcres,
     farmerContext,
-    crop.soilNutrients.nitrogen.currentVal,
-    crop.soilNutrients.phosphorus.currentVal,
-    crop.soilNutrients.potassium.currentVal,
-    crop.soilNutrients.ph.value,
   ]);
 
   // Derived live soil nutrients status
@@ -427,8 +426,26 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
 
   // Derived live recommended fertilizer products with pricing and packaging
   const activeRecommendedProducts = useMemo(() => {
+    if (apiCalculation?.recommendedFertilizers?.length) {
+      return apiCalculation.recommendedFertilizers.map((rf) => ({
+        id: rf.productCode,
+        name: rf.name,
+        formula: rf.formula,
+        composition: rf.composition,
+        ratePerAcre: rf.ratePerAcreKg,
+        unit: 'kg/acre',
+        badge: rf.badge || rf.applicationRole,
+        bagColor: rf.bagColor || '#1e56a0',
+        description: rf.description,
+        category: rf.category,
+        packageSizeKg: rf.standardPackageSizeKg,
+        packageUnit: rf.packageUnit,
+        price: rf.pricePerBagInr,
+        isOrganic: rf.isOrganic,
+      }));
+    }
     return recommendedProducts;
-  }, [recommendedProducts]);
+  }, [apiCalculation?.recommendedFertilizers, recommendedProducts]);
 
   // Derived live application timing steps
   const activeTimingSteps: ApplicationStep[] = useMemo(() => {
@@ -1262,25 +1279,33 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
         </div>
 
         <div className="organic-cards-grid">
-          {crop.organicAlternatives.map((alt, i) => (
-            <div key={i} className="organic-alt-card">
-              <div className="organic-card-top">
-                <span className="organic-type-tag">{alt.type}</span>
-                <span className="organic-dosage-chip">Dosage: {alt.dosage}</span>
+          {crop?.organicAlternatives && crop.organicAlternatives.length > 0 ? (
+            crop.organicAlternatives.map((alt, i) => (
+              <div key={i} className="organic-alt-card">
+                <div className="organic-card-top">
+                  <span className="organic-type-tag">{alt.type}</span>
+                  <span className="organic-dosage-chip">Dosage: {alt.dosage}</span>
+                </div>
+                <h3 className="organic-name">{alt.name}</h3>
+                <p className="organic-benefit">{alt.benefit}</p>
+                <button 
+                  type="button"
+                  className="btn-learn-organic"
+                  onClick={() => setSelectedOrganicGuide(alt)}
+                  id={`btn-guide-${i}`}
+                >
+                  <span>View Preparation Guide</span>
+                  <span>→</span>
+                </button>
               </div>
-              <h3 className="organic-name">{alt.name}</h3>
-              <p className="organic-benefit">{alt.benefit}</p>
-              <button 
-                type="button"
-                className="btn-learn-organic"
-                onClick={() => setSelectedOrganicGuide(alt)}
-                id={`btn-guide-${i}`}
-              >
-                <span>View Preparation Guide</span>
-                <span>→</span>
-              </button>
+            ))
+          ) : (
+            <div style={{ gridColumn: '1 / -1', padding: '24px', background: '#f8fafc', borderRadius: '12px', textAlign: 'center', color: '#64748b', fontSize: '14px' }}>
+              <span style={{ fontSize: '24px', display: 'block', marginBottom: '8px' }}>🌾</span>
+              <strong>Crop-specific organic fertilizer benchmarks are pending field verification for {crop?.name || 'this crop'}.</strong>
+              <p style={{ margin: '6px 0 0', fontSize: '13px' }}>Please consult your local Krishi Vigyan Kendra (KVK) for verified biological amendments.</p>
             </div>
-          ))}
+          )}
         </div>
       </section>
 
@@ -1303,7 +1328,7 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
 
             <div className="fert-modal-body">
               <div className="crop-options-grid">
-                {Object.values(ADVISORY_DATA).map((c) => (
+                {(crop && !ADVISORY_DATA[crop.id] ? [crop, ...Object.values(ADVISORY_DATA)] : Object.values(ADVISORY_DATA)).map((c) => (
                   <div
                     key={c.id}
                     className={`crop-option-item ${selectedCropId === c.id ? 'crop-option-selected' : ''}`}
