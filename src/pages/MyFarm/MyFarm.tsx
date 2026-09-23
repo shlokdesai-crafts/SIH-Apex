@@ -9,7 +9,17 @@ interface MyFarmProps {
 }
 
 export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
-  const { farmState, isLoading, addCropRecord, scheduleFieldVisit, startScanForField, startScanForCrop } = useFarm();
+  const { 
+    farmState, 
+    isLoading, 
+    addCropRecord, 
+    scheduleFieldVisit, 
+    startScanForField, 
+    startScanForCrop,
+    startAdvisoryForField,
+    startAdvisoryForCrop,
+    clearAdvisoryTarget
+  } = useFarm();
 
   // Modal states
   const [showAddCropModal, setShowAddCropModal] = useState(false);
@@ -369,13 +379,25 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                                 <strong className="metric-val" style={{ color: '#16a34a' }}>{latestScan.confidence}%</strong>
                               </div>
                             ) : null}
-                            <div className="crop-card-yield-row" style={{ marginTop: '6px' }}>
+                            <div className="crop-card-yield-row" style={{ marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
                               <button
                                 type="button"
                                 className="crop-card-history-link"
                                 onClick={() => setSelectedCrop(crop)}
                               >
-                                View History &amp; Details →
+                                View Details →
+                              </button>
+                              <button
+                                type="button"
+                                className="crop-card-advisory-btn"
+                                title={`Get Soil & Nutrient Advisory for ${crop.name}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  startAdvisoryForCrop(crop, matchingField);
+                                  if (onNavigateTab) onNavigateTab('advisory');
+                                }}
+                              >
+                                <span>💡</span> Advisory
                               </button>
                             </div>
                           </div>
@@ -495,6 +517,18 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                             </span>
                             <button
                               type="button"
+                              className="field-quick-advisory-btn"
+                              title={`View Advisory for ${field.name}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                startAdvisoryForField(field);
+                                if (onNavigateTab) onNavigateTab('advisory');
+                              }}
+                            >
+                              💡
+                            </button>
+                            <button
+                              type="button"
                               className="field-quick-scan-btn"
                               title={`Scan ${field.name} now`}
                               onClick={(e) => {
@@ -519,7 +553,20 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                   <h3>⚠️ Priority Actions</h3>
                   <button
                     className="panel-view-all-btn"
-                    onClick={() => onNavigateTab ? onNavigateTab('advisory') : null}
+                    onClick={() => {
+                      if (priorityActions.length > 0) {
+                        const firstAction = priorityActions[0];
+                        const cKey = getCanonicalCropKey(firstAction.crop);
+                        const matchingCrop = scannedCrops.find(
+                          (c) => getCanonicalCropKey(c.id || c.name) === cKey
+                        );
+                        const matchingField = (fields || []).find(
+                          (f) => getCanonicalCropKey(f.crop) === cKey || f.crop.toLowerCase() === firstAction.crop.toLowerCase()
+                        );
+                        startAdvisoryForCrop(matchingCrop || firstAction.crop, matchingField);
+                      }
+                      if (onNavigateTab) onNavigateTab('advisory');
+                    }}
                   >
                     View All →
                   </button>
@@ -595,7 +642,20 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
 
                 <button
                   className="quick-action-item"
-                  onClick={() => onNavigateTab ? onNavigateTab('advisory') : null}
+                  onClick={() => {
+                    if (scannedCrops.length > 0) {
+                      const primaryCrop = scannedCrops[0];
+                      const matchingField = (fields || []).find(
+                        (f) => getCanonicalCropKey(f.crop) === getCanonicalCropKey(primaryCrop.id || primaryCrop.name)
+                      );
+                      startAdvisoryForCrop(primaryCrop, matchingField);
+                    } else if (fields.length > 0) {
+                      startAdvisoryForField(fields[0]);
+                    } else {
+                      clearAdvisoryTarget();
+                    }
+                    if (onNavigateTab) onNavigateTab('advisory');
+                  }}
                 >
                   <div className="qa-left">
                     <div className="qa-icon-circle bulb">💡</div>
@@ -996,7 +1056,15 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                 <button
                   type="button"
                   className="btn-primary"
-                  onClick={() => onNavigateTab ? onNavigateTab('advisory') : null}
+                  onClick={() => {
+                    const cKey = getCanonicalCropKey(selectedCrop.id || selectedCrop.name);
+                    const matchingField = (fields || []).find(
+                      (f) => getCanonicalCropKey(f.crop) === cKey || f.crop.toLowerCase() === selectedCrop.name.toLowerCase()
+                    );
+                    startAdvisoryForCrop(selectedCrop, matchingField);
+                    setSelectedCrop(null);
+                    if (onNavigateTab) onNavigateTab('advisory');
+                  }}
                 >
                   View Advisory 💡
                 </button>
@@ -1043,18 +1111,32 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                   <strong style={{ color: '#065f46', display: 'block', fontSize: '0.92rem' }}>Scan This Field with AI</strong>
                   <span style={{ fontSize: '0.8rem', color: '#047857' }}>Run immediate image diagnostic for {selectedField.crop} in {selectedField.name}</span>
                 </div>
-                <button
-                  type="button"
-                  className="btn-primary"
-                  style={{ background: '#059669', display: 'flex', alignItems: 'center', gap: '6px' }}
-                  onClick={() => {
-                    startScanForField(selectedField);
-                    setSelectedField(null);
-                    if (onNavigateTab) onNavigateTab('scan');
-                  }}
-                >
-                  <span>📷</span> Scan Now
-                </button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', fontSize: '0.86rem' }}
+                    onClick={() => {
+                      startAdvisoryForField(selectedField);
+                      setSelectedField(null);
+                      if (onNavigateTab) onNavigateTab('advisory');
+                    }}
+                  >
+                    <span>💡</span> Advisory
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    style={{ background: '#059669', display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', fontSize: '0.86rem' }}
+                    onClick={() => {
+                      startScanForField(selectedField);
+                      setSelectedField(null);
+                      if (onNavigateTab) onNavigateTab('scan');
+                    }}
+                  >
+                    <span>📷</span> Scan Now
+                  </button>
+                </div>
               </div>
 
               {/* Field-Specific Scan History */}
@@ -1102,6 +1184,17 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                 >
                   Close
                 </button>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => {
+                    startAdvisoryForField(selectedField);
+                    setSelectedField(null);
+                    if (onNavigateTab) onNavigateTab('advisory');
+                  }}
+                >
+                  View Field Advisory 💡
+                </button>
               </div>
             </div>
           </div>
@@ -1147,6 +1240,14 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                   type="button"
                   className="btn-primary"
                   onClick={() => {
+                    const cKey = getCanonicalCropKey(selectedAction.crop);
+                    const matchingCrop = scannedCrops.find(
+                      (c) => getCanonicalCropKey(c.id || c.name) === cKey
+                    );
+                    const matchingField = (fields || []).find(
+                      (f) => getCanonicalCropKey(f.crop) === cKey || f.crop.toLowerCase() === selectedAction.crop.toLowerCase()
+                    );
+                    startAdvisoryForCrop(matchingCrop || selectedAction.crop, matchingField);
                     setSelectedAction(null);
                     if (onNavigateTab) onNavigateTab('advisory');
                   }}

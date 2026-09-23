@@ -1314,6 +1314,50 @@
   transform: scale(1.04);
 }
 
+.field-quick-advisory-btn {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 5px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.field-quick-advisory-btn:hover {
+  background: #166534;
+  color: #ffffff;
+  border-color: #166534;
+  transform: scale(1.04);
+}
+
+.crop-card-advisory-btn {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.crop-card-advisory-btn:hover {
+  background: #166534;
+  color: #ffffff;
+  border-color: #166534;
+  transform: translateY(-1px);
+}
+
 .qa-icon-circle.cam {
   background: #ecfdf5;
   color: #059669;
