@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useFarm } from '../context/FarmContext';
 import { scanCropImage, getScanHistory, deleteScan, type ScanHistoryItem } from '../services/cropScanApi';
 import { getBrowserPosition, reverseGeocode } from '../services/locationService';
@@ -182,7 +182,7 @@ interface ScanCropProps {
 }
 
 export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProps = {}) {
-  const { farmState, recordScan, scanTarget, clearScanTarget } = useFarm();
+  const { farmState, recordScan, scanTarget, clearScanTarget, startAdvisoryForCrop } = useFarm();
 
   // Workflow Step: idle -> preview -> scanning -> result
   const [step, setStep] = useState<Step>('idle');
@@ -576,12 +576,61 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
     clearScanTarget();
   };
 
+  // Check if active crop is supported by trained disease detection model
+  const isSelectedCropModelSupported = useMemo(() => {
+    if (!selectedCrop) return true;
+    const match = ALL_AVAILABLE_CROPS.find(c => c.name.toLowerCase() === selectedCrop.toLowerCase());
+    return match ? match.isModelSupported : false;
+  }, [selectedCrop]);
+
+  const handleOpenAdvisory = () => {
+    if (diagnosis) {
+      const cropName = (diagnosis as any).cropName || selectedCrop;
+      if (!cropName) return;
+      const matchingField = farmState?.fields?.find(f =>
+        f.id === selectedFieldId ||
+        f.crop.toLowerCase() === cropName.toLowerCase()
+      );
+      const parsedArea = parseFloat(cultivatedArea) || 1.0;
+      let areaHa = 0.5;
+      if (areaUnit === 'Hectares') {
+        areaHa = parsedArea;
+      } else if (areaUnit === 'Guntha') {
+        areaHa = Math.round(parsedArea * 0.0101 * 100) / 100;
+      } else {
+        areaHa = Math.round((parsedArea / 2.471) * 100) / 100;
+      }
+
+      startAdvisoryForCrop(
+        cropName,
+        matchingField,
+        {
+          cultivatedArea: parsedArea,
+          areaUnit,
+          areaHa,
+          growthStage: growthStage || undefined,
+          detectedDisease: (diagnosis as any).disease,
+          scanId: (diagnosis as any).scanId,
+          from: 'scan',
+        }
+      );
+      if (onNavigateTab) {
+        onNavigateTab('advisory');
+      }
+    }
+  };
+
   // ── AI Scan (FastAPI POST /api/scan) ────────────────────────────────────────
   const startScan = async () => {
     if (isSubmitting || step === 'scanning') return;
 
     if (!selectedCrop) {
       setBackendError("Please select a crop in Step 1 before continuing.");
+      return;
+    }
+
+    if (!isSelectedCropModelSupported) {
+      setBackendError(`Disease detection model unavailable for '${selectedCrop}'. Automated visual disease detection has not yet been trained for this crop. You can still register and manage ${selectedCrop} in My Farm.`);
       return;
     }
 
@@ -701,6 +750,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
         icon: isHealthy ? '✅' : (isDiseased ? '🍂' : '⚠️'),
         verification: verificationObj,
         topPredictions: json.topPredictions || [],
+        scanId: json.scanId || Date.now().toString(),
       } as any);
 
       const newRecord = {
@@ -1020,6 +1070,23 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                     <button type="button" className="sc-action-btn sc-action-primary" onClick={reset}>
                       🔄 Scan Another Crop
                     </button>
+                    {onNavigateTab && (
+                      <button
+                        type="button"
+                        className="sc-action-btn sc-action-advisory"
+                        style={{
+                          backgroundColor: '#15803d',
+                          color: '#fff',
+                          fontWeight: 600,
+                          border: 'none',
+                          boxShadow: '0 2px 8px rgba(21, 128, 61, 0.25)',
+                        }}
+                        onClick={handleOpenAdvisory}
+                        id="btn-open-nutrient-advisory"
+                      >
+                        💡 Open Soil &amp; Nutrient Advisory →
+                      </button>
+                    )}
                     <button
                       type="button"
                       className="sc-action-btn sc-action-secondary"
@@ -1113,23 +1180,50 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
 
                   {/* Currently Selected Crop Banner */}
                   {selectedCrop ? (
-                    <div className="sc-selected-crop-banner">
-                      <div className="sc-selected-crop-left">
-                        <span className="sc-selected-crop-check">✓</span>
-                        <div className="sc-selected-crop-info">
-                          <span className="sc-selected-crop-label">Currently Selected Crop:</span>
-                          <strong className="sc-selected-crop-name">🌾 {selectedCrop}</strong>
+                    <>
+                      <div className="sc-selected-crop-banner">
+                        <div className="sc-selected-crop-left">
+                          <span className="sc-selected-crop-check">✓</span>
+                          <div className="sc-selected-crop-info">
+                            <span className="sc-selected-crop-label">Currently Selected Crop:</span>
+                            <strong className="sc-selected-crop-name">🌾 {selectedCrop}</strong>
+                          </div>
                         </div>
+                        <button
+                          type="button"
+                          className="sc-change-crop-btn"
+                          onClick={() => setSelectedCrop(null)}
+                          title="Change crop selection"
+                        >
+                          Change Crop
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        className="sc-change-crop-btn"
-                        onClick={() => setSelectedCrop(null)}
-                        title="Change crop selection"
-                      >
-                        Change Crop
-                      </button>
-                    </div>
+
+                      {!isSelectedCropModelSupported && (
+                        <div className="sc-model-notice-banner" style={{
+                          marginTop: '8px',
+                          padding: '10px 14px',
+                          borderRadius: '8px',
+                          backgroundColor: '#fffbeb',
+                          border: '1px solid #fde68a',
+                          color: '#92400e',
+                          fontSize: '0.85rem',
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: '8px',
+                          lineHeight: 1.45,
+                        }}>
+                          <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>⚠️</span>
+                          <div>
+                            <strong>Disease detection model unavailable for {selectedCrop}.</strong>
+                            <div style={{ marginTop: '2px', color: '#b45309' }}>
+                              Automated visual disease detection is currently trained for: Cotton, Soybean, Sugarcane, Rice, Wheat, Tomato, Chickpea, and Maize.
+                              You can still add and manage {selectedCrop} in <strong>My Farm</strong> and view agronomic guidance, but automated visual scanning is unavailable.
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <div className="sc-select-crop-prompt">
                       <span>💡 Please select a crop from the cards below or use the search field.</span>
@@ -1440,6 +1534,31 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                         </div>
                       )}
 
+                      {!isSelectedCropModelSupported && selectedCrop && (
+                        <div className="sc-model-unavailable-box" style={{
+                          padding: '12px 14px',
+                          borderRadius: '8px',
+                          backgroundColor: '#fffbeb',
+                          border: '1px solid #fde68a',
+                          color: '#92400e',
+                          fontSize: '0.86rem',
+                          marginBottom: '12px',
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: '8px',
+                          lineHeight: 1.45,
+                        }}>
+                          <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>⚠️</span>
+                          <div>
+                            <strong>Disease detection model unavailable for {selectedCrop}</strong>
+                            <div style={{ marginTop: '2px', color: '#b45309' }}>
+                              Automated visual disease detection is currently trained for: Cotton, Soybean, Sugarcane, Rice, Wheat, Tomato, Chickpea, and Maize.
+                              Visual diagnosis is not supported for {selectedCrop}, but you can record it in <strong>My Farm</strong>.
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Prominent Analyze Crop Button */}
                       <button
                         type="button"
@@ -1451,11 +1570,14 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                           isSubmitting ||
                           !cultivatedArea ||
                           isNaN(parseFloat(cultivatedArea)) ||
-                          parseFloat(cultivatedArea) <= 0
+                          parseFloat(cultivatedArea) <= 0 ||
+                          !isSelectedCropModelSupported
                         }
                         title={
                           !selectedCrop
                             ? "Please select a crop in Step 1 first."
+                            : !isSelectedCropModelSupported
+                            ? `Disease detection model unavailable for ${selectedCrop}.`
                             : !uploadedFile
                             ? "Please upload or capture a crop photo in Step 3 first."
                             : (!cultivatedArea || isNaN(parseFloat(cultivatedArea)) || parseFloat(cultivatedArea) <= 0)
@@ -1463,7 +1585,11 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                             : "Analyze Crop with AI"
                         }
                       >
-                        {isSubmitting ? '⏳ Analyzing Crop…' : '🔬 Analyze Crop'}
+                        {isSubmitting
+                          ? '⏳ Analyzing Crop…'
+                          : !isSelectedCropModelSupported && selectedCrop
+                          ? `⚠️ Model Unavailable for ${selectedCrop}`
+                          : '🔬 Analyze Crop'}
                       </button>
                     </div>
                   )}

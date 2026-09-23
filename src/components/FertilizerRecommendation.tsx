@@ -850,6 +850,47 @@ export default function FertilizerRecommendation({ onBack }: FertilizerRecommend
     crop?.soilNutrients?.ph?.value,
   ]);
 
+  // Verified soil test provenance and certification accreditation check
+  const soilProvenance = useMemo(() => {
+    const st = farmerContext?.soilTest;
+    if (!st) {
+      return {
+        hasSoilTest: false,
+        isCertified: false,
+        isFarmerReported: false,
+        badgeLabel: 'No Soil Test on Record',
+        statusText: 'Unrecorded',
+        labName: null,
+        sampleId: null,
+        sampleDate: null,
+      };
+    }
+
+    const normalizedStatus = (st.status || '').toLowerCase().trim();
+    const hasValidLabName = Boolean(
+      st.testingLabName &&
+      st.testingLabName.trim().length > 0 &&
+      !['self', 'farmer', 'unverified', 'none', 'unknown', 'pending'].includes(st.testingLabName.trim().toLowerCase())
+    );
+    const isCertified = Boolean(
+      (normalizedStatus === 'certified' || normalizedStatus === 'verified') &&
+      hasValidLabName
+    );
+
+    return {
+      hasSoilTest: true,
+      isCertified,
+      isFarmerReported: !isCertified,
+      badgeLabel: isCertified
+        ? `✓ Certified Lab Report — ${st.testingLabName}`
+        : `⚠️ Farmer-Reported Soil Readings (Unverified Lab Status)`,
+      statusText: isCertified ? 'Certified Lab Report' : 'Unverified Farmer Readings',
+      labName: st.testingLabName || (isCertified ? 'Govt. Accredited Agronomy Lab' : 'Farmer Self-Report'),
+      sampleId: st.sampleId || 'SL-SAMPLE',
+      sampleDate: st.sampleDate || 'Recent',
+    };
+  }, [farmerContext?.soilTest]);
+
   // Derived live soil nutrients status
   const activeSoilNutrients = useMemo(() => {
     const baseSoil = crop.soilNutrients;
@@ -1891,7 +1932,11 @@ export default function FertilizerRecommendation({ onBack }: FertilizerRecommend
                 <span className="modal-icon">📑</span>
                 <div>
                   <h3 className="fert-modal-title">Comprehensive Soil Test Report</h3>
-                  <p className="fert-modal-desc">Soil Sample #SL-2025-084 • Lab: Akola District Agronomy Lab</p>
+                  <p className="fert-modal-desc">
+                    {soilProvenance.hasSoilTest
+                      ? `Soil Sample #${soilProvenance.sampleId} • Lab: ${soilProvenance.labName}`
+                      : 'No Verified Laboratory Soil Sample on Record'}
+                  </p>
                 </div>
               </div>
               <button className="fert-modal-close" onClick={() => setShowSoilModal(false)}>✕</button>
@@ -1902,8 +1947,14 @@ export default function FertilizerRecommendation({ onBack }: FertilizerRecommend
                 <div className="soil-meta-grid">
                   <div><strong>Plot Location:</strong> {crop.location} ({crop.field})</div>
                   <div><strong>Soil Texture:</strong> {crop.soilType}</div>
-                  <div><strong>Sampling Date:</strong> 12 Jan 2026</div>
-                  <div><strong>Status:</strong> Certified Valid (6 Months)</div>
+                  <div><strong>Testing Facility:</strong> {soilProvenance.labName || 'Not recorded'}</div>
+                  <div><strong>Sampling Date:</strong> {soilProvenance.sampleDate || 'Not recorded'}</div>
+                  <div>
+                    <strong>Verification &amp; Status:</strong>{' '}
+                    <span className={soilProvenance.isCertified ? 'status-cert-verified' : 'status-cert-unverified'}>
+                      {soilProvenance.statusText}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -2075,7 +2126,7 @@ export default function FertilizerRecommendation({ onBack }: FertilizerRecommend
                   filteredCatalogFertilizers.map((p: any) => {
                     const prodId = p.productCode || p.id;
                     const isAdded = !!addedProducts[prodId];
-                    const displayPrice = p.price !== undefined ? `₹${parseFloat(p.price).toFixed(2)}` : '₹266.50';
+                    const displayPrice = p.price !== undefined && Number(p.price) > 0 ? `₹${parseFloat(p.price).toFixed(2)}` : 'Govt. Subsidized / MRP';
                     const packageNote = p.packageSizeKg ? `${p.packageSizeKg}${p.packageUnit || 'kg'}` : '50kg';
                     const typeNote = p.isOrganic ? 'Bio-Certified Organic' : 'Govt. Subsidized';
 

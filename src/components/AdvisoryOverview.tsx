@@ -19,12 +19,13 @@ import {
   type ApiAdvisoryCalculationData,
   type FarmerContextData 
 } from '../services/advisoryApi';
-import { useFarm } from '../context/FarmContext';
+import { useFarm, getUserEligibleCrops, isDevTestEnvironment, type UserEligibleCrop } from '../context/FarmContext';
 
 interface AdvisoryOverviewProps {
   scanResult?: ScanResultData | null;
   onBack?: () => void;
   onOpenFertilizer?: () => void;
+  onNavigateTab?: (tab: string) => void;
 }
 
 export type { SoilNutrient, NutrientRequirement, FertilizerProduct, ApplicationStep, CropAdvisoryData };
@@ -47,12 +48,78 @@ export interface DbFertilizerItem {
   isActive: boolean;
 }
 
-export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer }: AdvisoryOverviewProps) {
+export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer, onNavigateTab }: AdvisoryOverviewProps) {
   const { t } = useTranslation();
-  const { advisoryTarget, clearAdvisoryTarget } = useFarm();
+  const { farmState, advisoryTarget, clearAdvisoryTarget } = useFarm();
+  const isDevTest = isDevTestEnvironment();
 
-  // Active crop state: initialized from advisoryTarget or scanResult if present, defaulting to 'tomato'
+  // Aggregate user-owned genuine crops from FarmContext (plots, crops, scans)
+  // or test fixtures if in dev test mode (?mode=test)
+  const eligibleCrops: UserEligibleCrop[] = useMemo(() => {
+    const base = getUserEligibleCrops(farmState);
+    if (advisoryTarget?.crop) {
+      const canonicalKey = normalizeCropKey(advisoryTarget.crop);
+      const existing = base.find(
+        (c) => c.canonicalKey === canonicalKey && (!advisoryTarget.fieldId || c.fieldId === advisoryTarget.fieldId)
+      );
+      if (!existing) {
+        const fromTarget: UserEligibleCrop = {
+          key: `target_${canonicalKey}_${advisoryTarget.fieldId || 'active'}`,
+          canonicalKey,
+          name: advisoryTarget.crop,
+          image: `/images/crop_${canonicalKey}.jpg`,
+          fieldId: advisoryTarget.fieldId,
+          fieldName: advisoryTarget.fieldName || 'Current Selected Field',
+          cultivatedArea: advisoryTarget.cultivatedArea,
+          areaUnit: advisoryTarget.areaUnit || 'Acres',
+          areaHa: advisoryTarget.areaHa,
+          areaDisplay: advisoryTarget.cultivatedArea
+            ? `${advisoryTarget.cultivatedArea} ${advisoryTarget.areaUnit || 'Acres'}`
+            : advisoryTarget.areaHa
+            ? `${advisoryTarget.areaHa} Ha`
+            : 'Not recorded',
+          variety: advisoryTarget.variety,
+          growthStage: advisoryTarget.growthStage,
+          sowingDate: advisoryTarget.sowingDate,
+          soilType: advisoryTarget.soilType,
+          irrigationMethod: advisoryTarget.irrigationMethod,
+          source: advisoryTarget.from === 'scan' ? 'scanned' : 'farm',
+          sourceLabel: advisoryTarget.from === 'scan' ? '📷 Scanned Crop' : '🌾 My Farm',
+        };
+        return [fromTarget, ...base];
+      }
+    }
+    return base;
+  }, [farmState, advisoryTarget]);
+
+  // Selected crop key among eligible user crops
+  const [selectedCropKey, setSelectedCropKey] = useState<string>(() => {
+    if (advisoryTarget?.crop) {
+      const key = normalizeCropKey(advisoryTarget.crop);
+      const match = eligibleCrops.find(
+        (c) => c.canonicalKey === key && (!advisoryTarget.fieldId || c.fieldId === advisoryTarget.fieldId)
+      );
+      if (match) return match.key;
+    }
+    if (scanResult?.crop) {
+      const key = normalizeCropKey(scanResult.crop);
+      const match = eligibleCrops.find((c) => c.canonicalKey === key);
+      if (match) return match.key;
+    }
+    return eligibleCrops[0]?.key || 'tomato';
+  });
+
+  const activeUserCrop: UserEligibleCrop | undefined = useMemo(() => {
+    return (
+      eligibleCrops.find((c) => c.key === selectedCropKey) ||
+      eligibleCrops.find((c) => c.canonicalKey === selectedCropKey) ||
+      eligibleCrops[0]
+    );
+  }, [eligibleCrops, selectedCropKey]);
+
+  // Active crop state: initialized from activeUserCrop or fallback
   const [selectedCropId, setSelectedCropId] = useState<string>(() => {
+    if (activeUserCrop) return activeUserCrop.canonicalKey;
     if (advisoryTarget?.crop) {
       const key = normalizeCropKey(advisoryTarget.crop);
       if (key) return key;
@@ -61,34 +128,58 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
   });
   const lastScannedCropRef = useRef<string | undefined>(scanResult?.crop);
 
-  // Synchronize when advisoryTarget changes (e.g. navigated from a specific plot in My Farm)
+  // Synchronize active crop when activeUserCrop changes
+  useEffect(() => {
+    if (activeUserCrop) {
+      setSelectedCropId(activeUserCrop.canonicalKey);
+      if (activeUserCrop.cultivatedArea && activeUserCrop.cultivatedArea > 0) {
+        setFieldSize(activeUserCrop.cultivatedArea);
+        if (activeUserCrop.areaUnit && ['Acres', 'Hectares', 'Guntha'].includes(activeUserCrop.areaUnit)) {
+          setFieldUnit(activeUserCrop.areaUnit as 'Acres' | 'Hectares' | 'Guntha');
+        }
+      } else if (activeUserCrop.areaHa && activeUserCrop.areaHa > 0) {
+        setFieldSize(Number((activeUserCrop.areaHa * 2.471).toFixed(1)));
+        setFieldUnit('Acres');
+      }
+    }
+  }, [activeUserCrop]);
+
+  // Synchronize when advisoryTarget changes (e.g. navigated from My Farm or Scan Crop)
   useEffect(() => {
     if (advisoryTarget?.crop) {
       const cropKey = normalizeCropKey(advisoryTarget.crop);
-      if (cropKey) {
-        setSelectedCropId(cropKey);
-        if (advisoryTarget.cultivatedArea && advisoryTarget.cultivatedArea > 0) {
-          setFieldSize(advisoryTarget.cultivatedArea);
-          if (advisoryTarget.areaUnit && ['Acres', 'Hectares', 'Guntha'].includes(advisoryTarget.areaUnit)) {
-            setFieldUnit(advisoryTarget.areaUnit as 'Acres' | 'Hectares' | 'Guntha');
-          }
-        } else if (advisoryTarget.areaHa && advisoryTarget.areaHa > 0) {
-          setFieldSize(Number((advisoryTarget.areaHa * 2.471).toFixed(1)));
-          setFieldUnit('Acres');
+      const match = eligibleCrops.find(
+        (c) => c.canonicalKey === cropKey && (!advisoryTarget.fieldId || c.fieldId === advisoryTarget.fieldId)
+      );
+      if (match) {
+        setSelectedCropKey(match.key);
+      }
+      setSelectedCropId(cropKey);
+      if (advisoryTarget.cultivatedArea && advisoryTarget.cultivatedArea > 0) {
+        setFieldSize(advisoryTarget.cultivatedArea);
+        if (advisoryTarget.areaUnit && ['Acres', 'Hectares', 'Guntha'].includes(advisoryTarget.areaUnit)) {
+          setFieldUnit(advisoryTarget.areaUnit as 'Acres' | 'Hectares' | 'Guntha');
         }
-        const targetCrop = ADVISORY_DATA[cropKey];
-        if (targetCrop && targetCrop.products) {
-          setSelectedFertilizers(targetCrop.products.map((p) => p.id));
-        }
+      } else if (advisoryTarget.areaHa && advisoryTarget.areaHa > 0) {
+        setFieldSize(Number((advisoryTarget.areaHa * 2.471).toFixed(1)));
+        setFieldUnit('Acres');
+      }
+      const targetCrop = ADVISORY_DATA[cropKey];
+      if (targetCrop && targetCrop.products) {
+        setSelectedFertilizers(targetCrop.products.map((p) => p.id));
       }
     }
-  }, [advisoryTarget]);
+  }, [advisoryTarget, eligibleCrops]);
 
   // When a new scan arrives, it automatically becomes the active crop in Advisory
   useEffect(() => {
     if (scanResult?.crop && scanResult.crop !== lastScannedCropRef.current) {
       lastScannedCropRef.current = scanResult.crop;
       const cropKey = normalizeCropKey(scanResult.crop);
+      const match = eligibleCrops.find((c) => c.canonicalKey === cropKey);
+      if (match) {
+        setSelectedCropKey(match.key);
+      }
       setSelectedCropId(cropKey);
       const scannedCrop = ADVISORY_DATA[cropKey];
       if (scannedCrop) {
@@ -96,7 +187,7 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
         setSelectedFertilizers(scannedCrop.products.map((p) => p.id));
       }
     }
-  }, [scanResult?.crop]);
+  }, [scanResult?.crop, eligibleCrops]);
 
   const [activeSubTab, setActiveSubTab] = useState<string>('nutrient-status');
   const [fieldSize, setFieldSize] = useState<number>(3.5);
@@ -238,14 +329,26 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
     });
   }, [crop.products, dbFertilizers]);
 
-  const handleSelectCrop = (cropId: string) => {
-    setSelectedCropId(cropId);
-    const newCrop = ADVISORY_DATA[cropId] || getDynamicCropAdvisory(cropId, cropId, farmerContext, apiCalculation);
-    setFieldSize(newCrop.acres || 3.5);
-    // Pre-select recommended fertilizers for the switched crop
-    setSelectedFertilizers(newCrop.products.map((p) => p.id));
+  const handleSelectEligibleCrop = (selected: UserEligibleCrop) => {
+    setSelectedCropKey(selected.key);
+    setSelectedCropId(selected.canonicalKey);
+    const newCrop = ADVISORY_DATA[selected.canonicalKey] || getDynamicCropAdvisory(selected.canonicalKey, selected.canonicalKey, farmerContext, apiCalculation);
+    if (selected.cultivatedArea && selected.cultivatedArea > 0) {
+      setFieldSize(selected.cultivatedArea);
+      if (selected.areaUnit && ['Acres', 'Hectares', 'Guntha'].includes(selected.areaUnit)) {
+        setFieldUnit(selected.areaUnit as 'Acres' | 'Hectares' | 'Guntha');
+      }
+    } else if (selected.areaHa && selected.areaHa > 0) {
+      setFieldSize(Number((selected.areaHa * 2.471).toFixed(1)));
+      setFieldUnit('Acres');
+    } else {
+      setFieldSize(newCrop.acres || 3.5);
+    }
+    if (newCrop.products) {
+      setSelectedFertilizers(newCrop.products.map((p) => p.id));
+    }
     setShowCropModal(false);
-    triggerToast(`Switched active advisory to ${newCrop.name}`);
+    triggerToast(`Switched active advisory to ${selected.name} (${selected.fieldName || 'Plot'})`);
   };
 
   const triggerToast = (msg: string) => {
@@ -346,6 +449,47 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
     effectiveAcres,
     farmerContext,
   ]);
+
+  // Verified soil test provenance and certification accreditation check
+  const soilProvenance = useMemo(() => {
+    const st = farmerContext?.soilTest;
+    if (!st) {
+      return {
+        hasSoilTest: false,
+        isCertified: false,
+        isFarmerReported: false,
+        badgeLabel: 'No Soil Test on Record',
+        statusText: 'Unrecorded',
+        labName: null,
+        sampleId: null,
+        sampleDate: null,
+      };
+    }
+
+    const normalizedStatus = (st.status || '').toLowerCase().trim();
+    const hasValidLabName = Boolean(
+      st.testingLabName &&
+      st.testingLabName.trim().length > 0 &&
+      !['self', 'farmer', 'unverified', 'none', 'unknown', 'pending'].includes(st.testingLabName.trim().toLowerCase())
+    );
+    const isCertified = Boolean(
+      (normalizedStatus === 'certified' || normalizedStatus === 'verified') &&
+      hasValidLabName
+    );
+
+    return {
+      hasSoilTest: true,
+      isCertified,
+      isFarmerReported: !isCertified,
+      badgeLabel: isCertified
+        ? `✓ Certified Lab Report — ${st.testingLabName}`
+        : `⚠️ Farmer-Reported Soil Readings (Unverified Lab Status)`,
+      statusText: isCertified ? 'Certified Lab Report' : 'Unverified Farmer Readings',
+      labName: st.testingLabName || (isCertified ? 'Govt. Accredited Agronomy Lab' : 'Farmer Self-Report'),
+      sampleId: st.sampleId || 'SL-SAMPLE',
+      sampleDate: st.sampleDate || 'Recent',
+    };
+  }, [farmerContext?.soilTest]);
 
   // Derived live soil nutrients status
   const activeSoilNutrients = useMemo(() => {
@@ -554,21 +698,26 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
         <button 
           className="fert-back-btn" 
           onClick={() => {
+            const from = advisoryTarget?.from;
             if (advisoryTarget) {
               clearAdvisoryTarget();
             }
-            if (onBack) {
+            if (onNavigateTab && from === 'farm') {
+              onNavigateTab('farm');
+            } else if (onNavigateTab && from === 'scan') {
+              onNavigateTab('scan');
+            } else if (onBack) {
               onBack();
             } else {
               window.history.back();
             }
           }}
-          aria-label={advisoryTarget?.from === 'farm' ? 'Back to My Farm' : 'Back to dashboard'}
+          aria-label={advisoryTarget?.from === 'farm' ? 'Back to My Farm' : (advisoryTarget?.from === 'scan' ? 'Back to Scan Crop' : 'Back to dashboard')}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
-          <span>{advisoryTarget?.from === 'farm' ? t('Back to My Farm') : t('Back to Dashboard')}</span>
+          <span>{advisoryTarget?.from === 'farm' ? t('Back to My Farm') : (advisoryTarget?.from === 'scan' ? t('Back to Scan Crop') : t('Back to Dashboard'))}</span>
         </button>
 
         <div className="fert-top-tags">
@@ -610,6 +759,74 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
         </div>
       </div>
 
+      {/* EVALUATION TEST FIXTURES BANNER (ONLY in DEV + ?mode=test) */}
+      {isDevTest && (
+        <div className="test-mode-banner" id="test-mode-banner">
+          <div className="test-mode-badge-wrap">
+            <span className="test-mode-badge">🧪 EVALUATION TEST FIXTURES ACTIVE</span>
+            <span className="test-mode-env-pill">Development (?mode=test)</span>
+          </div>
+          <p className="test-mode-text">
+            Isolated test fixtures are loaded for evaluator verification. In production environments (and without <code>?mode=test</code>), test fixtures are strictly prevented and only genuine user-owned farm records appear.
+          </p>
+        </div>
+      )}
+
+      {/* EMPTY STATE IF NO GENUINE CROPS EXIST IN PRODUCTION */}
+      {eligibleCrops.length === 0 ? (
+        <div className="advisory-empty-state-wrapper">
+          <div className="advisory-empty-state-card" id="advisory-empty-state">
+            <div className="empty-state-icon-circle">🌾</div>
+            <h2 className="empty-state-title">No Monitored Crops in Your Farm Yet</h2>
+            <p className="empty-state-desc">
+              CropGuard Soil &amp; Nutrient Intelligence generates personalized fertilizer schedules, nutrient deficit warnings, and split application calendars calibrated specifically to your genuine crops and farm plots.
+            </p>
+            <p className="empty-state-subdesc">
+              To view precision advisory, register your crop plot in My Farm or capture a leaf photo to diagnose crop health.
+            </p>
+
+            <div className="empty-state-action-buttons">
+              <button
+                type="button"
+                className="empty-state-btn btn-primary-add-crop"
+                id="btn-empty-add-crop"
+                onClick={() => (onNavigateTab ? onNavigateTab('farm') : onBack?.())}
+              >
+                <span>+ Add Crop to My Farm</span>
+                <span>→</span>
+              </button>
+              <button
+                type="button"
+                className="empty-state-btn btn-secondary-scan-crop"
+                id="btn-empty-scan-crop"
+                onClick={() => (onNavigateTab ? onNavigateTab('scan') : onBack?.())}
+              >
+                <span>📷 Scan a Crop Now</span>
+                <span>→</span>
+              </button>
+            </div>
+
+            <div className="empty-state-info-grid">
+              <div className="empty-info-card">
+                <div className="info-icon">📍</div>
+                <h4>Plot-Specific Calibration</h4>
+                <p>Dosages adapt to your exact acreage, soil texture, and irrigation method.</p>
+              </div>
+              <div className="empty-info-card">
+                <div className="info-icon">🧪</div>
+                <h4>Soil Health Verification</h4>
+                <p>Nutrient targets balance against your accredited laboratory Soil Health Card.</p>
+              </div>
+              <div className="empty-info-card">
+                <div className="info-icon">🛍️</div>
+                <h4>Exact Commercial Bags</h4>
+                <p>Receive exact quantities of Urea, DAP, MOP, or Bio-fertilizers without wastage.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
       {/* ============================================================
           HERO BANNER + CROP SELECTION
           ============================================================ */}
@@ -646,15 +863,20 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
                 <div className="fert-monitored-status">
                   <span className="crop-live-dot"></span>
                   <span className="crop-monitored-label">{t('MONITORED CROP')}</span>
+                  {activeUserCrop?.isTestFixture ? (
+                    <span className="crop-test-fixture-tag">🧪 Test Fixture</span>
+                  ) : activeUserCrop?.sourceLabel ? (
+                    <span className="crop-source-tag">{activeUserCrop.sourceLabel}</span>
+                  ) : null}
                 </div>
-                <span className="crop-field-chip">{advisoryTarget?.fieldName || farmerContext?.farm?.farmName || crop.field}</span>
+                <span className="crop-field-chip">{activeUserCrop?.fieldName || advisoryTarget?.fieldName || farmerContext?.farm?.farmName || crop.field}</span>
               </div>
 
               <div className="fert-crop-card-body">
                 <div className="fert-crop-avatar">
                   <img 
-                    src={crop.image} 
-                    alt={crop.name} 
+                    src={activeUserCrop?.image || crop.image} 
+                    alt={activeUserCrop?.name || crop.name} 
                     className="fert-crop-img"
                     onError={(e) => {
                       (e.target as HTMLElement).style.display = 'none';
@@ -665,35 +887,40 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
 
                 <div className="fert-crop-meta">
                   <div className="crop-name-row">
-                    <h2 className="fert-crop-name">{crop.name}</h2>
+                    <h2 className="fert-crop-name">{activeUserCrop?.name || crop.name}</h2>
                     <span className="fert-crop-acres-tag">
-                      {advisoryTarget?.cultivatedArea
+                      {activeUserCrop?.areaDisplay || (advisoryTarget?.cultivatedArea
                         ? `${advisoryTarget.cultivatedArea} ${advisoryTarget.areaUnit || 'Acres'}`
                         : advisoryTarget?.areaHa
                         ? `${advisoryTarget.areaHa} Ha`
-                        : `${farmerContext?.cropCycle?.allocatedAcres ?? crop.acres} Acres`}
+                        : `${farmerContext?.cropCycle?.allocatedAcres ?? crop.acres} Acres`)}
                     </span>
                   </div>
                   <div className="fert-crop-stage">
                     <span className="stage-flower-icon">🌸</span>
-                    <span>{advisoryTarget?.growthStage || farmerContext?.cropCycle?.currentStage || crop.stage}</span>
+                    <span>{activeUserCrop?.growthStage || advisoryTarget?.growthStage || farmerContext?.cropCycle?.currentStage || crop.stage || 'Active Growth'}</span>
                   </div>
                   <div className="fert-crop-subdetails">
                     <span>
-                      {advisoryTarget?.fieldName || farmerContext?.farm?.farmName || crop.field}
+                      {activeUserCrop?.fieldName || advisoryTarget?.fieldName || farmerContext?.farm?.farmName || crop.field}
                       {' • '}
-                      {advisoryTarget?.cultivatedArea
+                      {activeUserCrop?.areaDisplay || (advisoryTarget?.cultivatedArea
                         ? `${advisoryTarget.cultivatedArea} ${advisoryTarget.areaUnit || 'Acres'}`
                         : advisoryTarget?.areaHa
                         ? `${advisoryTarget.areaHa} Ha`
-                        : `${farmerContext?.cropCycle?.allocatedAcres ?? crop.acres} Acres`}
-                      {advisoryTarget?.variety ? ` • Var: ${advisoryTarget.variety}` : ''}
-                      {advisoryTarget?.soilType ? ` • Soil: ${advisoryTarget.soilType}` : ''}
-                      {advisoryTarget?.irrigationMethod ? ` • ${advisoryTarget.irrigationMethod}` : ''}
-                      {' | '}
-                      {(farmerContext?.farmer ? `${farmerContext.farmer.district}, ${farmerContext.farmer.state}` : crop.location).split(',')[0]}
+                        : `${farmerContext?.cropCycle?.allocatedAcres ?? crop.acres} Acres`)}
+                      {activeUserCrop?.variety ? ` • Var: ${activeUserCrop.variety}` : advisoryTarget?.variety ? ` • Var: ${advisoryTarget.variety}` : ''}
+                      {activeUserCrop?.soilType ? ` • Soil: ${activeUserCrop.soilType}` : advisoryTarget?.soilType ? ` • Soil: ${advisoryTarget.soilType}` : ''}
+                      {activeUserCrop?.sowingDate ? ` • Sown: ${activeUserCrop.sowingDate}` : ''}
+                      {activeUserCrop?.irrigationMethod ? ` • ${activeUserCrop.irrigationMethod}` : advisoryTarget?.irrigationMethod ? ` • ${advisoryTarget.irrigationMethod}` : ''}
                     </span>
                   </div>
+                  {activeUserCrop?.latestScanSummary && (
+                    <div className="crop-scan-status-strip">
+                      <span className="scan-status-icon">📷</span>
+                      <span className="scan-status-text">Latest Scan: {activeUserCrop.latestScanSummary}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -705,7 +932,7 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
                   aria-label="Change Crop"
                 >
                   <span className="dash-minus">−</span>
-                  <span>{t('Change Crop')}</span>
+                  <span>{t('Change Crop')} ({eligibleCrops.length} Available)</span>
                   <span className="btn-arrow">→</span>
                 </button>
               </div>
@@ -839,121 +1066,165 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
           <div className="fert-card-header">
             <div className="fert-card-title-group">
               <div className="fert-card-icon soil-icon">🧪</div>
-              <h2 className="fert-card-title" id="heading-soil-status">Soil Nutrient Status</h2>
+              <div>
+                <h2 className="fert-card-title" id="heading-soil-status">Soil Nutrient Status</h2>
+                <div className="soil-provenance-status-row">
+                  {soilProvenance.hasSoilTest ? (
+                    <span className={`soil-provenance-badge ${soilProvenance.isCertified ? 'badge-certified' : 'badge-unverified'}`}>
+                      {soilProvenance.badgeLabel}
+                    </span>
+                  ) : (
+                    <span className="soil-provenance-badge badge-missing">
+                      ℹ️ Soil Lab Test Not on Record
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
-            <button 
-              className="fert-card-link"
-              onClick={() => setShowSoilModal(true)}
-              id="link-detailed-soil-report"
-            >
-              <span>View Detailed Soil Report</span>
-              <span className="link-arrow">→</span>
-            </button>
+            {soilProvenance.hasSoilTest && (
+              <button 
+                className="fert-card-link"
+                onClick={() => setShowSoilModal(true)}
+                id="link-detailed-soil-report"
+              >
+                <span>View Detailed Soil Report</span>
+                <span className="link-arrow">→</span>
+              </button>
+            )}
           </div>
 
           <div className="fert-card-body">
-            {/* Top 3 Status Blocks: Nitrogen, Phosphorus, Potassium */}
-            <div className="soil-nutrients-row">
-              {/* Nitrogen Block */}
-              <div className={`nutrient-status-box box-nitrogen status-${activeSoilNutrients.nitrogen.status.toLowerCase()}`}>
-                <div className="nutrient-header">
-                  <span className="nutrient-name">Nitrogen</span>
-                  <span className={`nutrient-pill ${activeSoilNutrients.nitrogen.status === 'Low' ? 'red-pill' : activeSoilNutrients.nitrogen.status === 'Adequate' ? 'green-pill' : 'amber-pill'}`}>
-                    {activeSoilNutrients.nitrogen.status}
-                  </span>
-                </div>
-                <div className="nutrient-value-row">
-                  <span className="nutrient-big-val">{activeSoilNutrients.nitrogen.currentVal}</span>
-                  <span className="nutrient-unit">{activeSoilNutrients.nitrogen.unit}</span>
-                </div>
-                <div className="nutrient-target-text">
-                  Target: {activeSoilNutrients.nitrogen.targetVal} {activeSoilNutrients.nitrogen.unit}
-                </div>
-                <div className="nutrient-meter-bar">
-                  <div 
-                    className="nutrient-meter-fill fill-red" 
-                    style={{ width: `${Math.min(100, (activeSoilNutrients.nitrogen.currentVal / Math.max(1, activeSoilNutrients.nitrogen.targetVal)) * 100)}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              {/* Phosphorus Block */}
-              <div className={`nutrient-status-box box-phosphorus status-${activeSoilNutrients.phosphorus.status.toLowerCase()}`}>
-                <div className="nutrient-header">
-                  <span className="nutrient-name">Phosphorus</span>
-                  <span className={`nutrient-pill ${activeSoilNutrients.phosphorus.status === 'Low' ? 'red-pill' : activeSoilNutrients.phosphorus.status === 'Adequate' ? 'green-pill' : 'amber-pill'}`}>
-                    {activeSoilNutrients.phosphorus.status}
-                  </span>
-                </div>
-                <div className="nutrient-value-row">
-                  <span className="nutrient-big-val">{activeSoilNutrients.phosphorus.currentVal}</span>
-                  <span className="nutrient-unit">{activeSoilNutrients.phosphorus.unit}</span>
-                </div>
-                <div className="nutrient-target-text">
-                  Target: {activeSoilNutrients.phosphorus.targetVal} {activeSoilNutrients.phosphorus.unit}
-                </div>
-                <div className="nutrient-meter-bar">
-                  <div 
-                    className="nutrient-meter-fill fill-green" 
-                    style={{ width: `${Math.min(100, (activeSoilNutrients.phosphorus.currentVal / Math.max(1, activeSoilNutrients.phosphorus.targetVal)) * 100)}%` }}
-                  ></div>
+            {!soilProvenance.hasSoilTest ? (
+              <div className="soil-test-unavailable-banner">
+                <div className="unavailable-icon-wrap">🔬</div>
+                <div className="unavailable-body">
+                  <h4 className="unavailable-heading">
+                    Soil Health Test Data Unavailable for {activeUserCrop?.name || crop.name}
+                  </h4>
+                  <p className="unavailable-text">
+                    No verified laboratory soil test or farmer-recorded test parameters have been uploaded for <strong>{activeUserCrop?.fieldName || crop.field}</strong>.
+                    To maintain strict scientific integrity, CropGuard does not display fabricated N-P-K nutrient readings.
+                  </p>
+                  <p className="unavailable-subtext">
+                    Accredited soil testing measures active organic carbon, pH, and available N-P-K in your soil. You can consult your district Krishi Vigyan Kendra (KVK) for soil testing or calculate standard ICAR baseline crop dosages below.
+                  </p>
+                  <div className="unavailable-actions">
+                    <button
+                      type="button"
+                      className="btn-unavailable-calc"
+                      onClick={() => handleTabClick('calculator')}
+                    >
+                      🧮 Open Fertilizer Calculator for Baseline Dosages →
+                    </button>
+                  </div>
                 </div>
               </div>
+            ) : (
+              <>
+                {/* Top 3 Status Blocks: Nitrogen, Phosphorus, Potassium */}
+                <div className="soil-nutrients-row">
+                  {/* Nitrogen Block */}
+                  <div className={`nutrient-status-box box-nitrogen status-${activeSoilNutrients.nitrogen.status.toLowerCase()}`}>
+                    <div className="nutrient-header">
+                      <span className="nutrient-name">Nitrogen</span>
+                      <span className={`nutrient-pill ${activeSoilNutrients.nitrogen.status === 'Low' ? 'red-pill' : activeSoilNutrients.nitrogen.status === 'Adequate' ? 'green-pill' : 'amber-pill'}`}>
+                        {activeSoilNutrients.nitrogen.status}
+                      </span>
+                    </div>
+                    <div className="nutrient-value-row">
+                      <span className="nutrient-big-val">{activeSoilNutrients.nitrogen.currentVal}</span>
+                      <span className="nutrient-unit">{activeSoilNutrients.nitrogen.unit}</span>
+                    </div>
+                    <div className="nutrient-target-text">
+                      Target: {activeSoilNutrients.nitrogen.targetVal} {activeSoilNutrients.nitrogen.unit}
+                    </div>
+                    <div className="nutrient-meter-bar">
+                      <div 
+                        className="nutrient-meter-fill fill-red" 
+                        style={{ width: `${Math.min(100, (activeSoilNutrients.nitrogen.currentVal / Math.max(1, activeSoilNutrients.nitrogen.targetVal)) * 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
 
-              {/* Potassium Block */}
-              <div className={`nutrient-status-box box-potassium status-${activeSoilNutrients.potassium.status.toLowerCase()}`}>
-                <div className="nutrient-header">
-                  <span className="nutrient-name">Potassium</span>
-                  <span className={`nutrient-pill ${activeSoilNutrients.potassium.status === 'Low' ? 'red-pill' : activeSoilNutrients.potassium.status === 'Adequate' ? 'green-pill' : 'amber-pill'}`}>
-                    {activeSoilNutrients.potassium.status}
-                  </span>
-                </div>
-                <div className="nutrient-value-row">
-                  <span className="nutrient-big-val">{activeSoilNutrients.potassium.currentVal}</span>
-                  <span className="nutrient-unit">{activeSoilNutrients.potassium.unit}</span>
-                </div>
-                <div className="nutrient-target-text">
-                  Target: {activeSoilNutrients.potassium.targetVal} {activeSoilNutrients.potassium.unit}
-                </div>
-                <div className="nutrient-meter-bar">
-                  <div 
-                    className="nutrient-meter-fill fill-amber" 
-                    style={{ width: `${Math.min(100, (activeSoilNutrients.potassium.currentVal / Math.max(1, activeSoilNutrients.potassium.targetVal)) * 100)}%` }}
-                  ></div>
-                </div>
-              </div>
-            </div>
+                  {/* Phosphorus Block */}
+                  <div className={`nutrient-status-box box-phosphorus status-${activeSoilNutrients.phosphorus.status.toLowerCase()}`}>
+                    <div className="nutrient-header">
+                      <span className="nutrient-name">Phosphorus</span>
+                      <span className={`nutrient-pill ${activeSoilNutrients.phosphorus.status === 'Low' ? 'red-pill' : activeSoilNutrients.phosphorus.status === 'Adequate' ? 'green-pill' : 'amber-pill'}`}>
+                        {activeSoilNutrients.phosphorus.status}
+                      </span>
+                    </div>
+                    <div className="nutrient-value-row">
+                      <span className="nutrient-big-val">{activeSoilNutrients.phosphorus.currentVal}</span>
+                      <span className="nutrient-unit">{activeSoilNutrients.phosphorus.unit}</span>
+                    </div>
+                    <div className="nutrient-target-text">
+                      Target: {activeSoilNutrients.phosphorus.targetVal} {activeSoilNutrients.phosphorus.unit}
+                    </div>
+                    <div className="nutrient-meter-bar">
+                      <div 
+                        className="nutrient-meter-fill fill-green" 
+                        style={{ width: `${Math.min(100, (activeSoilNutrients.phosphorus.currentVal / Math.max(1, activeSoilNutrients.phosphorus.targetVal)) * 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
 
-            {/* Bottom 3 Metrics Bar: pH, Organic Carbon, Micronutrients */}
-            <div className="soil-secondary-bar">
-              <div className="secondary-metric-item">
-                <span className="secondary-metric-label">pH</span>
-                <div className="secondary-metric-val">
-                  <strong>{activeSoilNutrients.ph.value}</strong>
-                  <span className="secondary-badge badge-neutral">{activeSoilNutrients.ph.label}</span>
+                  {/* Potassium Block */}
+                  <div className={`nutrient-status-box box-potassium status-${activeSoilNutrients.potassium.status.toLowerCase()}`}>
+                    <div className="nutrient-header">
+                      <span className="nutrient-name">Potassium</span>
+                      <span className={`nutrient-pill ${activeSoilNutrients.potassium.status === 'Low' ? 'red-pill' : activeSoilNutrients.potassium.status === 'Adequate' ? 'green-pill' : 'amber-pill'}`}>
+                        {activeSoilNutrients.potassium.status}
+                      </span>
+                    </div>
+                    <div className="nutrient-value-row">
+                      <span className="nutrient-big-val">{activeSoilNutrients.potassium.currentVal}</span>
+                      <span className="nutrient-unit">{activeSoilNutrients.potassium.unit}</span>
+                    </div>
+                    <div className="nutrient-target-text">
+                      Target: {activeSoilNutrients.potassium.targetVal} {activeSoilNutrients.potassium.unit}
+                    </div>
+                    <div className="nutrient-meter-bar">
+                      <div 
+                        className="nutrient-meter-fill fill-amber" 
+                        style={{ width: `${Math.min(100, (activeSoilNutrients.potassium.currentVal / Math.max(1, activeSoilNutrients.potassium.targetVal)) * 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div className="secondary-metric-divider"></div>
+                {/* Bottom 3 Metrics Bar: pH, Organic Carbon, Micronutrients */}
+                <div className="soil-secondary-bar">
+                  <div className="secondary-metric-item">
+                    <span className="secondary-metric-label">pH</span>
+                    <div className="secondary-metric-val">
+                      <strong>{activeSoilNutrients.ph.value}</strong>
+                      <span className="secondary-badge badge-neutral">{activeSoilNutrients.ph.label}</span>
+                    </div>
+                  </div>
 
-              <div className="secondary-metric-item">
-                <span className="secondary-metric-label">Organic Carbon</span>
-                <div className="secondary-metric-val">
-                  <strong>{activeSoilNutrients.organicCarbon.value}</strong>
-                  <span className="secondary-badge badge-low">{activeSoilNutrients.organicCarbon.label}</span>
+                  <div className="secondary-metric-divider"></div>
+
+                  <div className="secondary-metric-item">
+                    <span className="secondary-metric-label">Organic Carbon</span>
+                    <div className="secondary-metric-val">
+                      <strong>{activeSoilNutrients.organicCarbon.value}</strong>
+                      <span className="secondary-badge badge-low">{activeSoilNutrients.organicCarbon.label}</span>
+                    </div>
+                  </div>
+
+                  <div className="secondary-metric-divider"></div>
+
+                  <div className="secondary-metric-item">
+                    <span className="secondary-metric-label">Micronutrients</span>
+                    <div className="secondary-metric-val">
+                      <strong className="text-attention">{activeSoilNutrients.micronutrients.label}</strong>
+                      <span className="secondary-subelements">{activeSoilNutrients.micronutrients.elements}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-
-              <div className="secondary-metric-divider"></div>
-
-              <div className="secondary-metric-item">
-                <span className="secondary-metric-label">Micronutrients</span>
-                <div className="secondary-metric-val">
-                  <strong className="text-attention">{activeSoilNutrients.micronutrients.label}</strong>
-                  <span className="secondary-subelements">{activeSoilNutrients.micronutrients.elements}</span>
-                </div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         </section>
 
@@ -1367,9 +1638,11 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
           )}
         </div>
       </section>
+      </>
+      )}
 
       {/* ============================================================
-          MODAL: CHANGE CROP SELECTION
+          MODAL: CHANGE CROP SELECTION (ONLY GENUINE CROPS / DEV-TEST FIXTURES)
           ============================================================ */}
       {showCropModal && (
         <div className="fert-modal-overlay" onClick={() => setShowCropModal(false)}>
@@ -1379,35 +1652,62 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
                 <span className="modal-icon">🌾</span>
                 <div>
                   <h3 className="fert-modal-title">Select Active Crop</h3>
-                  <p className="fert-modal-desc">Switch monitored crop to view tailor-made nutrient plans</p>
+                  <p className="fert-modal-desc">
+                    Showing {eligibleCrops.length} verified crop{eligibleCrops.length === 1 ? '' : 's'} from your farm plots and scan history
+                  </p>
                 </div>
               </div>
               <button className="fert-modal-close" onClick={() => setShowCropModal(false)}>✕</button>
             </div>
 
             <div className="fert-modal-body">
-              <div className="crop-options-grid">
-                {(crop && !ADVISORY_DATA[crop.id] ? [crop, ...Object.values(ADVISORY_DATA)] : Object.values(ADVISORY_DATA)).map((c) => (
-                  <div
-                    key={c.id}
-                    className={`crop-option-item ${selectedCropId === c.id ? 'crop-option-selected' : ''}`}
-                    onClick={() => handleSelectCrop(c.id)}
-                    id={`select-crop-${c.id}`}
-                  >
-                    <div className="crop-option-thumb">
-                      <img src={c.image} alt={c.name} className="crop-option-img" />
-                    </div>
-                    <div className="crop-option-info">
-                      <div className="crop-option-title-row">
-                        <strong className="crop-option-name">{c.name}</strong>
-                        {selectedCropId === c.id && <span className="crop-active-badge">Active</span>}
+              {eligibleCrops.length === 0 ? (
+                <div className="empty-crop-selection-notice" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>
+                  <p>No crops currently registered in My Farm or Scan History.</p>
+                </div>
+              ) : (
+                <div className="crop-options-grid">
+                  {eligibleCrops.map((c) => (
+                    <div
+                      key={c.key}
+                      className={`crop-option-item ${activeUserCrop?.key === c.key ? 'crop-option-selected' : ''}`}
+                      onClick={() => handleSelectEligibleCrop(c)}
+                      id={`select-crop-${c.key}`}
+                    >
+                      <div className="crop-option-thumb">
+                        <img 
+                          src={c.image} 
+                          alt={c.name} 
+                          className="crop-option-img" 
+                          onError={(e) => {
+                            (e.target as HTMLElement).style.display = 'none';
+                          }}
+                        />
+                        <div className="crop-option-fallback">🌿</div>
                       </div>
-                      <span className="crop-option-stage">{c.stage}</span>
-                      <span className="crop-option-meta">{c.field} • {c.acres} Acres</span>
+                      <div className="crop-option-info">
+                        <div className="crop-option-title-row">
+                          <strong className="crop-option-name">{c.name}</strong>
+                          {activeUserCrop?.key === c.key && <span className="crop-active-badge">Active</span>}
+                        </div>
+                        <div className="crop-option-badges-row">
+                          <span className="crop-option-source-badge">{c.sourceLabel}</span>
+                          {c.isTestFixture && <span className="crop-option-test-tag">Test Fixture</span>}
+                        </div>
+                        <span className="crop-option-stage">{c.growthStage || 'Stage not specified'}</span>
+                        <span className="crop-option-meta">
+                          {c.fieldName || 'Plot'} • {c.areaDisplay}
+                        </span>
+                        {c.latestScanSummary && (
+                          <span className="crop-option-scan-meta" title={c.latestScanSummary}>
+                            📷 {c.latestScanSummary}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="fert-modal-footer">
@@ -2322,7 +2622,11 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
                 <span className="modal-icon">📑</span>
                 <div>
                   <h3 className="fert-modal-title">Comprehensive Soil Test Report</h3>
-                  <p className="fert-modal-desc">Soil Sample #SL-2025-084 • Lab: Akola District Agronomy Lab</p>
+                  <p className="fert-modal-desc">
+                    {soilProvenance.hasSoilTest
+                      ? `Soil Sample #${soilProvenance.sampleId} • Lab: ${soilProvenance.labName}`
+                      : 'No Verified Laboratory Soil Sample on Record'}
+                  </p>
                 </div>
               </div>
               <button className="fert-modal-close" onClick={() => setShowSoilModal(false)}>✕</button>
@@ -2331,10 +2635,16 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
             <div className="fert-modal-body">
               <div className="soil-report-summary-box">
                 <div className="soil-meta-grid">
-                  <div><strong>Plot Location:</strong> {crop.location} ({crop.field})</div>
-                  <div><strong>Soil Texture:</strong> {crop.soilType}</div>
-                  <div><strong>Sampling Date:</strong> 12 Jan 2026</div>
-                  <div><strong>Status:</strong> Certified Valid (6 Months)</div>
+                  <div><strong>Plot Location:</strong> {activeUserCrop?.fieldName || crop.field} ({crop.location})</div>
+                  <div><strong>Soil Texture:</strong> {activeUserCrop?.soilType || crop.soilType || 'Loam'}</div>
+                  <div><strong>Testing Facility:</strong> {soilProvenance.labName || 'Not recorded'}</div>
+                  <div><strong>Sampling Date:</strong> {soilProvenance.sampleDate || 'Not recorded'}</div>
+                  <div>
+                    <strong>Verification &amp; Status:</strong>{' '}
+                    <span className={soilProvenance.isCertified ? 'status-cert-verified' : 'status-cert-unverified'}>
+                      {soilProvenance.statusText}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -2492,7 +2802,7 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
                   filteredCatalogFertilizers.map((p: any) => {
                     const prodId = p.productCode || p.id;
                     const isSelected = selectedFertilizers.includes(prodId);
-                    const displayPrice = p.price !== undefined ? `₹${parseFloat(p.price).toFixed(2)}` : '₹266.50';
+                    const displayPrice = p.price !== undefined && Number(p.price) > 0 ? `₹${parseFloat(p.price).toFixed(2)}` : 'Govt. Subsidized / MRP';
                     const packageNote = p.packageSizeKg ? `${p.packageSizeKg}${p.packageUnit || 'kg'}` : '50kg';
                     const typeNote = p.isOrganic ? 'Bio-Certified Organic' : 'Govt. Subsidized';
 

@@ -96,9 +96,14 @@ export default function Dashboard() {
       )}
       {activeTab === 'risk' && <RiskForecast weatherData={weatherData} locationData={locationData} scanResult={scanResult} />}
       {activeTab === 'advisory' && (
-        <AdvisoryOverview scanResult={scanResult} 
-          onBack={() => setActiveTab(previousTab === 'farm' ? 'farm' : 'home')} 
+        <AdvisoryOverview 
+          scanResult={scanResult} 
+          onBack={() => {
+            const dest = previousTab === 'farm' ? 'farm' : (previousTab === 'scan' ? 'scan' : 'home');
+            setActiveTab(dest);
+          }} 
           onOpenFertilizer={() => setActiveTab('fertilizer')} 
+          onNavigateTab={handleNavigateTab}
         />
       )}
       {activeTab === 'fertilizer' && (

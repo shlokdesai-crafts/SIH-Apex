@@ -395,6 +395,20 @@ class TestCropRouting(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("Unsupported crop", response.json().get("detail", ""))
 
+    def test_scan_api_crop_without_trained_model_rejected(self):
+        """Test POST /api/scan with registered crop lacking trained model returns HTTP 400 with honest message."""
+        rice_file = self.images_dir / "crop_rice.jpg"
+        with open(rice_file, "rb") as f:
+            img_bytes = f.read()
+
+        response = self.client.post(
+            "/api/scan",
+            files={"file": ("crop_rice.jpg", img_bytes, "image/jpeg")},
+            data={"crop": "Onion"}
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Disease detection model unavailable", response.json().get("detail", ""))
+
 
 if __name__ == "__main__":
     unittest.main()

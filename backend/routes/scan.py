@@ -128,7 +128,19 @@ async def scan_crop(
 
     display_crop = get_display_crop_name(canonical_crop)
 
-    # ── Validate Field/Crop Relationship if field_id is provided ──────────────
+    # ── Check Disease Detection Model Availability ─────────────────────────────
+    crop_cfg = CROP_CONFIGS.get(canonical_crop)
+    has_trained_model = bool(
+        crop_cfg
+        and crop_cfg.get("classes")
+        and crop_cfg.get("model_path")
+        and Path(crop_cfg["model_path"]).exists()
+    )
+    if not has_trained_model:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Disease detection model unavailable for crop '{display_crop}'. Automated visual disease detection has not yet been trained for this crop.",
+        )
     if clean_field_id and resolved_uid and resolved_uid != "anonymous":
         try:
             user_farm = get_farm_by_user(resolved_uid)
