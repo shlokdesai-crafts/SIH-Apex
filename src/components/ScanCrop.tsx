@@ -157,11 +157,26 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
   }, []);
 
   const saveToHistory = (record: any) => {
-    const newHistory = [record, ...scanHistory];
+    // Strip large base64 image data from localStorage to stay well within 5MB quota
+    const safeRecord = {
+      ...record,
+      previewUrl: (record.previewUrl && record.previewUrl.startsWith('data:image/') && record.previewUrl.length > 500)
+        ? null
+        : record.previewUrl,
+      imagePath: (record.imagePath && record.imagePath.startsWith('data:image/') && record.imagePath.length > 500)
+        ? null
+        : record.imagePath,
+    };
+    const newHistory = [safeRecord, ...scanHistory].slice(0, 30);
     setScanHistory(newHistory);
     try {
       localStorage.setItem('cropguard_history', JSON.stringify(newHistory));
-    } catch (_) {}
+    } catch (_) {
+      try {
+        const leanHistory = newHistory.slice(0, 10).map((r) => ({ ...r, previewUrl: null, imagePath: null }));
+        localStorage.setItem('cropguard_history', JSON.stringify(leanHistory));
+      } catch (_) {}
+    }
   };
 
   const deleteFromHistory = async (id: string, e?: React.MouseEvent) => {
@@ -467,7 +482,7 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
                         'Maintain regular field scouting and optimal crop hydration',
                         'Ensure clean post-harvest storage and aeration'
                       ]),
-              previewUrl: previewUrl,
+              previewUrl: finalPreviewUrl,
             });
           }
           setTimeout(() => setStep('result'), 400); 

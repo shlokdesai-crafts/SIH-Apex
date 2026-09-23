@@ -437,13 +437,42 @@ export function getFarmState(farmerId: string, defaultLocation?: string): FarmSt
   return initial;
 }
 
+function sanitizeUrlForStorage(url?: string | null): string | null {
+  if (!url) return null;
+  // Never persist large base64 data URLs in localStorage (which causes QuotaExceededError)
+  if (url.startsWith('data:image/') && url.length > 500) {
+    return null;
+  }
+  return url;
+}
+
 export function saveFarmState(farmerId: string, state: FarmState): void {
   if (!farmerId) farmerId = 'default_farmer';
   const key = `${STORAGE_PREFIX}${farmerId}`;
   try {
-    localStorage.setItem(key, JSON.stringify(state));
+    // Sanitize state so large base64 images don't exceed the 5MB browser quota
+    const sanitizedState: FarmState = {
+      ...state,
+      recentScans: (state.recentScans || []).slice(0, 20).map((s) => ({
+        ...s,
+        previewUrl: sanitizeUrlForStorage(s.previewUrl),
+      })),
+    };
+    localStorage.setItem(key, JSON.stringify(sanitizedState));
   } catch (err) {
-    console.error('Failed to save farm state to localStorage:', err);
+    console.warn('Failed to save farm state to localStorage (quota exceeded), pruning old records...');
+    try {
+      const trimmedState: FarmState = {
+        ...state,
+        recentScans: (state.recentScans || []).slice(0, 5).map((s) => ({
+          ...s,
+          previewUrl: null,
+        })),
+      };
+      localStorage.setItem(key, JSON.stringify(trimmedState));
+    } catch (e) {
+      console.error('Failed fallback saving farm state:', e);
+    }
   }
 }
 
@@ -650,7 +679,16 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
 
   // Backwards compatibility with legacy cropguard_history
   try {
-    const legacyHistory = JSON.parse(localStorage.getItem('cropguard_history') || '[]');
+    const rawLegacy = localStorage.getItem('cropguard_history');
+    let legacyHistory: any[] = [];
+    if (rawLegacy) {
+      try {
+        legacyHistory = JSON.parse(rawLegacy);
+      } catch (_) {
+        legacyHistory = [];
+      }
+    }
+    const safePreview = sanitizeUrlForStorage(input.previewUrl);
     const newLegacyItem = {
       id: scanId,
       date: Date.now(),
@@ -658,11 +696,18 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
       disease: input.disease,
       severity: input.severity,
       confidence: input.confidence,
-      previewUrl: input.previewUrl || null,
+      previewUrl: safePreview,
     };
-    localStorage.setItem('cropguard_history', JSON.stringify([newLegacyItem, ...legacyHistory]));
+    const sanitizedLegacy = [newLegacyItem, ...legacyHistory].slice(0, 25).map((item) => ({
+      ...item,
+      previewUrl: sanitizeUrlForStorage(item.previewUrl),
+    }));
+    localStorage.setItem('cropguard_history', JSON.stringify(sanitizedLegacy));
   } catch (e) {
     console.warn('Failed to sync to cropguard_history:', e);
+    try {
+      localStorage.removeItem('cropguard_history');
+    } catch (_) {}
   }
 
   return updatedState;

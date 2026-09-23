@@ -22,6 +22,8 @@ from dotenv import load_dotenv
 from pymongo import MongoClient, ASCENDING, DESCENDING, IndexModel
 from pymongo.errors import PyMongoError, DuplicateKeyError
 from bson import ObjectId
+import uuid
+import sqlite3
 
 # Load environment
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / ".env")
@@ -32,6 +34,35 @@ logger = logging.getLogger(__name__)
 # Secret for HMAC token signing
 AUTH_SECRET = os.getenv("AUTH_SECRET", "cropguard_sih_secure_secret_key_2026")
 MONGO_URL = os.getenv("MONGO_URL", "")
+
+SQLITE_DB_PATH = Path(__file__).resolve().parent / "submissions.db"
+
+
+def _get_sqlite_conn():
+    conn = sqlite3.connect(SQLITE_DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def _ensure_sqlite_users_table():
+    with _get_sqlite_conn() as conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id TEXT PRIMARY KEY,
+                phone TEXT UNIQUE NOT NULL,
+                fullName TEXT NOT NULL,
+                passwordHash TEXT NOT NULL,
+                location TEXT NOT NULL,
+                district TEXT,
+                language TEXT NOT NULL,
+                role TEXT NOT NULL,
+                email TEXT,
+                createdAt TEXT NOT NULL,
+                updatedAt TEXT NOT NULL
+            )
+        """)
+        conn.commit()
+
 
 # Clean connection URI if it has template brackets
 if "<" in MONGO_URL and ">" in MONGO_URL:
@@ -204,29 +235,63 @@ def create_user(
     district: Optional[str] = None,
 ) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
     """Registers a new user and provisions their initial Farm record."""
-    db = get_db()
-    if db is None:
-        return False, None, "Database unavailable"
-
     phone = phone.strip()
     if not phone or not password:
         return False, None, "Phone and password required"
+
+    now = datetime.now(timezone.utc)
+    pwd_hash = hash_password(password)
+    dist = district or location.split(",")[0].strip()
+    name = full_name.strip() or "Farmer"
+    user_role = role or "Farmer"
+
+    db = get_db()
+    if db is None:
+        # SQLite offline-first fallback
+        try:
+            _ensure_sqlite_users_table()
+            with _get_sqlite_conn() as conn:
+                cur = conn.cursor()
+                cur.execute("SELECT id FROM users WHERE phone = ?", (phone,))
+                if cur.fetchone():
+                    return False, None, "User with this phone number already exists"
+                
+                user_id = f"usr_{uuid.uuid4().hex[:12]}"
+                cur.execute("""
+                    INSERT INTO users (id, phone, fullName, passwordHash, location, district, language, role, email, createdAt, updatedAt)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (user_id, phone, name, pwd_hash, location, dist, language, user_role, email.strip() if email else None, now.isoformat(), now.isoformat()))
+                conn.commit()
+
+            user_public = {
+                "id": user_id,
+                "phone": phone,
+                "fullName": name,
+                "location": location,
+                "district": dist,
+                "language": language,
+                "role": user_role,
+                "email": email.strip() if email else None,
+                "createdAt": now.isoformat(),
+            }
+            token = create_auth_token(user_id, phone, user_role)
+            return True, {"user": user_public, "token": token}, None
+        except Exception as exc:
+            logger.error(f"Error creating user in SQLite: {exc}")
+            return False, None, str(exc)
 
     existing = db.users.find_one({"phone": phone})
     if existing:
         return False, None, "User with this phone number already exists"
 
-    now = datetime.now(timezone.utc)
-    pwd_hash = hash_password(password)
-
     user_doc = {
         "phone": phone,
-        "fullName": full_name.strip() or "Farmer",
+        "fullName": name,
         "passwordHash": pwd_hash,
         "location": location,
-        "district": district or location.split(",")[0].strip(),
+        "district": dist,
         "language": language,
-        "role": role or "Farmer",
+        "role": user_role,
         "email": email.strip() if email else None,
         "createdAt": now,
         "updatedAt": now,
@@ -255,11 +320,11 @@ def create_user(
             "location": location,
             "district": user_doc["district"],
             "language": language,
-            "role": role,
+            "role": user_role,
             "email": user_doc["email"],
             "createdAt": now.isoformat(),
         }
-        token = create_auth_token(user_id, phone, role)
+        token = create_auth_token(user_id, phone, user_role)
         return True, {"user": user_public, "token": token}, None
     except DuplicateKeyError:
         return False, None, "User with this phone number already exists"
@@ -270,11 +335,39 @@ def create_user(
 
 def authenticate_user(phone: str, password: str) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
     """Authenticates user with phone and password."""
+    phone = phone.strip()
     db = get_db()
     if db is None:
-        return False, None, "Database unavailable"
+        try:
+            _ensure_sqlite_users_table()
+            with _get_sqlite_conn() as conn:
+                cur = conn.cursor()
+                cur.execute("SELECT * FROM users WHERE phone = ?", (phone,))
+                row = cur.fetchone()
+                if not row:
+                    return False, None, "Account not found. Please sign up."
+                if not verify_password(password, row["passwordHash"]):
+                    return False, None, "Incorrect password."
+                
+                user_id = str(row["id"])
+                user_role = row["role"] or "Farmer"
+                token = create_auth_token(user_id, phone, user_role)
+                user_public = {
+                    "id": user_id,
+                    "phone": row["phone"],
+                    "fullName": row["fullName"],
+                    "location": row["location"],
+                    "district": row["district"] or "",
+                    "language": row["language"] or "en",
+                    "role": user_role,
+                    "email": row["email"],
+                    "createdAt": row["createdAt"],
+                }
+                return True, {"user": user_public, "token": token}, None
+        except Exception as exc:
+            logger.error(f"Error authenticating user in SQLite: {exc}")
+            return False, None, str(exc)
 
-    phone = phone.strip()
     user = db.users.find_one({"phone": phone})
     if not user:
         return False, None, "Account not found. Please sign up."
@@ -303,10 +396,31 @@ def authenticate_user(phone: str, password: str) -> Tuple[bool, Optional[Dict[st
 
 
 def get_user_by_id(user_id: str) -> Optional[Dict[str, Any]]:
-    """Fetches user profile by ObjectId."""
+    """Fetches user profile by ObjectId or SQLite ID."""
     db = get_db()
     if db is None:
-        return None
+        try:
+            _ensure_sqlite_users_table()
+            with _get_sqlite_conn() as conn:
+                cur = conn.cursor()
+                cur.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+                row = cur.fetchone()
+                if not row:
+                    return None
+                return {
+                    "id": str(row["id"]),
+                    "phone": row["phone"],
+                    "fullName": row["fullName"],
+                    "location": row["location"],
+                    "district": row["district"] or "",
+                    "language": row["language"] or "en",
+                    "role": row["role"] or "Farmer",
+                    "email": row["email"],
+                    "createdAt": row["createdAt"],
+                }
+        except Exception:
+            return None
+
     try:
         user = db.users.find_one({"_id": ObjectId(user_id)})
         if not user:
@@ -330,13 +444,27 @@ def get_user_by_id(user_id: str) -> Optional[Dict[str, Any]]:
 
 def update_user_profile(user_id: str, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """Updates user profile preferences."""
-    db = get_db()
-    if db is None:
-        return None
     allowed_fields = {"fullName", "location", "district", "language", "email"}
     filtered = {k: v for k, v in updates.items() if k in allowed_fields and v is not None}
     if not filtered:
         return get_user_by_id(user_id)
+
+    db = get_db()
+    if db is None:
+        try:
+            _ensure_sqlite_users_table()
+            with _get_sqlite_conn() as conn:
+                cur = conn.cursor()
+                now_iso = datetime.now(timezone.utc).isoformat()
+                set_clauses = [f"{k} = ?" for k in filtered.keys()]
+                set_clauses.append("updatedAt = ?")
+                values = list(filtered.values()) + [now_iso, user_id]
+                cur.execute(f"UPDATE users SET {', '.join(set_clauses)} WHERE id = ?", values)
+                conn.commit()
+                return get_user_by_id(user_id)
+        except Exception as exc:
+            logger.error(f"Failed to update profile in SQLite: {exc}")
+            return None
 
     filtered["updatedAt"] = datetime.now(timezone.utc)
     try:
