@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from 'react';
 import { AuthContext } from '../auth/AuthContext';
-import type { FarmState, FarmField, CropScanRecord, CropStatus } from '../types/farm';
+import type { FarmState, FarmField, FarmCrop, CropScanRecord, CropStatus } from '../types/farm';
 import {
   getFarmState,
   recordScan as recordScanService,
@@ -23,6 +23,22 @@ export interface ScanTarget {
   crop?: string;
 }
 
+export interface AdvisoryTarget {
+  fieldId?: string;
+  fieldName?: string;
+  crop?: string;
+  cultivatedArea?: number;
+  areaUnit?: 'Acres' | 'Hectares' | 'Guntha' | string;
+  areaHa?: number;
+  variety?: string;
+  growthStage?: string;
+  soilType?: string;
+  irrigationMethod?: string;
+  season?: string;
+  detectedDisease?: string;
+  from?: 'farm' | 'home' | 'scan';
+}
+
 interface FarmContextType {
   farmState: FarmState | null;
   isLoading: boolean;
@@ -31,6 +47,11 @@ interface FarmContextType {
   startScanForField: (field: FarmField) => void;
   startScanForCrop: (cropName: string) => void;
   clearScanTarget: () => void;
+  advisoryTarget: AdvisoryTarget | null;
+  setAdvisoryTarget: (target: AdvisoryTarget | null) => void;
+  startAdvisoryForField: (field: FarmField) => void;
+  startAdvisoryForCrop: (crop: FarmCrop | string, field?: FarmField) => void;
+  clearAdvisoryTarget: () => void;
   recordScan: (input: RecordScanInput) => Promise<FarmState>;
   addCropRecord: (record: { cropName: string; areaHa: number; stage?: string }) => Promise<FarmState>;
   scheduleFieldVisit: (visit: { crop: string; date: string; officerVillage?: string }) => Promise<FarmState>;
@@ -46,6 +67,11 @@ export const FarmContext = createContext<FarmContextType>({
   startScanForField: () => {},
   startScanForCrop: () => {},
   clearScanTarget: () => {},
+  advisoryTarget: null,
+  setAdvisoryTarget: () => {},
+  startAdvisoryForField: () => {},
+  startAdvisoryForCrop: () => {},
+  clearAdvisoryTarget: () => {},
   recordScan: async () => { throw new Error('FarmContext not initialized'); },
   addCropRecord: async () => { throw new Error('FarmContext not initialized'); },
   scheduleFieldVisit: async () => { throw new Error('FarmContext not initialized'); },
@@ -61,6 +87,7 @@ export function FarmProvider({ children }: { children: ReactNode }) {
   const [farmState, setFarmState] = useState<FarmState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [scanTarget, setScanTarget] = useState<ScanTarget | null>(null);
+  const [advisoryTarget, setAdvisoryTarget] = useState<AdvisoryTarget | null>(null);
 
   const startScanForField = useCallback((field: FarmField) => {
     setScanTarget({ fieldId: field.id, crop: field.crop });
@@ -72,6 +99,64 @@ export function FarmProvider({ children }: { children: ReactNode }) {
 
   const clearScanTarget = useCallback(() => {
     setScanTarget(null);
+  }, []);
+
+  const startAdvisoryForField = useCallback((field: FarmField) => {
+    setAdvisoryTarget({
+      fieldId: field.id,
+      fieldName: field.name,
+      crop: field.crop,
+      cultivatedArea: field.cultivatedArea ?? (field.areaHa ? Number((field.areaHa * 2.471).toFixed(1)) : undefined),
+      areaUnit: (field.areaUnit as any) || 'Acres',
+      areaHa: field.areaHa,
+      variety: field.variety,
+      growthStage: field.growthStage,
+      soilType: field.soilType,
+      irrigationMethod: field.irrigationMethod,
+      season: field.season,
+      detectedDisease: field.detectedDisease,
+      from: 'farm',
+    });
+  }, []);
+
+  const startAdvisoryForCrop = useCallback((crop: FarmCrop | string, field?: FarmField) => {
+    if (typeof crop === 'string') {
+      setAdvisoryTarget({
+        crop,
+        fieldId: field?.id,
+        fieldName: field?.name,
+        cultivatedArea: field?.cultivatedArea ?? (field?.areaHa ? Number((field.areaHa * 2.471).toFixed(1)) : undefined),
+        areaUnit: (field?.areaUnit as any) || 'Acres',
+        areaHa: field?.areaHa,
+        variety: field?.variety,
+        growthStage: field?.growthStage,
+        soilType: field?.soilType,
+        irrigationMethod: field?.irrigationMethod,
+        season: field?.season,
+        detectedDisease: field?.detectedDisease,
+        from: 'farm',
+      });
+    } else {
+      setAdvisoryTarget({
+        fieldId: field?.id,
+        fieldName: field?.name,
+        crop: crop.name,
+        cultivatedArea: crop.cultivatedArea ?? (crop.areaHa ? Number((crop.areaHa * 2.471).toFixed(1)) : undefined),
+        areaUnit: (crop.areaUnit as any) || 'Acres',
+        areaHa: crop.areaHa,
+        variety: crop.variety || field?.variety,
+        growthStage: crop.growthStage || field?.growthStage,
+        soilType: crop.soilType || field?.soilType,
+        irrigationMethod: crop.irrigationMethod || field?.irrigationMethod,
+        season: crop.season || field?.season,
+        detectedDisease: crop.detectedDisease || field?.detectedDisease,
+        from: 'farm',
+      });
+    }
+  }, []);
+
+  const clearAdvisoryTarget = useCallback(() => {
+    setAdvisoryTarget(null);
   }, []);
 
   const loadFarm = useCallback(async () => {
@@ -165,6 +250,11 @@ export function FarmProvider({ children }: { children: ReactNode }) {
         startScanForField,
         startScanForCrop,
         clearScanTarget,
+        advisoryTarget,
+        setAdvisoryTarget,
+        startAdvisoryForField,
+        startAdvisoryForCrop,
+        clearAdvisoryTarget,
         recordScan,
         addCropRecord,
         scheduleFieldVisit,
