@@ -1,7 +1,8 @@
 import { useTranslation } from '../i18n/useTranslation';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './GovStatsRow.css';
-import { GOV_SUMMARY_STATS } from '../services/govDataService';
+
 interface Stats {
   total_submissions: number;
   resolved: number;
@@ -9,57 +10,108 @@ interface Stats {
   crops_analyzed: number;
   unidentified: number;
 }
-const GovStatsRow = () => {
-  const {
-    t
-  } = useTranslation();
+
+interface GovStatsRowProps {
+  onSelectFilter?: (filter: string) => void;
+}
+
+const GovStatsRow = ({ onSelectFilter }: GovStatsRowProps) => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const [stats, setStats] = useState<Stats | null>(null);
-  const fetchStats = () => {
-    fetch('/api/stats').then(r => r.json()).then(data => setStats(data)).catch(() => {/* silently keep previous values */});
+  const [loading, setLoading] = useState<boolean>(true);
+
+  const fetchStats = async () => {
+    try {
+      const res = await fetch('/api/stats');
+      if (res.ok) {
+        const data = await res.json();
+        setStats(data);
+      }
+    } catch (e) {
+      console.error('Error fetching live stats:', e);
+    } finally {
+      setLoading(false);
+    }
   };
+
   useEffect(() => {
     fetchStats();
-    const interval = setInterval(fetchStats, 10000); // refresh every 10 s
+    const interval = setInterval(fetchStats, 8000);
     return () => clearInterval(interval);
   }, []);
-  const fmt = (n: number | undefined) => n !== undefined ? n.toLocaleString('en-IN') : '—';
-  return <div className="gov-stats-row">
-      <div className="gov-stat-card">
+
+  const fmt = (n: number | undefined) => (n !== undefined ? n.toLocaleString('en-IN') : '0');
+
+  const handleCardClick = (filterType: string) => {
+    if (onSelectFilter) {
+      onSelectFilter(filterType);
+    }
+
+    if (filterType === 'unidentified') {
+      const unidentEl = document.getElementById('unidentified-cases-section');
+      if (unidentEl) {
+        unidentEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        navigate('/case-management');
+      }
+    } else if (filterType === 'field-visits') {
+      navigate('/case-management');
+    } else if (filterType === 'all') {
+      navigate('/case-management');
+    }
+  };
+
+  return (
+    <div className="gov-stats-row">
+      <div
+        className="gov-stat-card clickable"
+        onClick={() => handleCardClick('all')}
+        title="View All Submissions"
+      >
         <div className="gov-stat-icon success-light">
           <span>📷</span>
         </div>
         <div className="gov-stat-info">
           <p className="gov-stat-title">{t("Total Farmer Submissions")}</p>
           <h3 className="gov-stat-value">
-            {stats?.total_submissions !== undefined ? fmt(stats.total_submissions) : GOV_SUMMARY_STATS.totalSubmissions.toLocaleString('en-IN')}
+            {loading ? '...' : fmt(stats?.total_submissions)}
           </h3>
-          {stats?.total_submissions !== undefined ? <p className="gov-stat-desc">{t("Live from database")}</p> : <p className="gov-stat-trend positive">{GOV_SUMMARY_STATS.totalSubmissionsTrend}</p>}
+          <p className="gov-stat-desc">{t("Official Department System")}</p>
         </div>
       </div>
 
-      <div className="gov-stat-card">
+      <div
+        className="gov-stat-card clickable"
+        onClick={() => handleCardClick('resolved')}
+        title="View Resolved Cases"
+      >
         <div className="gov-stat-icon success">
           <span>✅</span>
         </div>
         <div className="gov-stat-info">
           <p className="gov-stat-title">{t("Issues Resolved")}</p>
           <h3 className="gov-stat-value">
-            {stats?.resolved !== undefined ? fmt(stats.resolved) : GOV_SUMMARY_STATS.issuesResolved.toLocaleString('en-IN')}
+            {loading ? '...' : fmt(stats?.resolved)}
           </h3>
-          {stats?.resolved !== undefined ? <p className="gov-stat-desc">{t("Healthy / resolved scans")}</p> : <p className="gov-stat-trend positive">{GOV_SUMMARY_STATS.issuesResolvedTrend}</p>}
+          <p className="gov-stat-desc">{t("Cleared & Healthy Crops")}</p>
         </div>
       </div>
 
-      <div className="gov-stat-card">
+      <div
+        className="gov-stat-card clickable"
+        onClick={() => handleCardClick('field-visits')}
+        title="View Field Visits"
+      >
         <div className="gov-stat-icon warning">
           <span>⚠️</span>
         </div>
         <div className="gov-stat-info">
           <p className="gov-stat-title">{t("Needs Field Visit")}</p>
           <h3 className="gov-stat-value">
-            {stats?.needs_field_visit !== undefined ? fmt(stats.needs_field_visit) : GOV_SUMMARY_STATS.needsFieldVisit.toLocaleString('en-IN')}
+            {loading ? '...' : fmt(stats?.needs_field_visit)}
           </h3>
-          {stats?.needs_field_visit !== undefined ? <p className="gov-stat-desc">{t("Pending / assigned")}</p> : <p className="gov-stat-trend negative">{GOV_SUMMARY_STATS.needsFieldVisitTrend}</p>}
+          <p className="gov-stat-desc">{t("Assigned / Inspection Pending")}</p>
         </div>
       </div>
 
@@ -70,26 +122,30 @@ const GovStatsRow = () => {
         <div className="gov-stat-info">
           <p className="gov-stat-title">{t("Crops Analyzed")}</p>
           <h3 className="gov-stat-value">
-            {stats?.crops_analyzed !== undefined ? fmt(stats.crops_analyzed) : GOV_SUMMARY_STATS.cropsAnalyzed}
+            {loading ? '...' : fmt(stats?.crops_analyzed)}
           </h3>
-          <p className="gov-stat-desc">
-            {stats?.crops_analyzed !== undefined ? 'Distinct crop types' : 'Major crops in Maharashtra'}
-          </p>
+          <p className="gov-stat-desc">{t("Monitored Crop Varieties")}</p>
         </div>
       </div>
 
-      <div className="gov-stat-card">
+      <div
+        className="gov-stat-card clickable highlight-danger"
+        onClick={() => handleCardClick('unidentified')}
+        title="Click to Filter & View Unidentified Cases"
+      >
         <div className="gov-stat-icon danger">
-          <span>❓</span>
+          <span>🔬</span>
         </div>
         <div className="gov-stat-info">
           <p className="gov-stat-title">{t("Unidentified Cases")}</p>
           <h3 className="gov-stat-value">
-            {stats?.unidentified !== undefined ? fmt(stats.unidentified) : GOV_SUMMARY_STATS.unidentifiedCases.toLocaleString('en-IN')}
+            {loading ? '...' : fmt(stats?.unidentified)}
           </h3>
-          {stats?.unidentified !== undefined ? <p className="gov-stat-desc">{t("Could not identify crop")}</p> : <p className="gov-stat-trend negative">{GOV_SUMMARY_STATS.unidentifiedCasesTrend}</p>}
+          <p className="gov-stat-desc action-link">🔍 {t("Click to Review & Identify")}</p>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default GovStatsRow;

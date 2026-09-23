@@ -4,9 +4,9 @@
   left: 0;
   bottom: 0;
   z-index: 1000;
-  width: 250px;
-  min-width: 250px;
-  max-width: 250px;
+  width: 255px;
+  min-width: 255px;
+  max-width: 255px;
   background-color: #ffffff;
   border-right: 1px solid #e2e8f0;
   padding: 16px 0 0 0;
@@ -26,7 +26,7 @@
 
 .gov-sidebar-nav {
   list-style: none;
-  padding: 0 12px;
+  padding: 0 10px;
   margin: 0;
   display: flex;
   flex-direction: column;
@@ -34,17 +34,18 @@
 }
 
 .gov-sidebar-nav li {
-  padding: 10px 14px;
+  padding: 10px 12px;
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 10px;
   color: #475569;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
   position: relative;
   border-radius: 8px;
+  white-space: nowrap;
 }
 
 .gov-sidebar-nav li:hover {
@@ -80,11 +81,11 @@
 }
 
 .gov-sidebar-nav .badge {
-  position: absolute;
-  right: 12px;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 11.5px;
+  margin-left: auto;
+  flex-shrink: 0;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 10.5px;
   font-weight: 700;
   line-height: 1.2;
 }

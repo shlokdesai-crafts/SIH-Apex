@@ -461,6 +461,8 @@ def save_crop_scan_record(
     preview_url: Optional[str] = None,
     image_quality: Optional[Dict[str, Any]] = None,
     diagnosis_details: Optional[Dict[str, Any]] = None,
+    farmer_name: Optional[str] = "Anonymous",
+    priority: Optional[str] = None,
 ) -> str:
     """
     Persists scan metadata in crop_scans and detailed report in diagnosis_reports.
@@ -470,19 +472,40 @@ def save_crop_scan_record(
     now = datetime.now(timezone.utc)
     scan_id_str = str(ObjectId())
 
+    # Determine status & priority defaults
+    final_status = status or "Pending"
+    if disease and disease.lower() == "healthy":
+        final_status = "Resolved"
+    elif not disease or disease.lower() == "unidentified":
+        final_status = "Unidentified"
+
+    final_priority = priority
+    if not final_priority:
+        if severity and severity.lower() in ("severe", "high"):
+            final_priority = "High"
+        elif severity and severity.lower() in ("moderate", "medium"):
+            final_priority = "Medium"
+        else:
+            final_priority = "Low"
+
     scan_doc = {
         "_id": ObjectId(scan_id_str),
         "userId": user_id or "anonymous",
-        "crop": crop,
-        "disease": disease,
+        "farmer_name": farmer_name or "Anonymous",
+        "crop": crop or "Unknown",
+        "disease": disease or "Unidentified",
+        "ai_result": disease or "Unidentified",
         "confidence": round(float(confidence), 4) if confidence is not None else 0.0,
         "severity": severity or "None",
-        "status": status,
+        "status": final_status,
+        "priority": final_priority,
         "location": location or "Unknown",
         "latitude": latitude,
         "longitude": longitude,
         "previewUrl": preview_url or "/images/crop_healthy_leaf.jpg",
         "imageQuality": image_quality or {},
+        "assigned_officer": None,
+        "resolution_notes": None,
         "scannedAt": now,
     }
 
@@ -759,10 +782,95 @@ def get_user_advisories(user_id: str, limit: int = 20) -> List[Dict[str, Any]]:
 
 
 
-# ── Live Aggregations for Dashboard ──────────────────────────────────────────
+# ── Live Aggregations for Dashboard & MongoDB Case Management ───────────────
+
+def seed_mongo_demo_cases_if_empty():
+    """Seeds initial demo scan records into MongoDB Atlas if crop_scans is empty."""
+    db = get_db()
+    if db is None:
+        return
+    try:
+        if db.crop_scans.count_documents({}) > 0:
+            return
+
+        demo_cases = [
+            {
+                "_id": ObjectId(),
+                "userId": "farmer_1",
+                "farmer_name": "Mahesh Pawar",
+                "location": "Latur",
+                "crop": "Sugarcane",
+                "disease": "Red Rot Disease",
+                "ai_result": "Red Rot Disease",
+                "confidence": 0.88,
+                "severity": "Severe",
+                "status": "Pending",
+                "priority": "High",
+                "previewUrl": "/images/crop_healthy_leaf.jpg",
+                "scannedAt": datetime.now(timezone.utc),
+                "assigned_officer": None,
+                "resolution_notes": None,
+            },
+            {
+                "_id": ObjectId(),
+                "userId": "farmer_2",
+                "farmer_name": "Tukaram Desai",
+                "location": "Kolhapur",
+                "crop": "Sugarcane",
+                "disease": "Unidentified Disease",
+                "ai_result": "Unidentified Disease",
+                "confidence": 0.42,
+                "severity": "Unknown",
+                "status": "Unidentified",
+                "priority": "High",
+                "previewUrl": "/images/crop_healthy_leaf.jpg",
+                "scannedAt": datetime.now(timezone.utc),
+                "assigned_officer": None,
+                "resolution_notes": None,
+            },
+            {
+                "_id": ObjectId(),
+                "userId": "farmer_3",
+                "farmer_name": "Rekha Gaikwad",
+                "location": "Nanded",
+                "crop": "Soybean",
+                "disease": "Yellow Mosaic Virus",
+                "ai_result": "Yellow Mosaic Virus",
+                "confidence": 0.94,
+                "severity": "Moderate",
+                "status": "Assigned",
+                "priority": "Medium",
+                "previewUrl": "/images/crop_healthy_leaf.jpg",
+                "scannedAt": datetime.now(timezone.utc),
+                "assigned_officer": "Mahesh Gaikwad",
+                "resolution_notes": None,
+            },
+            {
+                "_id": ObjectId(),
+                "userId": "farmer_4",
+                "farmer_name": "Suresh Mali",
+                "location": "Dhule",
+                "crop": "Cotton",
+                "disease": "Boll Rot",
+                "ai_result": "Boll Rot",
+                "confidence": 0.91,
+                "severity": "Severe",
+                "status": "Resolved",
+                "priority": "High",
+                "previewUrl": "/images/crop_healthy_leaf.jpg",
+                "scannedAt": datetime.now(timezone.utc),
+                "assigned_officer": "Sanjay More",
+                "resolution_notes": "Applied copper oxychloride spray. Field visit verified clear improvement.",
+            },
+        ]
+        db.crop_scans.insert_many(demo_cases)
+        logger.info("[MongoDB] Seeded demo cases into crop_scans.")
+    except Exception as exc:
+        logger.error(f"[MongoDB] Error seeding demo cases: {exc}")
+
 
 def get_dashboard_mongo_stats() -> Dict[str, Any]:
-    """Computes live stats from MongoDB collections."""
+    """Computes live stats from MongoDB Atlas crop_scans collection."""
     db = get_db()
     if db is None:
         return {
@@ -773,16 +881,25 @@ def get_dashboard_mongo_stats() -> Dict[str, Any]:
             "crops_analyzed": 0,
         }
     try:
+        seed_mongo_demo_cases_if_empty()
         total = db.crop_scans.count_documents({})
-        needs_visit = db.crop_scans.count_documents({"severity": {"$in": ["Severe", "Moderate"]}})
-        unique_crops = len(db.crop_scans.distinct("crop"))
+        resolved = db.crop_scans.count_documents({"status": "Resolved"})
+        needs_visit = db.crop_scans.count_documents({"status": {"$in": ["Pending", "Assigned", "Needs Field Visit"]}})
+        unidentified = db.crop_scans.count_documents({
+            "$or": [
+                {"status": "Unidentified"},
+                {"disease": "AI Unidentified"},
+                {"ai_result": "AI Unidentified"},
+            ]
+        })
+        unique_crops = len([c for c in db.crop_scans.distinct("crop") if c and c != "Unknown"])
 
         return {
             "total_submissions": total,
-            "resolved": 0,
+            "resolved": resolved,
             "needs_field_visit": needs_visit,
-            "unidentified": 0,
-            "crops_analyzed": unique_crops or 3,
+            "unidentified": unidentified,
+            "crops_analyzed": unique_crops or 4,
         }
     except Exception as exc:
         logger.error(f"Error getting mongo stats: {exc}")
@@ -793,3 +910,182 @@ def get_dashboard_mongo_stats() -> Dict[str, Any]:
             "unidentified": 0,
             "crops_analyzed": 0,
         }
+
+
+def get_mongo_submissions(limit: int = 100, status_filter: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Fetches scan submissions from MongoDB Atlas crop_scans collection."""
+    db = get_db()
+    if db is None:
+        return []
+    try:
+        seed_mongo_demo_cases_if_empty()
+        query: Dict[str, Any] = {}
+        if status_filter and status_filter.lower() != "all":
+            sf = status_filter.lower()
+            if sf == "pending":
+                query["status"] = {"$in": ["Pending", "Assigned", "Needs Field Visit"]}
+            elif sf == "unidentified":
+                query["$or"] = [
+                    {"status": "Unidentified"},
+                    {"disease": "AI Unidentified"},
+                    {"ai_result": "AI Unidentified"},
+                ]
+            else:
+                query["status"] = status_filter
+
+        cursor = db.crop_scans.find(query).sort("scannedAt", DESCENDING).limit(limit)
+        results = []
+        for doc in cursor:
+            scanned = doc.get("scannedAt")
+            created_iso = scanned.isoformat() if isinstance(scanned, datetime) else str(scanned or datetime.now(timezone.utc).isoformat())
+
+            results.append({
+                "id": str(doc["_id"]),
+                "farmer_name": doc.get("farmer_name") or "Anonymous",
+                "location": doc.get("location") or "Unknown",
+                "crop": doc.get("crop") or "Unknown",
+                "ai_result": doc.get("ai_result") or doc.get("disease") or "Scan completed",
+                "disease": doc.get("disease"),
+                "confidence": doc.get("confidence"),
+                "severity": doc.get("severity"),
+                "status": doc.get("status") or "Pending",
+                "priority": doc.get("priority") or ("High" if doc.get("severity") == "Severe" else "Medium"),
+                "created_at": created_iso,
+                "image_url": doc.get("previewUrl"),
+                "assigned_officer": doc.get("assigned_officer"),
+                "resolution_notes": doc.get("resolution_notes"),
+                "latitude": doc.get("latitude"),
+                "longitude": doc.get("longitude"),
+            })
+        return results
+    except Exception as exc:
+        logger.error(f"Error fetching mongo submissions: {exc}")
+        return []
+
+
+def update_mongo_submission(
+    submission_id: str,
+    status: Optional[str] = None,
+    assigned_officer: Optional[str] = None,
+    resolution_notes: Optional[str] = None,
+    priority: Optional[str] = None,
+    disease: Optional[str] = None,
+    ai_result: Optional[str] = None,
+) -> bool:
+    """Updates submission record in MongoDB Atlas."""
+    db = get_db()
+    if db is None:
+        return False
+    try:
+        update_doc: Dict[str, Any] = {}
+        if status is not None:
+            update_doc["status"] = status
+        if assigned_officer is not None:
+            update_doc["assigned_officer"] = assigned_officer
+        if resolution_notes is not None:
+            update_doc["resolution_notes"] = resolution_notes
+        if priority is not None:
+            update_doc["priority"] = priority
+        if disease is not None:
+            update_doc["disease"] = disease
+        if ai_result is not None:
+            update_doc["ai_result"] = ai_result
+
+        if not update_doc:
+            return True
+
+        query: Dict[str, Any] = {}
+        if ObjectId.is_valid(submission_id):
+            query = {"$or": [{"_id": ObjectId(submission_id)}, {"_id": submission_id}]}
+        else:
+            query = {"_id": submission_id}
+
+        res = db.crop_scans.update_one(query, {"$set": update_doc})
+        return res.modified_count > 0 or res.matched_count > 0
+    except Exception as exc:
+        logger.error(f"Error updating mongo submission: {exc}")
+        return False
+
+
+def get_mongo_map_markers(severity_filter: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Returns coordinates from MongoDB Atlas for live map markers with fallback location calculation."""
+    db = get_db()
+    if db is None:
+        return []
+
+    # Map of Maharashtra districts to central lat/lng
+    DISTRICT_COORDS = {
+        "pune": (18.5204, 73.8567),
+        "nashik": (19.9975, 73.7898),
+        "latur": (18.4088, 76.5604),
+        "nagpur": (21.1458, 79.0882),
+        "kolhapur": (16.7050, 74.2433),
+        "solapur": (17.6599, 75.9064),
+        "nanded": (19.1383, 77.3210),
+        "dhule": (20.9042, 74.7749),
+        "satara": (17.6805, 74.0183),
+        "yavatmal": (20.3888, 78.1204),
+        "wardha": (20.7453, 78.6022),
+        "osmanabad": (18.2070, 76.0416),
+        "dharashiv": (18.2070, 76.0416),
+        "akola": (20.7002, 77.0082),
+        "amravati": (20.9374, 77.7796),
+        "aurangabad": (19.8762, 75.3433),
+        "beed": (18.9891, 75.7601),
+        "sangli": (16.8524, 74.5815),
+    }
+
+    try:
+        seed_mongo_demo_cases_if_empty()
+        query: Dict[str, Any] = {}
+        if severity_filter and severity_filter != "All Cases":
+            if severity_filter == "High Issues" or severity_filter == "Severe":
+                query["severity"] = "Severe"
+            elif severity_filter == "Needs Visit" or severity_filter == "Unidentified":
+                query["$or"] = [
+                    {"status": "Unidentified"},
+                    {"disease": "AI Unidentified"},
+                    {"status": "Pending"},
+                ]
+            else:
+                query["severity"] = severity_filter
+
+        cursor = db.crop_scans.find(query).sort("scannedAt", DESCENDING).limit(150)
+        markers = []
+        for idx, doc in enumerate(cursor):
+            doc_id = str(doc["_id"])
+            lat = doc.get("latitude")
+            lng = doc.get("longitude")
+
+            # Fallback coordinate resolution if coordinates are missing
+            if lat is None or lng is None:
+                loc_str = str(doc.get("location") or "").lower()
+                base_lat, base_lng = 19.7515, 75.7139 # Maharashtra center
+                for dist_key, coords in DISTRICT_COORDS.items():
+                    if dist_key in loc_str:
+                        base_lat, base_lng = coords
+                        break
+                
+                # Add tiny deterministic jitter so markers in same district don't stack exactly on top of each other
+                hash_val = sum(ord(c) for c in doc_id)
+                lat = base_lat + ((hash_val % 37) - 18) * 0.008
+                lng = base_lng + ((hash_val % 43) - 21) * 0.008
+
+            markers.append({
+                "id": doc_id,
+                "farmer_name": doc.get("farmer_name") or "Anonymous",
+                "location": doc.get("location") or "Maharashtra",
+                "latitude": float(lat),
+                "longitude": float(lng),
+                "crop": doc.get("crop") or "Unknown",
+                "disease": doc.get("disease") or doc.get("ai_result") or "Pending Review",
+                "severity": doc.get("severity") or "Moderate",
+                "status": doc.get("status") or "Pending",
+                "assigned_officer": doc.get("assigned_officer"),
+                "resolution_notes": doc.get("resolution_notes"),
+                "created_at": str(doc.get("scannedAt")),
+            })
+        return markers
+    except Exception as exc:
+        logger.error(f"Error fetching mongo map markers: {exc}")
+        return []
