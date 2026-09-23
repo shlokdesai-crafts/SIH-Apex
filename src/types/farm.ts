@@ -34,6 +34,7 @@ export interface FarmCrop {
   soilType?: string;
   season?: string;
   notes?: string;
+  growthStage?: string;
 }
 
 export interface FarmField {
@@ -53,6 +54,7 @@ export interface FarmField {
   soilType?: string;
   season?: string;
   notes?: string;
+  growthStage?: string;
 }
 
 export interface CropScanRecord {
@@ -69,6 +71,8 @@ export interface CropScanRecord {
   status: CropStatus;
   cultivatedArea?: number;
   areaUnit?: string;
+  growthStage?: string;
+  location?: string;
 }
 
 export interface FarmActivity {

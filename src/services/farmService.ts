@@ -523,6 +523,8 @@ export interface RecordScanInput {
   soilType?: string;
   season?: string;
   notes?: string;
+  growthStage?: string;
+  location?: string;
   disease: string;
   confidence: number;
   severity: string;
@@ -594,6 +596,8 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
     status: cropStatus,
     cultivatedArea: input.cultivatedArea,
     areaUnit: input.areaUnit || 'Acres',
+    growthStage: input.growthStage || undefined,
+    location: input.location || undefined,
   };
 
   const updatedScans = [scanRecord, ...(currentState.scans || [])];
@@ -624,6 +628,7 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
         soilType: input.soilType || c.soilType,
         season: input.season || c.season,
         notes: input.notes || c.notes,
+        growthStage: input.growthStage || c.growthStage,
       };
     }
     return c;
@@ -649,6 +654,7 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
       soilType: input.soilType,
       season: input.season,
       notes: input.notes,
+      growthStage: input.growthStage,
       expectedYieldQtHa: 10.0,
       lastScanDate: todayStr,
       detectedDisease: input.disease,
@@ -679,6 +685,7 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
           soilType: input.soilType || f.soilType,
           season: input.season || f.season,
           notes: input.notes || f.notes,
+          growthStage: input.growthStage || f.growthStage,
         };
       }
       return f;
@@ -705,6 +712,7 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
         soilType: input.soilType || updatedFields[matchingFieldIndex].soilType,
         season: input.season || updatedFields[matchingFieldIndex].season,
         notes: input.notes || updatedFields[matchingFieldIndex].notes,
+        growthStage: input.growthStage || updatedFields[matchingFieldIndex].growthStage,
       };
     } else {
       // Create new genuine field record for this first-time scanned crop
@@ -727,6 +735,7 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
         soilType: input.soilType,
         season: input.season,
         notes: input.notes,
+        growthStage: input.growthStage,
       };
       updatedFields.push(newField);
     }
@@ -804,6 +813,7 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
     lastUpdated: `${todayStr}, ${scanTimeFormatted}`,
     farmDetails: {
       ...currentState.farmDetails,
+      location: input.location?.trim() || currentState.farmDetails.location,
       totalAreaHa: totalFarmAreaHa,
       lastUpdated: `${todayStr}, ${scanTimeFormatted}`,
     },

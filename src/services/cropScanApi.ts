@@ -173,6 +173,7 @@ export async function scanCropImage(
     farmerId?: string;
     crop?: string;
     fieldId?: string;
+    location?: string;
   }
 ): Promise<ScanResponseData> {
   const form = new FormData();
@@ -184,6 +185,10 @@ export async function scanCropImage(
   if (options?.latitude != null && options?.longitude != null) {
     form.append('latitude', options.latitude.toString());
     form.append('longitude', options.longitude.toString());
+  }
+  if (options?.location) {
+    form.append('location', options.location);
+  } else if (options?.latitude != null && options?.longitude != null) {
     form.append('location', `Lat: ${options.latitude.toFixed(4)}, Lng: ${options.longitude.toFixed(4)}`);
   }
 
