@@ -24,21 +24,21 @@ class TestMaizeArchitecture(unittest.TestCase):
     """Model architecture checks — do not require real data."""
 
     def test_model_output_shape(self):
-        """MobileNetV3 should output (batch, 5) for 5 Maize classes."""
+        """MobileNetV3 should output (batch, 4) for 4 verified Maize classes."""
         classes = CROP_CONFIGS["Maize"]["classes"]
-        self.assertEqual(len(classes), 5)
+        self.assertEqual(len(classes), 4)
         self.assertEqual(
             classes,
-            ["Healthy", "Common Rust", "Gray Leaf Spot", "Northern Leaf Blight", "Maize Streak Virus"],
+            ["Healthy", "Common Rust", "Gray Leaf Spot", "Northern Leaf Blight"],
         )
-        model = create_crop_model(num_classes=5, pretrained=False)
+        model = create_crop_model(num_classes=4, pretrained=False)
         dummy = torch.randn(2, 3, 224, 224)
         out = model(dummy)
-        self.assertEqual(out.shape, (2, 5))
+        self.assertEqual(out.shape, (2, 4))
 
     def test_softmax_sum_to_one(self):
         """Softmax probabilities must sum to 1."""
-        model = create_crop_model(num_classes=5, pretrained=False).eval()
+        model = create_crop_model(num_classes=4, pretrained=False).eval()
         dummy = torch.randn(1, 3, 224, 224)
         with torch.no_grad():
             probs = torch.softmax(model(dummy), dim=1)[0]
@@ -48,7 +48,7 @@ class TestMaizeArchitecture(unittest.TestCase):
 class TestMaizeDiseaseInference(CropDiseaseTestBase):
     crop_name = "Maize"
     real_image_file = "crop_maize.jpg"
-    expected_classes = ["Healthy", "Common Rust", "Gray Leaf Spot", "Northern Leaf Blight", "Maize Streak Virus"]
+    expected_classes = ["Healthy", "Common Rust", "Gray Leaf Spot", "Northern Leaf Blight"]
 
     def test_real_image_prediction_schema(self):
         """Real maize image should return a valid prediction schema."""

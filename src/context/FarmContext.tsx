@@ -45,16 +45,18 @@ export function FarmProvider({ children }: { children: ReactNode }) {
   const [farmState, setFarmState] = useState<FarmState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadFarm = useCallback(() => {
+  const loadFarm = useCallback(async () => {
     setIsLoading(true);
-    const state = getFarmState(farmerId, defaultLocation);
-    setFarmState(state);
+    const local = getFarmState(farmerId, defaultLocation);
+    setFarmState(local);
+
     setIsLoading(false);
   }, [farmerId, defaultLocation]);
 
   useEffect(() => {
     loadFarm();
   }, [loadFarm]);
+
 
   const recordScan = useCallback(
     async (input: RecordScanInput): Promise<FarmState> => {
@@ -112,3 +114,4 @@ export function useFarm(): FarmContextType {
   }
   return context;
 }
+

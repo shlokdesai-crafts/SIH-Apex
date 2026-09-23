@@ -5,6 +5,11 @@ main.py  –  CropGuard FastAPI application entry point
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env from project root
+load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / ".env")
+load_dotenv()
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,9 +17,15 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
 from db import init_db, DB_PATH
+from db_mongo import get_db
 from routes.scan import router as scan_router
 from routes.gov import router as gov_router
+from routes.auth import router as auth_router
+from routes.farm import router as farm_router
+from routes.notifications import router as notif_router
+from routes.feedback import router as feedback_router
 from routes.history import router as history_router
+from routes.advisory_risk import router as advisory_risk_router
 
 
 # Base upload directory
@@ -26,6 +37,8 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 async def lifespan(app: FastAPI):
     # Initialise the SQLite database on startup
     init_db()
+    # Connect and initialise MongoDB
+    get_db()
     yield
 
 
@@ -67,9 +80,15 @@ app.add_middleware(
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
 # ── Routers ───────────────────────────────────────────────────────────────────
+app.include_router(auth_router, prefix="/api", tags=["Authentication"])
+app.include_router(farm_router, prefix="/api", tags=["Farm"])
 app.include_router(scan_router, prefix="/api", tags=["Scan"])
 app.include_router(history_router, prefix="/api", tags=["Scan History"])
+app.include_router(notif_router, prefix="/api", tags=["Notifications"])
+app.include_router(feedback_router, prefix="/api", tags=["Feedback"])
+app.include_router(advisory_risk_router, prefix="/api", tags=["Risk & Advisory"])
 app.include_router(gov_router, prefix="/api", tags=["Government Dashboard"])
+
 
 
 # ── Health endpoints ──────────────────────────────────────────────────────────

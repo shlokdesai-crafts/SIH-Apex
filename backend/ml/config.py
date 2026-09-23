@@ -77,26 +77,28 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
         "classes": [
             "Healthy",
             "Bacterial Leaf Blight",
-            "Blast",
-            "Brown Spot",
-            "Tungro"
+            "Brown Spot"
         ],
         "model_path": SAVED_MODELS_DIR / "rice_mobilenetv3.pth",
         "data_dir": BASE_DIR / "data" / "rice",
+        "dataset_source": "ICAR / IndiaAI Rice and Maize in-field dataset",
+        "dataset_source_path": r"C:\Users\Shlok\Downloads\SIH\dataset\Rice_and_Maize_Dataset",
+        "verified_real": True,
+        "source_mapping": {
+            "Healthy": "ICAR Rice/Healthy (48 verified images)",
+            "Bacterial Leaf Blight": "ICAR Rice/Disease/01_Bacterial_leaf_blight (46 verified images)",
+            "Brown Spot": "ICAR Rice/Disease/02_Brown_spot (50 verified images)",
+        },
         "confidence_threshold": 0.60,
         "severity_map": {
             "Healthy": "None",
             "Bacterial Leaf Blight": "Severe",
-            "Blast": "Severe",
             "Brown Spot": "Moderate",
-            "Tungro": "Severe",
         },
         "status_map": {
             "Healthy": "Healthy",
             "Bacterial Leaf Blight": "Diseased",
-            "Blast": "Diseased",
             "Brown Spot": "Diseased",
-            "Tungro": "Diseased",
         },
     },
     "Wheat": {
@@ -109,6 +111,10 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
         ],
         "model_path": SAVED_MODELS_DIR / "wheat_mobilenetv3.pth",
         "data_dir": BASE_DIR / "data" / "wheat",
+        "dataset_source": "Unverified / Awaiting Real Multi-Class Dataset",
+        "dataset_source_path": "",
+        "verified_real": False,
+        "source_mapping": {},
         "confidence_threshold": 0.60,
         "severity_map": {
             "Healthy": "None",
@@ -130,25 +136,31 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
             "Healthy",
             "Common Rust",
             "Gray Leaf Spot",
-            "Northern Leaf Blight",
-            "Maize Streak Virus"
+            "Northern Leaf Blight"
         ],
         "model_path": SAVED_MODELS_DIR / "maize_mobilenetv3.pth",
         "data_dir": BASE_DIR / "data" / "maize",
+        "dataset_source": "PlantVillage Open Dataset + ICAR IndiaAI",
+        "dataset_source_path": r"C:\Users\Shlok\Downloads\SIH\dataset\PlantVillage-Dataset-master, C:\Users\Shlok\Downloads\SIH\dataset\Rice_and_Maize_Dataset",
+        "verified_real": True,
+        "source_mapping": {
+            "Healthy": "PlantVillage Corn_(maize)___healthy (1,162) + ICAR Maize/Healthy (50)",
+            "Common Rust": "PlantVillage Corn_(maize)___Common_rust_ (1,192)",
+            "Gray Leaf Spot": "PlantVillage Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot (513)",
+            "Northern Leaf Blight": "PlantVillage Corn_(maize)___Northern_Leaf_Blight (985) + ICAR Maize/Disease/02_turcicum_leaf_blight (50)",
+        },
         "confidence_threshold": 0.60,
         "severity_map": {
             "Healthy": "None",
             "Common Rust": "Moderate",
             "Gray Leaf Spot": "Severe",
             "Northern Leaf Blight": "Severe",
-            "Maize Streak Virus": "Severe",
         },
         "status_map": {
             "Healthy": "Healthy",
             "Common Rust": "Diseased",
             "Gray Leaf Spot": "Diseased",
             "Northern Leaf Blight": "Diseased",
-            "Maize Streak Virus": "Diseased",
         },
     },
     "Cotton": {
@@ -161,6 +173,10 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
         ],
         "model_path": SAVED_MODELS_DIR / "cotton_mobilenetv3.pth",
         "data_dir": BASE_DIR / "data" / "cotton",
+        "dataset_source": "Unverified / Awaiting Real Multi-Class Dataset",
+        "dataset_source_path": "",
+        "verified_real": False,
+        "source_mapping": {},
         "confidence_threshold": 0.60,
         "severity_map": {
             "Healthy": "None",
@@ -187,6 +203,16 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
         ],
         "model_path": SAVED_MODELS_DIR / "tomato_mobilenetv3.pth",
         "data_dir": BASE_DIR / "data" / "tomato",
+        "dataset_source": "PlantVillage Open-Access Agricultural Pathology Dataset",
+        "dataset_source_path": r"C:\Users\Shlok\Downloads\SIH\dataset\PlantVillage-Dataset-master",
+        "verified_real": True,
+        "source_mapping": {
+            "Healthy": "PlantVillage Tomato___healthy (1,585 verified unique images)",
+            "Bacterial Spot": "PlantVillage Tomato___Bacterial_spot (2,127 verified images)",
+            "Early Blight": "PlantVillage Tomato___Early_blight (1,000 verified images)",
+            "Late Blight": "PlantVillage Tomato___Late_blight (1,901 verified unique images)",
+            "Yellow Leaf Curl Virus": "PlantVillage Tomato___Tomato_Yellow_Leaf_Curl_Virus (5,357 verified images)",
+        },
         "confidence_threshold": 0.60,
         "severity_map": {
             "Healthy": "None",

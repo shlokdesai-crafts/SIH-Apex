@@ -1,95 +1,75 @@
 {
   "crop": "Maize",
-  "accuracy": 1.0,
-  "macro_precision": 1.0,
-  "macro_recall": 1.0,
-  "macro_f1": 1.0,
-  "weighted_f1": 1.0,
-  "total_samples": 25,
+  "accuracy": 0.934,
+  "macro_precision": 0.9068,
+  "macro_recall": 0.9125,
+  "macro_f1": 0.9092,
+  "weighted_f1": 0.9344,
+  "total_samples": 394,
   "class_metrics": {
     "Healthy": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
-      "accuracy": 1.0,
-      "samples": 5,
-      "predicted": 5
+      "precision": 0.9836,
+      "recall": 0.9917,
+      "f1_score": 0.9877,
+      "accuracy": 0.9917,
+      "samples": 121,
+      "predicted": 122
     },
     "Common Rust": {
       "precision": 1.0,
       "recall": 1.0,
       "f1_score": 1.0,
       "accuracy": 1.0,
-      "samples": 5,
-      "predicted": 5
+      "samples": 119,
+      "predicted": 119
     },
     "Gray Leaf Spot": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
-      "accuracy": 1.0,
-      "samples": 5,
-      "predicted": 5
+      "precision": 0.7455,
+      "recall": 0.8039,
+      "f1_score": 0.7736,
+      "accuracy": 0.8039,
+      "samples": 51,
+      "predicted": 55
     },
     "Northern Leaf Blight": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
-      "accuracy": 1.0,
-      "samples": 5,
-      "predicted": 5
-    },
-    "Maize Streak Virus": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
-      "accuracy": 1.0,
-      "samples": 5,
-      "predicted": 5
+      "precision": 0.898,
+      "recall": 0.8544,
+      "f1_score": 0.8756,
+      "accuracy": 0.8544,
+      "samples": 103,
+      "predicted": 98
     }
   },
   "confusion_matrix": [
     [
-      5,
+      120,
       0,
-      0,
-      0,
+      1,
       0
     ],
     [
       0,
-      5,
-      0,
-      0,
-      0
-    ],
-    [
-      0,
-      0,
-      5,
+      119,
       0,
       0
     ],
     [
       0,
       0,
-      0,
-      5,
-      0
+      41,
+      10
     ],
     [
+      2,
       0,
-      0,
-      0,
-      0,
-      5
+      13,
+      88
     ]
   ],
   "class_names": [
     "Healthy",
     "Common Rust",
     "Gray Leaf Spot",
-    "Northern Leaf Blight",
-    "Maize Streak Virus"
+    "Northern Leaf Blight"
   ]
 }

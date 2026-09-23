@@ -22,7 +22,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, List
 
-from fastapi import APIRouter, File, Form, UploadFile
+from fastapi import APIRouter, File, Form, Header, UploadFile
 
 from services.validation import validate_upload
 from services.image_quality import analyze_quality, quality_errors
@@ -45,6 +45,7 @@ from models.response import (
 from ml.inference import predict_crop_disease
 from ml.config import CROP_CONFIGS
 from db import insert_submission, insert_scan_history
+from db_mongo import save_crop_scan_record, verify_auth_token
 from data.canonical_mapping import (
     normalize_crop_name,
     get_display_crop_name,
@@ -83,12 +84,14 @@ def _save_uploaded_image(contents: bytes, original_filename: Optional[str]) -> t
 @router.post("/scan", response_model=ScanResponse, summary="Validate and analyse a crop image")
 async def scan_crop(
     file: UploadFile = File(..., description="JPG or PNG crop image, max 10 MB"),
+    user_id: Optional[str] = Form(default=None),
     farmer_name: Optional[str] = Form(default="Anonymous"),
     farmer_id: Optional[str] = Form(default="default_farmer"),
     crop: Optional[str] = Form(default=None),
     location: Optional[str] = Form(default="Unknown"),
     latitude: Optional[float] = Form(default=None),
     longitude: Optional[float] = Form(default=None),
+    authorization: Optional[str] = Header(None),
 ):
     """
     Multi-Crop identification and disease diagnostic pipeline with persistent scan history.
@@ -191,10 +194,9 @@ async def scan_crop(
         )
     else:
         # Normalise canonical and display crop names from image identification
-        canonical_crop = normalize_crop_name(crop_id.crop_name)
+        canonical_crop = normalize_crop_name(crop_id.crop_name) or crop_id.crop_name
         display_crop = get_display_crop_name(canonical_crop)
         crop_id.crop_name = display_crop
-
     crop_conf_pct = round(crop_id.confidence * 100, 1)
 
     # ── Step 5: Phase 3B Real Crop Disease Detection ──────────────────────────
@@ -250,15 +252,13 @@ async def scan_crop(
     # ── Step 6: Safe Image Storage ────────────────────────────────────────────
     saved_web_url, disk_path = _save_uploaded_image(contents, file.filename)
 
-    # ── Step 7: Persist Scan History to Database ──────────────────────────────
+    # ── Step 7: Build Authoritative Verification & References ─────────────────
     explanation = disease_detection.explanation if disease_detection else ""
     symptoms = disease_detection.symptoms if disease_detection else []
     actions = disease_detection.recommended_actions if disease_detection else []
     prevention = disease_detection.prevention if disease_detection else []
-
     disease_conf = disease_detection.confidence if disease_detection else 0.0
 
-    # ── Step 7: Build Authoritative Verification & References ─────────────────
     verification_dict = get_crop_verification_metadata(
         canonical_crop=canonical_crop,
         condition_name=condition_name,
@@ -267,7 +267,7 @@ async def scan_crop(
     )
     verification = VerificationDetail(**verification_dict)
 
-    # Save to persistent scan_history table
+    # Save to persistent scan_history table (SQLite)
     insert_scan_history(
         scan_id=scan_id,
         crop_name=display_crop,
@@ -288,6 +288,30 @@ async def scan_crop(
         reference_source=verification.referenceSource,
         accuracy_score=verification.accuracyPercentage,
         verification_json=json.dumps(verification_dict),
+    )
+
+    # Resolve user identity for MongoDB: prioritize explicit user_id, then Authorization header
+    resolved_uid = user_id
+    if (not resolved_uid or resolved_uid == "anonymous") and authorization:
+        token = authorization.replace("Bearer ", "").strip()
+        payload = verify_auth_token(token)
+        if payload and payload.get("uid"):
+            resolved_uid = payload["uid"]
+
+    # MongoDB persistence
+    scan_id_mongo = save_crop_scan_record(
+        user_id=resolved_uid,
+        crop=crop_id.crop_name,
+        disease=disease_detection.disease if disease_detection else "Unknown",
+        confidence=disease_conf,
+        severity=severity or "None",
+        status="valid",
+        location=location or "Unknown",
+        latitude=latitude,
+        longitude=longitude,
+        preview_url=None,
+        image_quality=image_quality.model_dump() if image_quality else None,
+        diagnosis_details=disease_detection.model_dump() if disease_detection else None,
     )
 
     # Save to legacy submissions table for government dashboard analytics
@@ -354,4 +378,5 @@ async def scan_crop(
         severity=severity,
         risk_score=None,
         advisory=None,
+        scan_id=scan_id_mongo,
     )

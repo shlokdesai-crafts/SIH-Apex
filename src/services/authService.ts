@@ -1,9 +1,8 @@
 /**
  * Auth Service
  * 
- * localStorage-based authentication for demo/SIH purposes.
- * Architecture is designed so you can swap in a real backend
- * (Firebase, Express, etc.) by changing only this file.
+ * MongoDB Atlas-backed authentication with JWT/HMAC token persistence.
+ * Connects to /api/auth/signup, /api/auth/login, /api/auth/me, /api/auth/profile.
  */
 
 import type { Language } from '../i18n/translations';
@@ -14,7 +13,7 @@ export interface User {
   id: string;
   fullName: string;
   phone: string;
-  passwordHash: string;
+  passwordHash?: string;
   location: string;
   language: Language;
   role?: string;
@@ -42,78 +41,70 @@ export interface SignupData {
   location: string;
   language: Language;
   role?: string;
+  email?: string | null;
+  district?: string;
 }
 
 export interface AuthResult {
   success: boolean;
   user?: UserPublic;
+  token?: string;
   error?: string;
 }
 
 // ─── Storage Keys ────────────────────────────────────────────
 
-const USERS_KEY = 'cropguard_users';
 const SESSION_KEY = 'cropguard_session';
+const TOKEN_KEY = 'cropguard_auth_token';
 
-// ─── Helpers ─────────────────────────────────────────────────
+// ─── Token & Header Helpers ─────────────────────────────────
 
-function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
-}
-
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-function getStoredUsers(): User[] {
+export function getAuthToken(): string | null {
   try {
-    const stored = localStorage.getItem(USERS_KEY);
-    return stored ? JSON.parse(stored) : [];
+    return localStorage.getItem(TOKEN_KEY);
   } catch {
-    return [];
-  }
-}
-
-function saveUsers(users: User[]): void {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
-}
-
-function toPublicUser(user: User): UserPublic {
-  return {
-    id: user.id,
-    fullName: user.fullName,
-    phone: user.phone,
-    location: user.location,
-    language: user.language,
-    role: user.role,
-    email: user.email,
-    district: user.district,
-    createdAt: user.createdAt,
-  };
-}
-
-export function updateStoredUser(updates: Partial<UserPublic>): UserPublic | null {
-  try {
-    const current = getCurrentUser();
-    if (!current) return null;
-    const updatedUser: UserPublic = { ...current, ...updates };
-    localStorage.setItem(SESSION_KEY, JSON.stringify(updatedUser));
-
-    const users = getStoredUsers();
-    const idx = users.findIndex(u => u.id === current.id);
-    if (idx !== -1) {
-      users[idx] = { ...users[idx], ...updates };
-      saveUsers(users);
-    }
-    return updatedUser;
-  } catch (err) {
-    console.error('Failed to update stored user:', err);
     return null;
   }
+}
+
+export function setAuthToken(token: string): void {
+  try {
+    localStorage.setItem(TOKEN_KEY, token);
+  } catch (err) {
+    console.error('Failed to store auth token:', err);
+  }
+}
+
+export function clearAuthToken(): void {
+  try {
+    localStorage.removeItem(TOKEN_KEY);
+  } catch {}
+}
+
+export function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  const token = getAuthToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
+// ─── Session Helpers ─────────────────────────────────────────
+
+export function getCurrentUser(): UserPublic | null {
+  try {
+    const stored = localStorage.getItem(SESSION_KEY);
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function isAuthenticated(): boolean {
+  return getCurrentUser() !== null && getAuthToken() !== null;
 }
 
 // ─── Validation ──────────────────────────────────────────────
@@ -127,8 +118,8 @@ export function validatePhone(phone: string): string | null {
 }
 
 export function validatePassword(password: string): string | null {
-  if (password.length < 6) {
-    return 'Password must be at least 6 characters';
+  if (password.length < 4) {
+    return 'Password must be at least 4 characters';
   }
   return null;
 }
@@ -181,10 +172,9 @@ export async function syncGovernmentOfficer(data: GovSyncData): Promise<void> {
   }
 }
 
-// ─── Auth Operations ─────────────────────────────────────────
+// ─── Real MongoDB Auth Operations ────────────────────────────
 
 export async function signup(data: SignupData): Promise<AuthResult> {
-  // Validate
   const phoneError = validatePhone(data.phone);
   if (phoneError) return { success: false, error: phoneError };
 
@@ -199,98 +189,163 @@ export async function signup(data: SignupData): Promise<AuthResult> {
     return { success: false, error: 'Location is required' };
   }
 
-  // Check for duplicate phone
-  const users = getStoredUsers();
   const cleanedPhone = data.phone.replace(/\s|-/g, '');
-  if (users.some(u => u.phone === cleanedPhone)) {
-    return { success: false, error: 'An account with this phone number already exists' };
-  }
 
-  // Create user
-  const user: User = {
-    id: generateId(),
-    fullName: data.fullName.trim(),
-    phone: cleanedPhone,
-    passwordHash: await hashPassword(data.password),
-    location: data.location.trim(),
-    language: data.language,
-    role: data.role || 'farmer',
-    createdAt: new Date().toISOString(),
-  };
-
-  users.push(user);
-  saveUsers(users);
-
-  // Create session
-  const publicUser = toPublicUser(user);
-  localStorage.setItem(SESSION_KEY, JSON.stringify(publicUser));
-
-  // If registering as Government Officer, sync record to PostgreSQL
-  if (user.role === 'government') {
-    await syncGovernmentOfficer({
-      userId: user.id,
-      name: user.fullName,
-      phone: user.phone,
-      location: user.location,
+  try {
+    const res = await fetch('/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: cleanedPhone,
+        password: data.password,
+        fullName: data.fullName.trim(),
+        location: data.location.trim(),
+        language: data.language || 'en',
+        role: data.role || 'Farmer',
+        email: data.email || null,
+        district: data.district || null,
+      }),
     });
-  }
 
-  return { success: true, user: publicUser };
+    const json = await res.json();
+    if (!res.ok || !json.success) {
+      return { success: false, error: json.detail || json.message || 'Registration failed' };
+    }
+
+    const user: UserPublic = json.user;
+    const token: string = json.token;
+
+    setAuthToken(token);
+    localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+
+    // If registering as Government Officer, sync record
+    if (user.role?.toLowerCase() === 'government') {
+      syncGovernmentOfficer({
+        userId: user.id,
+        name: user.fullName,
+        phone: user.phone,
+        location: user.location,
+        district: user.district,
+      }).catch((e) => console.warn('Background sync error on signup:', e));
+    }
+
+    return { success: true, user, token };
+  } catch (err: any) {
+    console.error('Signup network error:', err);
+    return { success: false, error: 'Network error connecting to CropGuard server.' };
+  }
 }
 
 export async function login(phone: string, password: string, role: string): Promise<AuthResult> {
   const phoneError = validatePhone(phone);
   if (phoneError) return { success: false, error: phoneError };
 
-  const users = getStoredUsers();
   const cleanedPhone = phone.replace(/\s|-/g, '');
-  const user = users.find(u => u.phone === cleanedPhone);
 
-  if (!user) {
-    return { success: false, error: 'No account found with this phone number' };
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: cleanedPhone,
+        password,
+        role: role || 'Farmer',
+      }),
+    });
+
+    const json = await res.json();
+    if (!res.ok || !json.success) {
+      return { success: false, error: json.detail || json.message || 'Invalid phone or password' };
+    }
+
+    const user: UserPublic = json.user;
+    const token: string = json.token;
+
+    setAuthToken(token);
+    localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+
+    if (user.role?.toLowerCase() === 'government') {
+      syncGovernmentOfficer({
+        userId: user.id,
+        name: user.fullName,
+        phone: user.phone,
+        location: user.location,
+        district: user.district,
+      }).catch((e) => console.warn('Background sync error on login:', e));
+    }
+
+    return { success: true, user, token };
+  } catch (err: any) {
+    console.error('Login network error:', err);
+    return { success: false, error: 'Network error connecting to CropGuard server.' };
+  }
+}
+
+export async function fetchCurrentProfile(): Promise<UserPublic | null> {
+  const token = getAuthToken();
+  if (!token) return null;
+
+  try {
+    const res = await fetch('/api/auth/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      if (res.status === 401) {
+        logout();
+      }
+      return null;
+    }
+    const json = await res.json();
+    if (json.success && json.user) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(json.user));
+      return json.user;
+    }
+    return null;
+  } catch (err) {
+    console.error('Failed to fetch profile from MongoDB:', err);
+    return getCurrentUser();
+  }
+}
+
+export function updateStoredUser(updates: Partial<UserPublic>): UserPublic | null {
+  const current = getCurrentUser();
+  const token = getAuthToken();
+
+  const updatedLocal: UserPublic = { ...(current || ({} as UserPublic)), ...updates };
+  localStorage.setItem(SESSION_KEY, JSON.stringify(updatedLocal));
+
+  if (token) {
+    fetch('/api/auth/profile', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        fullName: updates.fullName,
+        location: updates.location,
+        district: updates.district,
+        language: updates.language,
+        email: updates.email,
+      }),
+    })
+      .then((res) => {
+        if (res.ok) {
+          return res.json();
+        }
+      })
+      .then((json) => {
+        if (json?.success && json?.user) {
+          localStorage.setItem(SESSION_KEY, JSON.stringify(json.user));
+        }
+      })
+      .catch((err) => console.warn('Could not update profile on backend:', err));
   }
 
-  // Ensure role matches, defaulting to 'farmer' if role is undefined in legacy accounts
-  const userRole = user.role || 'farmer';
-  if (userRole !== role) {
-    return { success: false, error: `Account exists but is not registered as a ${role}` };
-  }
-
-  const inputHash = await hashPassword(password);
-  if (inputHash !== user.passwordHash) {
-    return { success: false, error: 'Incorrect password' };
-  }
-
-  // Create session
-  const publicUser = toPublicUser(user);
-  localStorage.setItem(SESSION_KEY, JSON.stringify(publicUser));
-
-  // If logging in as Government Officer, ensure record is synced in PostgreSQL
-  if (userRole === 'government') {
-    syncGovernmentOfficer({
-      userId: user.id,
-      name: user.fullName,
-      phone: user.phone,
-      location: user.location,
-    }).catch((e) => console.warn('Background sync error on login:', e));
-  }
-
-  return { success: true, user: publicUser };
+  return updatedLocal;
 }
 
 export function logout(): void {
   localStorage.removeItem(SESSION_KEY);
-}
-
-export function getCurrentUser(): UserPublic | null {
-  try {
-    const stored = localStorage.getItem(SESSION_KEY);
-    return stored ? JSON.parse(stored) : null;
-  } catch {
-    return null;
-  }
-}
-
-export function isAuthenticated(): boolean {
-  return getCurrentUser() !== null;
+  localStorage.removeItem(TOKEN_KEY);
 }

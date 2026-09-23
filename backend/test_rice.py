@@ -22,20 +22,21 @@ from test_helpers import CropDiseaseTestBase
 class TestRiceArchitecture(unittest.TestCase):
 
     def test_model_output_shape(self):
-        """MobileNetV3 should output (batch, 5) for 5 Rice classes."""
+        """MobileNetV3 should output (batch, 3) for 3 real Rice classes."""
         classes = CROP_CONFIGS["Rice"]["classes"]
-        self.assertEqual(len(classes), 5)
+        self.assertEqual(len(classes), 3)
         self.assertIn("Healthy", classes)
-        self.assertIn("Blast", classes)
-        model = create_crop_model(num_classes=5, pretrained=False)
+        self.assertIn("Bacterial Leaf Blight", classes)
+        self.assertIn("Brown Spot", classes)
+        model = create_crop_model(num_classes=3, pretrained=False)
         out = model(torch.randn(2, 3, 224, 224))
-        self.assertEqual(out.shape, (2, 5))
+        self.assertEqual(out.shape, (2, 3))
 
 
 class TestRiceDiseaseInference(CropDiseaseTestBase):
     crop_name = "Rice"
     real_image_file = "crop_rice.jpg"
-    expected_classes = ["Healthy", "Bacterial Leaf Blight", "Blast", "Brown Spot", "Tungro"]
+    expected_classes = ["Healthy", "Bacterial Leaf Blight", "Brown Spot"]
 
     def test_real_image_prediction_schema(self):
         """Real rice image must yield a valid prediction schema."""
