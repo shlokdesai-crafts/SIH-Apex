@@ -324,14 +324,21 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
   // ── AI Scan – calls FastAPI /api/scan ───────────────────────────────────────
   const startScan = async () => {
     setBackendError(null);
-    setStep('scanning');
-    setScanProgress(0);
+
+    if (!selectedCrop) {
+      setStep('preview');
+      setBackendError("Please select a crop before continuing.");
+      return;
+    }
 
     if (!uploadedFile) {
       setStep('preview');
       setBackendError("Please upload a real image from your device to use the AI scan.");
       return;
     }
+
+    setStep('scanning');
+    setScanProgress(0);
 
     try {
       let lat: number | null = null;
@@ -502,6 +509,8 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
         errorMessage = 'Backend AI service is unavailable. No disease diagnosis was produced. Start the backend service and try again.';
       } else if (err.isInvalidResponse) {
         errorMessage = 'AI diagnosis unavailable — backend returned an invalid response. Please try again.';
+      } else if (err.status === 400) {
+        errorMessage = err.message || 'Crop selection is mandatory. Please select a valid crop before scanning.';
       } else if (err.status) {
         errorMessage = `Backend server error (${err.status}): ${err.message || 'Unable to process image.'}`;
       } else if (err.message) {
@@ -536,11 +545,7 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
 
   const handleCropClick = (crop: typeof CROPS[0]) => {
     setSelectedCrop(crop.name);
-    setPreviewUrl(crop.img);
     setBackendError(null);
-    setStep('preview');
-    const filename = crop.img.split('/').pop() || `${crop.name.toLowerCase()}.jpg`;
-    loadFileFromUrl(crop.img, filename);
   };
 
   const handleExampleClick = (ex: { img: string; label: string; color: string }) => {
@@ -554,12 +559,7 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
 
   const handleDatabaseCropClick = (crop: (typeof DATABASE_20_CROPS)[0]) => {
     setSelectedCrop(crop.name);
-    const targetImg = crop.sampleImg || crop.icon;
-    setPreviewUrl(targetImg);
     setBackendError(null);
-    setStep('preview');
-    const filename = targetImg.split('/').pop() || `${crop.id}.jpg`;
-    loadFileFromUrl(targetImg, filename);
   };
 
   // ── Scan steps label ─────────────────────────────────────────────────────────
@@ -617,6 +617,19 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
                 >
+                  {selectedCrop ? (
+                    <div className="sc-idle-crop-badge" onClick={(e) => e.stopPropagation()}>
+                      <span>🌾 Selected Crop: <strong>{selectedCrop}</strong></span>
+                      <button
+                        type="button"
+                        className="sc-idle-crop-clear"
+                        onClick={() => setSelectedCrop(null)}
+                        title="Change crop selection"
+                      >
+                        ✕ Change
+                      </button>
+                    </div>
+                  ) : null}
                   <div className="sc-cam-icon">
                     <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                       <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
@@ -624,7 +637,9 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
                     </svg>
                     <span className="sc-cam-plus">+</span>
                   </div>
-                  <h3 className="sc-drop-title">Click to upload a photo</h3>
+                  <h3 className="sc-drop-title">
+                    {selectedCrop ? `Click to upload a ${selectedCrop} photo` : 'Click to upload a photo'}
+                  </h3>
                   <p className="sc-drop-sub">or drag and drop an image here</p>
                   <p className="sc-drop-hint">Supports: JPG, PNG (Max 10 MB)</p>
                 </div>
@@ -635,11 +650,38 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
                 <div className="sc-preview-zone">
                   <img src={previewUrl} alt="Crop preview" className="sc-preview-img" />
                   <div className="sc-preview-overlay">
-                    <div className="sc-preview-badge">
-                      {selectedCrop ? `🌾 ${selectedCrop}` : '📁 Image loaded'}
+                    <div className={`sc-preview-badge ${selectedCrop ? 'sc-preview-badge--selected' : 'sc-preview-badge--empty'}`}>
+                      {selectedCrop ? `🌾 ${selectedCrop}` : '⚠️ No crop selected'}
                     </div>
                     <button className="sc-change-btn" onClick={reset}>Change</button>
                   </div>
+
+                  {/* Mandatory crop selection prompt banner */}
+                  {!selectedCrop ? (
+                    <div className="sc-crop-required-banner">
+                      <span className="sc-crop-required-icon">⚠️</span>
+                      <div className="sc-crop-required-text">
+                        <strong>Please select a crop before continuing.</strong>
+                        <span>Select the crop you are scanning from the Popular Crops list below.</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="sc-selected-crop-banner">
+                      <div className="sc-selected-crop-text">
+                        <span className="sc-selected-crop-label">Selected Crop for Analysis:</span>
+                        <strong className="sc-selected-crop-name">🌾 {selectedCrop}</strong>
+                      </div>
+                      <button
+                        type="button"
+                        className="sc-change-crop-btn"
+                        onClick={() => setSelectedCrop(null)}
+                        title="Change selected crop"
+                      >
+                        Change Crop
+                      </button>
+                    </div>
+                  )}
+
                   {farmState && farmState.fields && farmState.fields.length > 0 && (
                     <div style={{ padding: '10px 14px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>🌱 Associate with Field:</span>
@@ -939,9 +981,13 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
                   )}
 
                   {step === 'preview' && (
-                    <button className="sc-analyse-btn" onClick={startScan}>
+                    <button
+                      className="sc-analyse-btn"
+                      onClick={startScan}
+                      disabled={!selectedCrop || !uploadedFile}
+                      title={!selectedCrop ? "Please select a crop before continuing." : "Analyse with AI"}
+                    >
                       🔬 Analyse with AI
-
                     </button>
                   )}
                 </div>

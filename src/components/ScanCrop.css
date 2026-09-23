@@ -791,10 +791,143 @@
   letter-spacing: 0.2px;
 }
 .sc-analyse-btn:hover { opacity: 0.92; transform: translateY(-2px); }
+.sc-analyse-btn:disabled {
+  background: #cbd5e1;
+  color: #64748b;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+  opacity: 0.8;
+}
 
-/* ================================================================
-   POPULAR CROPS CARD
-   ================================================================ */
+/* ── Mandatory Crop Selection Banners & Badges ── */
+.sc-crop-required-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fffbeb;
+  border: 1.5px solid #fcd34d;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 10px 0 4px;
+}
+
+.sc-crop-required-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.sc-crop-required-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sc-crop-required-text strong {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #92400e;
+}
+
+.sc-crop-required-text span {
+  font-size: 12px;
+  color: #b45309;
+}
+
+.sc-selected-crop-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 10px 0 4px;
+}
+
+.sc-selected-crop-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sc-selected-crop-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #166534;
+}
+
+.sc-selected-crop-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: #14532d;
+  background: #dcfce7;
+  padding: 3px 10px;
+  border-radius: 16px;
+  border: 1px solid #bbf7d0;
+}
+
+.sc-change-crop-btn {
+  background: #ffffff;
+  color: #166534;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.sc-change-crop-btn:hover {
+  background: #dcfce7;
+  border-color: #4ade80;
+}
+
+.sc-idle-crop-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #e8f5e9;
+  border: 1px solid #a5d6a7;
+  color: #1b5e20;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.sc-idle-crop-clear {
+  background: none;
+  border: none;
+  color: #2e7d32;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-left: 4px;
+}
+
+.sc-idle-crop-clear:hover {
+  background: #c8e6c9;
+}
+
+.sc-preview-badge--selected {
+  background: rgba(240, 253, 244, 0.95);
+  color: #14532d;
+  border: 1px solid #86efac;
+}
+
+.sc-preview-badge--empty {
+  background: rgba(254, 243, 199, 0.95);
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
 .sc-crops-card {
   background: #fff;
   border-radius: 16px;

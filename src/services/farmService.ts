@@ -453,7 +453,7 @@ export function saveFarmState(farmerId: string, state: FarmState): void {
     // Sanitize state so large base64 images don't exceed the 5MB browser quota
     const sanitizedState: FarmState = {
       ...state,
-      recentScans: (state.recentScans || []).slice(0, 20).map((s) => ({
+      scans: (state.scans || []).slice(0, 20).map((s: CropScanRecord) => ({
         ...s,
         previewUrl: sanitizeUrlForStorage(s.previewUrl),
       })),
@@ -464,7 +464,7 @@ export function saveFarmState(farmerId: string, state: FarmState): void {
     try {
       const trimmedState: FarmState = {
         ...state,
-        recentScans: (state.recentScans || []).slice(0, 5).map((s) => ({
+        scans: (state.scans || []).slice(0, 5).map((s: CropScanRecord) => ({
           ...s,
           previewUrl: null,
         })),

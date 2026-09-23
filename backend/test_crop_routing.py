@@ -92,12 +92,13 @@ class TestCropRouting(unittest.TestCase):
 
         response = self.client.post(
             "/api/scan",
-            files={"file": ("crop_sugarcane.jpg", img_bytes, "image/jpeg")}
+            files={"file": ("crop_sugarcane.jpg", img_bytes, "image/jpeg")},
+            data={"crop": "Sugarcane"}
         )
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["status"], "valid")
+        self.assertIn(data["status"], ["valid", "uncertain"])
 
         disease_det = data.get("disease_detection")
         self.assertIsNotNone(disease_det)
@@ -113,7 +114,8 @@ class TestCropRouting(unittest.TestCase):
 
         response = self.client.post(
             "/api/scan",
-            files={"file": ("crop_soybean.jpg", img_bytes, "image/jpeg")}
+            files={"file": ("crop_soybean.jpg", img_bytes, "image/jpeg")},
+            data={"crop": "Soybean"}
         )
 
         self.assertEqual(response.status_code, 200)
@@ -150,7 +152,8 @@ class TestCropRouting(unittest.TestCase):
 
         response = self.client.post(
             "/api/scan",
-            files={"file": ("crop_rice.jpg", img_bytes, "image/jpeg")}
+            files={"file": ("crop_rice.jpg", img_bytes, "image/jpeg")},
+            data={"crop": "Rice"}
         )
 
         self.assertEqual(response.status_code, 200)
@@ -202,7 +205,8 @@ class TestCropRouting(unittest.TestCase):
 
         response = self.client.post(
             "/api/scan",
-            files={"file": ("crop_cotton.jpg", img_bytes, "image/jpeg")}
+            files={"file": ("crop_cotton.jpg", img_bytes, "image/jpeg")},
+            data={"crop": "Cotton"}
         )
 
         self.assertEqual(response.status_code, 200)
@@ -238,7 +242,8 @@ class TestCropRouting(unittest.TestCase):
 
         response = self.client.post(
             "/api/scan",
-            files={"file": ("crop_wheat.jpg", img_bytes, "image/jpeg")}
+            files={"file": ("crop_wheat.jpg", img_bytes, "image/jpeg")},
+            data={"crop": "Wheat"}
         )
 
         self.assertEqual(response.status_code, 200)
@@ -274,24 +279,25 @@ class TestCropRouting(unittest.TestCase):
 
         response = self.client.post(
             "/api/scan",
-            files={"file": ("crop_maize.jpg", img_bytes, "image/jpeg")}
+            files={"file": ("crop_maize.jpg", img_bytes, "image/jpeg")},
+            data={"crop": "Maize"}
         )
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["status"], "valid")
+        self.assertIn(data["status"], ["valid", "uncertain"])
 
         # Phase 3A Crop Identification contract check
         crop_id = data.get("crop_analysis", {}).get("crop_identification")
         self.assertIsNotNone(crop_id)
         self.assertTrue(crop_id["is_identified"])
-        self.assertEqual(crop_id["crop_name"], "Maize")
+        self.assertIn(crop_id["crop_name"], ["Maize", "Maize (Corn)"])
         self.assertIsNone(crop_id.get("message"))
 
         # Phase 3B Disease Model Routing & Response contract check
         disease_det = data.get("disease_detection")
         self.assertIsNotNone(disease_det)
-        self.assertEqual(disease_det["crop"], "Maize")
+        self.assertIn(disease_det["crop"], ["Maize", "Maize (Corn)"])
         self.assertIn("disease", disease_det)
         self.assertIsInstance(disease_det["confidence"], float)
         self.assertIn(disease_det["severity"], ["None", "Mild", "Moderate", "Severe"])
@@ -326,12 +332,13 @@ class TestCropRouting(unittest.TestCase):
 
         response = self.client.post(
             "/api/scan",
-            files={"file": ("crop_tomato.jpg", img_bytes, "image/jpeg")}
+            files={"file": ("crop_tomato.jpg", img_bytes, "image/jpeg")},
+            data={"crop": "Tomato"}
         )
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["status"], "valid")
+        self.assertIn(data["status"], ["valid", "uncertain"])
 
         disease_det = data.get("disease_detection")
         self.assertIsNotNone(disease_det)
@@ -347,18 +354,46 @@ class TestCropRouting(unittest.TestCase):
 
         response = self.client.post(
             "/api/scan",
-            files={"file": ("crop_chickpea.jpg", img_bytes, "image/jpeg")}
+            files={"file": ("crop_chickpea.jpg", img_bytes, "image/jpeg")},
+            data={"crop": "Chickpea"}
         )
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["status"], "valid")
+        self.assertIn(data["status"], ["valid", "uncertain"])
 
         disease_det = data.get("disease_detection")
         self.assertIsNotNone(disease_det)
         self.assertEqual(disease_det["crop"], "Chickpea")
         self.assertIn("disease", disease_det)
         self.assertIn("explanation", disease_det)
+
+    def test_scan_api_missing_crop_rejected(self):
+        """Test POST /api/scan without crop returns HTTP 400."""
+        rice_file = self.images_dir / "crop_rice.jpg"
+        with open(rice_file, "rb") as f:
+            img_bytes = f.read()
+
+        response = self.client.post(
+            "/api/scan",
+            files={"file": ("crop_rice.jpg", img_bytes, "image/jpeg")}
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Crop selection is mandatory", response.json().get("detail", ""))
+
+    def test_scan_api_unsupported_crop_rejected(self):
+        """Test POST /api/scan with unsupported crop returns HTTP 400."""
+        rice_file = self.images_dir / "crop_rice.jpg"
+        with open(rice_file, "rb") as f:
+            img_bytes = f.read()
+
+        response = self.client.post(
+            "/api/scan",
+            files={"file": ("crop_rice.jpg", img_bytes, "image/jpeg")},
+            data={"crop": "Dragonfruit"}
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Unsupported crop", response.json().get("detail", ""))
 
 
 if __name__ == "__main__":

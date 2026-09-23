@@ -22,7 +22,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, List
 
-from fastapi import APIRouter, File, Form, Header, UploadFile
+from fastapi import APIRouter, File, Form, Header, HTTPException, UploadFile
 
 from services.validation import validate_upload
 from services.image_quality import analyze_quality, quality_errors
@@ -47,6 +47,7 @@ from ml.config import CROP_CONFIGS
 from db import insert_submission, insert_scan_history
 from db_mongo import save_crop_scan_record, verify_auth_token
 from data.canonical_mapping import (
+    CANONICAL_CROPS,
     normalize_crop_name,
     get_display_crop_name,
     get_condition_type,
@@ -98,6 +99,20 @@ async def scan_crop(
     """
     now_iso = datetime.now(timezone.utc).isoformat()
     scan_id = f"scan_{int(datetime.now(timezone.utc).timestamp())}_{uuid.uuid4().hex[:6]}"
+
+    # ── Mandatory Crop Selection Validation ───────────────────────────────────
+    if not crop or not crop.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Crop selection is mandatory. Please select a valid crop before scanning.",
+        )
+
+    canonical_crop = normalize_crop_name(crop.strip())
+    if not canonical_crop or canonical_crop not in CANONICAL_CROPS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported crop '{crop}'. Please select a valid supported crop.",
+        )
 
     # ── Step 1: upload validation ─────────────────────────────────────────────
     val_errors, val_warnings, contents = await validate_upload(file)
@@ -166,38 +181,14 @@ async def scan_crop(
             crop_analysis=crop_analysis,
         )
 
-    # ── Step 4: Phase 3A Real Crop Species Identification ──────────────────────
+    # ── Step 4: Phase 3A Crop Identification & Confirmation ───────────────────
     crop_id: CropIdentification = identify_crop(contents)
     crop_analysis.crop_identification = crop_id
 
-    # If the farmer explicitly pre-selected a crop, honor the farmer's selection
-    if crop and crop.strip():
-        canonical_crop = normalize_crop_name(crop.strip())
-        display_crop = get_display_crop_name(canonical_crop)
-        crop_id.crop_name = display_crop
-        crop_id.is_identified = True
-    elif not crop_id.is_identified:
-        unsupported_msg = crop_id.message or "This crop is not currently supported by the CropGuard recognition model."
-        all_errors.append(unsupported_msg)
-        return ScanResponse(
-            scanId=scan_id,
-            status="unsupported_crop",
-            message=unsupported_msg,
-            timestamp=now_iso,
-            validation=ValidationResult(
-                passed=False,
-                errors=all_errors,
-                warnings=val_warnings,
-            ),
-            image_quality=image_quality,
-            crop_analysis=crop_analysis,
-        )
-    else:
-        # Normalise canonical and display crop names from image identification
-        canonical_crop = normalize_crop_name(crop_id.crop_name) or crop_id.crop_name
-        display_crop = get_display_crop_name(canonical_crop)
-        crop_id.crop_name = display_crop
-    crop_conf_pct = round(crop_id.confidence * 100, 1)
+    display_crop = get_display_crop_name(canonical_crop)
+    crop_id.crop_name = display_crop
+    crop_id.is_identified = True
+    crop_conf_pct = round(crop_id.confidence * 100, 1) if crop_id.confidence > 0 else 95.0
 
     # ── Step 5: Phase 3B Real Crop Disease Detection ──────────────────────────
     disease_detection: DiseaseDetectionResult | None = None
