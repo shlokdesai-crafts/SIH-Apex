@@ -197,15 +197,39 @@ export async function scanCropImage(
       try {
         const errJson = await res.json();
         if (errJson.message) errText = errJson.message;
+        else if (errJson.detail) {
+          errText = typeof errJson.detail === 'string' ? errJson.detail : JSON.stringify(errJson.detail);
+        }
       } catch (_) {}
-      throw new Error(errText);
+      const httpErr = new Error(errText);
+      (httpErr as any).status = res.status;
+      (httpErr as any).isHttpError = true;
+      throw httpErr;
     }
 
-    return await res.json();
+    try {
+      return await res.json();
+    } catch (_) {
+      const parseErr = new Error('Backend returned an invalid non-JSON response.');
+      (parseErr as any).isInvalidResponse = true;
+      throw parseErr;
+    }
   } catch (err: any) {
     clearTimeout(timeoutId);
     if (err.name === 'AbortError') {
-      throw new Error('Analysis timed out. Please check your network connection and try again.');
+      const abortErr = new Error('Analysis timed out. Please check your network connection and try again.');
+      (abortErr as any).isTimeout = true;
+      throw abortErr;
+    }
+    if (
+      err.name === 'TypeError' ||
+      (err.message && (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')))
+    ) {
+      const connErr = new Error(
+        'Backend AI service is unavailable. No disease diagnosis was produced. Start the backend service and try again.'
+      );
+      (connErr as any).isConnectionError = true;
+      throw connErr;
     }
     throw err;
   }

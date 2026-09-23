@@ -80,64 +80,23 @@ const DATABASE_20_CROPS = [
   { id: 'sunflower',   name: 'Sunflower',   marathi: 'सूर्यफूल', icon: '/images/crops/sunflower.png',   sampleImg: '/images/crops/sunflower.png', samples: '1,850' },
 ];
 
-// ── Simulated AI diagnoses ─────────────────────────────────────────────────────
-const DIAGNOSES = [
-  {
-    disease: 'Leaf Blight',
-    severity: 'Moderate',
-    severityColor: '#f57c00',
-    confidence: 87,
-    description: 'Fungal infection causing brown lesions on leaf edges. Likely caused by excess moisture.',
-    recommendations: [
-      'Apply Mancozeb fungicide (2g/L) every 7 days',
-      'Improve drainage around the field',
-      'Remove and destroy infected leaves',
-      'Avoid overhead irrigation',
-    ],
-    icon: '🍂',
-  },
-  {
-    disease: 'Healthy Plant',
-    severity: 'None',
-    severityColor: '#2e7d32',
-    confidence: 93,
-    description: 'Your crop appears healthy! No signs of disease or pest damage detected.',
-    recommendations: [
-      'Continue regular watering schedule',
-      'Apply balanced NPK fertilizer next week',
-      'Monitor for early pest signs weekly',
-    ],
-    icon: '✅',
-  },
-  {
-    disease: 'Aphid Infestation',
-    severity: 'Mild',
-    severityColor: '#1976d2',
-    confidence: 79,
-    description: 'Small aphid colonies detected on leaf undersides. Early stage – easy to treat.',
-    recommendations: [
-      'Spray Neem oil solution (5ml/L) in evenings',
-      'Introduce ladybird beetles as bio-control',
-      'Inspect neighboring plants for spread',
-      'Re-scan after 5 days to track progress',
-    ],
-    icon: '🐛',
-  },
-  {
-    disease: 'Powdery Mildew',
-    severity: 'Severe',
-    severityColor: '#c62828',
-    confidence: 91,
-    description: 'Severe white powdery coating on leaf surfaces. Immediate treatment required.',
-    recommendations: [
-      'Apply sulfur-based fungicide immediately',
-      'Increase plant spacing for better air circulation',
-      'Avoid wetting the foliage during irrigation',
-      'Consider consulting a local agronomist',
-    ],
-    icon: '⚠️',
-  },
-];
+const EMPTY_DIAGNOSIS = {
+  cropName: '',
+  cropConfidence: 0,
+  disease: '',
+  diseaseConfidence: null as number | null,
+  status: '',
+  severity: '',
+  severityColor: '#6b7280',
+  description: '',
+  symptoms: [] as string[],
+  recommended_actions: [] as string[],
+  prevention: [] as string[],
+  expertVerificationRequired: false,
+  icon: '🌿',
+  verification: null as any,
+  topPredictions: [] as any[],
+};
 
 type Step = 'idle' | 'preview' | 'scanning' | 'result';
 
@@ -162,7 +121,7 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
   const [dragging, setDragging] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);  // real File for backend
-  const [diagnosis, setDiagnosis] = useState(DIAGNOSES[0]);
+  const [diagnosis, setDiagnosis] = useState<any>(EMPTY_DIAGNOSIS);
   const [scanProgress, setScanProgress] = useState(0);
   const [selectedCrop, setSelectedCrop] = useState<string | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -267,6 +226,18 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
   const streamRef      = useRef<MediaStream | null>(null);
   const dropRef        = useRef<HTMLDivElement>(null);
 
+  // ── File processing ──────────────────────────────────────────────────────────
+  const processFile = (file: File) => {
+    setUploadedFile(file);  // store real File for backend upload
+    setBackendError(null);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPreviewUrl(e.target?.result as string);
+      setStep('preview');
+    };
+    reader.readAsDataURL(file);
+  };
+
   // ── Drag handlers ────────────────────────────────────────────────────────────
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -284,18 +255,6 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
     const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith('image/')) processFile(file);
   }, []);
-
-  // ── File processing ──────────────────────────────────────────────────────────
-  const processFile = (file: File) => {
-    setUploadedFile(file);  // store real File for backend upload
-    setBackendError(null);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreviewUrl(e.target?.result as string);
-      setStep('preview');
-    };
-    reader.readAsDataURL(file);
-  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -347,400 +306,7 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
 
   useEffect(() => () => { streamRef.current?.getTracks().forEach(t => t.stop()); }, []);
 
-  // ── Intelligent Local Crop & Health Analyzer ──────────────────────────────────
-  const analyzeImageLocally = async (
-    imgSrc: string,
-    file: File | null,
-    preSelectedCrop: string | null
-  ) => {
-    const normSrc = imgSrc.toLowerCase();
-    const fileName = (file?.name || '').toLowerCase();
-
-    // 1. Built-in Example Images
-    if (normSrc.includes('crop_healthy_leaf.jpg')) {
-      const cName = preSelectedCrop || 'Cotton';
-      return {
-        cropName: cName,
-        cropConfidence: 96,
-        disease: 'Healthy Plant',
-        diseaseConfidence: 98,
-        status: 'Healthy',
-        severity: 'None',
-        severityColor: '#2e7d32',
-        description: 'The crop foliage exhibits vibrant chlorophyll pigmentation, intact leaf margins, and zero symptoms of fungal or bacterial infection.',
-        symptoms: [
-          'Uniform deep green leaf lamina',
-          'Intact cuticle and clean leaf margins',
-          'Absence of fungal sporulation, rust pustules, or necrotic lesions',
-          'Normal physiological leaf turgor'
-        ],
-        recommended_actions: [
-          'Maintain scheduled irrigation and balanced N-P-K fertigation cycles',
-          'Conduct routine scouting across the field for early pest arrivals',
-          'Keep field borders weed-free to prevent insect vector buildup'
-        ],
-        prevention: [
-          'Continue standard crop rotation schedule',
-          'Ensure proper row spacing to promote canopy ventilation'
-        ],
-        expertVerificationRequired: false,
-        icon: '✅',
-      };
-    }
-
-    if (normSrc.includes('crop_leaf_spots.jpg')) {
-      const cName = preSelectedCrop || 'Soybean';
-      return {
-        cropName: cName,
-        cropConfidence: 94,
-        disease: 'Cercospora Leaf Spot',
-        diseaseConfidence: 91,
-        status: 'Diseased',
-        severity: 'Mild',
-        severityColor: '#1976d2',
-        description: 'Early fungal foliar infection characterized by localized circular spots on leaves. Prompt management prevents canopy defoliation.',
-        symptoms: [
-          'Small circular brown spots with defined borders',
-          'Mild chlorotic halos surrounding emerging lesions',
-          'Localized on middle and lower canopy foliage'
-        ],
-        recommended_actions: [
-          'Apply bio-fungicide or copper oxychloride (2.5g/L)',
-          'Improve row aeration and avoid sprinkler irrigation during evening hours',
-          'Remove and compost severely spotted lower leaves'
-        ],
-        prevention: [
-          'Incorporate crop residues into soil post-harvest',
-          'Plant certified disease-tolerant cultivars',
-          'Practice multi-year crop rotation'
-        ],
-        expertVerificationRequired: false,
-        icon: '🍂',
-      };
-    }
-
-    if (normSrc.includes('crop_infected_leaf.jpg')) {
-      const cName = preSelectedCrop || 'Cotton';
-      return {
-        cropName: cName,
-        cropConfidence: 95,
-        disease: 'Bacterial Blight',
-        diseaseConfidence: 93,
-        status: 'Diseased',
-        severity: 'Severe',
-        severityColor: '#c62828',
-        description: 'Advanced bacterial infection causing angular water-soaked lesions bounded by veins and extensive tissue necrosis.',
-        symptoms: [
-          'Angular dark brown water-soaked lesions along leaf veins',
-          'Extensive foliar blighting and premature defoliation',
-          'Spreading chlorosis surrounding dead leaf patches'
-        ],
-        recommended_actions: [
-          'Spray Copper Hydroxide (2g/L) mixed with Streptocycline (100ppm)',
-          'Immediately rogue out and destroy severely infected plant debris',
-          'Cease overhead irrigation to halt water-splash bacterial transmission'
-        ],
-        prevention: [
-          'Destroy all infected crop residue post-harvest',
-          'Treat planting seeds with hot water or certified bactericide soak',
-          'Plant certified blight-resistant cultivars'
-        ],
-        expertVerificationRequired: false,
-        icon: '🍂',
-      };
-    }
-
-    if (normSrc.includes('crop_pest_leaf.jpg')) {
-      const cName = preSelectedCrop || 'Cotton';
-      return {
-        cropName: cName,
-        cropConfidence: 93,
-        disease: 'Aphid Infestation',
-        diseaseConfidence: 89,
-        status: 'Diseased',
-        severity: 'Moderate',
-        severityColor: '#f57c00',
-        description: 'Sap-sucking aphid colonies detected clustering on leaf undersides, inducing leaf curling and sticky honeydew secretions.',
-        symptoms: [
-          'Clusters of small aphids visible on leaf undersides and shoots',
-          'Upward curling and crinkling of leaf blades',
-          'Sticky honeydew residues with early signs of sooty mold'
-        ],
-        recommended_actions: [
-          'Apply Neem seed kernel extract (5%) or Neem oil solution (5ml/L)',
-          'Introduce or conserve natural predators like ladybird beetles',
-          'Spray systemic insecticide if pest counts exceed economic threshold'
-        ],
-        prevention: [
-          'Install yellow sticky traps across field margins (10 traps/acre)',
-          'Avoid excessive nitrogen fertilization which stimulates succulent foliage'
-        ],
-        expertVerificationRequired: false,
-        icon: '🐛',
-      };
-    }
-
-    // 2. In-browser Canvas Color & Tissue Analysis
-    let yellowRatio = 0;
-    let greenRatio = 0;
-    let redRatio = 0;
-    let whiteRatio = 0;
-    let tanRatio = 0;
-    let necroticRatio = 0;
-
-    try {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      await new Promise<void>((resolve, reject) => {
-        img.onload = () => resolve();
-        img.onerror = () => reject(new Error('Canvas image load failed'));
-        img.src = imgSrc;
-      });
-
-      const canvas = document.createElement('canvas');
-      const size = 128;
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(img, 0, 0, size, size);
-        const imgData = ctx.getImageData(0, 0, size, size);
-        const d = imgData.data;
-
-        let yellowPixels = 0;
-        let greenPixels = 0;
-        let redPixels = 0;
-        let whitePixels = 0;
-        let tanPixels = 0;
-        let necroticPixels = 0;
-        let plantPixels = 0;
-
-        for (let i = 0; i < d.length; i += 4) {
-          const r = d[i];
-          const g = d[i + 1];
-          const b = d[i + 2];
-          const brightness = (r + g + b) / 3;
-
-          // Ignore extreme dark background / shadow
-          if (brightness < 25) continue;
-
-          plantPixels++;
-
-          // Yellow / golden corn kernels (high R & G, low B, warm hue)
-          if (r > 135 && g > 105 && b < 100 && (r - b) > 40 && Math.abs(r - g) < 75) {
-            yellowPixels++;
-          }
-          // Green foliage / husk / leaves
-          else if (g > 70 && g > r * 1.05 && g > b * 1.05) {
-            greenPixels++;
-          }
-          // Red fruit (tomato)
-          else if (r > 135 && r > g * 1.35 && r > b * 1.35) {
-            redPixels++;
-          }
-          // White cotton bolls
-          else if (r > 195 && g > 195 && b > 195 && Math.abs(r - g) < 15 && Math.abs(g - b) < 15) {
-            whitePixels++;
-          }
-          // Tan / straw wheat
-          else if (r > 140 && g > 115 && b > 65 && b < 140 && r >= g && g > b) {
-            tanPixels++;
-          }
-          // True necrotic brown/black lesion spots on plant tissue
-          else if (brightness >= 25 && brightness <= 75 && r > 30 && g > 20 && b < 55 && (r - b) > 8) {
-            necroticPixels++;
-          }
-        }
-
-        const denom = Math.max(plantPixels, 1);
-        yellowRatio = yellowPixels / denom;
-        greenRatio = greenPixels / denom;
-        redRatio = redPixels / denom;
-        whiteRatio = whitePixels / denom;
-        tanRatio = tanPixels / denom;
-        necroticRatio = necroticPixels / denom;
-      }
-    } catch (canvasErr) {
-      console.warn('[CropGuard] Canvas pixel analysis bypassed:', canvasErr);
-    }
-
-    // 3. Determine Crop Identification
-    let identifiedCrop = 'Maize (Corn)';
-    let identifiedConfidence = 95.5;
-
-    const isCornHint = fileName.includes('corn') || fileName.includes('maize') || normSrc.includes('maize') || yellowRatio > 0.10;
-    const isTomatoHint = fileName.includes('tomato') || normSrc.includes('tomato') || redRatio > 0.12;
-    const isCottonHint = fileName.includes('cotton') || normSrc.includes('cotton') || whiteRatio > 0.15;
-    const isWheatHint = fileName.includes('wheat') || normSrc.includes('wheat') || tanRatio > 0.18;
-    const isRiceHint = fileName.includes('rice') || fileName.includes('paddy') || normSrc.includes('rice');
-    const isSoybeanHint = fileName.includes('soybean') || normSrc.includes('soybean');
-    const isSugarcaneHint = fileName.includes('sugarcane') || normSrc.includes('sugarcane');
-    const isChickpeaHint = fileName.includes('chickpea') || normSrc.includes('chickpea');
-
-    if (preSelectedCrop) {
-      identifiedCrop = preSelectedCrop.toLowerCase() === 'maize' ? 'Maize (Corn)' : preSelectedCrop;
-      identifiedConfidence = 98.0;
-
-      // Transparent handling for expansion crops where disease model is not yet trained:
-      if (!ACTIVE_MODEL_CROPS.has(preSelectedCrop) && preSelectedCrop !== 'Onion' && preSelectedCrop !== 'Potato') {
-        return {
-          cropName: preSelectedCrop,
-          cropConfidence: 97.5,
-          disease: 'AI Model Training Pending',
-          diseaseConfidence: 0,
-          status: 'Dataset Verified (Diagnosis In Development)',
-          severity: 'None',
-          severityColor: '#0284c7',
-          description: `Crop species verified as ${preSelectedCrop}. The image dataset is authenticated in CropGuard, but dedicated deep learning disease diagnosis model weights are currently undergoing training.`,
-          symptoms: [
-            `Authentic morphological characteristics of ${preSelectedCrop} verified`,
-            'Foliar tissue cataloged in CropGuard reference repository',
-            'Automated disease diagnostic model training scheduled in current roadmap'
-          ],
-          recommended_actions: [
-            `Maintain standard agronomic care and pest scouting for ${preSelectedCrop}`,
-            'For immediate disease diagnosis, please consult your nearest Krishi Vigyan Kendra (KVK) extension officer',
-            'Check back soon as verified deep learning models are deployed to CropGuard'
-          ],
-          prevention: [
-            'Follow recommended state package of practices for this crop',
-            'Use certified planting material and balanced fertigation'
-          ],
-          expertVerificationRequired: true,
-          icon: 'ℹ️',
-        };
-      }
-    } else if (isCornHint) {
-      identifiedCrop = 'Maize (Corn)';
-      identifiedConfidence = Number((94.0 + Math.min(yellowRatio * 10, 4.8)).toFixed(1));
-    } else if (isTomatoHint) {
-      identifiedCrop = 'Tomato';
-      identifiedConfidence = Number((92.0 + Math.min(redRatio * 12, 5.5)).toFixed(1));
-    } else if (isCottonHint) {
-      identifiedCrop = 'Cotton';
-      identifiedConfidence = 93.8;
-    } else if (isWheatHint) {
-      identifiedCrop = 'Wheat';
-      identifiedConfidence = 94.2;
-    } else if (isRiceHint) {
-      identifiedCrop = 'Rice';
-      identifiedConfidence = 93.0;
-    } else if (isSoybeanHint) {
-      identifiedCrop = 'Soybean';
-      identifiedConfidence = 92.5;
-    } else if (isSugarcaneHint) {
-      identifiedCrop = 'Sugarcane';
-      identifiedConfidence = 93.2;
-    } else if (isChickpeaHint) {
-      identifiedCrop = 'Chickpea';
-      identifiedConfidence = 92.0;
-    } else {
-      if (yellowRatio > greenRatio && yellowRatio > 0.08) {
-        identifiedCrop = 'Maize (Corn)';
-        identifiedConfidence = 94.2;
-      } else {
-        identifiedCrop = 'Soybean';
-        identifiedConfidence = 91.5;
-      }
-    }
-
-    // 4. Assess Health / Freshness vs Disease
-    const isHealthyCrop = necroticRatio < 0.08;
-
-    if (isHealthyCrop) {
-      const isCorn = identifiedCrop.includes('Maize') || identifiedCrop.includes('Corn');
-      return {
-        cropName: identifiedCrop,
-        cropConfidence: identifiedConfidence,
-        disease: 'Healthy Plant',
-        diseaseConfidence: 96.5,
-        status: 'Healthy',
-        severity: 'None',
-        severityColor: '#2e7d32',
-        description: isCorn
-          ? 'The crop appears fresh and completely healthy! Intact, vibrant golden kernels with clean protective husk and zero signs of fungal blight, rust pustules, or ear rot.'
-          : `The ${identifiedCrop} crop appears fresh and completely healthy! Vibrant natural coloration with intact cellular structure and zero symptoms of disease or pest infestation.`,
-        symptoms: isCorn
-          ? [
-              'Intact, well-filled uniform kernels with vibrant golden luster',
-              'Clean protective husk free of fungal mycelium or discoloration',
-              'Absence of rust pustules, leaf spot lesions, or chlorotic streaks',
-              'Firm, fresh produce structure with optimal moisture vigor'
-            ]
-          : [
-              `Uniform healthy coloration characteristic of ${identifiedCrop}`,
-              'Intact leaf margins and firm cellular structure',
-              'Absence of pathogen lesions, fungal sporulation, or chlorosis',
-              'Normal physiological turgor and healthy tissue development'
-            ],
-        recommended_actions: isCorn
-          ? [
-              'Store harvested corn in well-ventilated, dry storage at optimal moisture content (13–14%)',
-              'Protect stored cobs from moisture condensation and rodent access',
-              'Keep storage containers clean and sanitized to prevent storage mold development'
-            ]
-          : [
-              'Maintain scheduled irrigation and balanced N-P-K nutrient application',
-              'Conduct weekly scouting across the canopy for early pest or disease signs',
-              'Ensure good field drainage to avoid root hypoxia and moisture stress'
-            ],
-        prevention: [
-          'Practice systematic crop rotation in subsequent planting cycles',
-          'Use certified pathogen-free seeds with high germination vigor',
-          'Maintain clean field hygiene and sanitized agricultural tools'
-        ],
-        expertVerificationRequired: false,
-        icon: '✅',
-      };
-    }
-
-    // Diseased branch
-    const isCorn = identifiedCrop.includes('Maize') || identifiedCrop.includes('Corn');
-    const isTomato = identifiedCrop.toLowerCase() === 'tomato';
-    const diseaseName = isCorn ? 'Common Rust' : (isTomato ? 'Early Blight' : 'Leaf Blight');
-    const severityText = necroticRatio > 0.20 ? 'Severe' : 'Moderate';
-    const severityColor = severityText === 'Severe' ? '#c62828' : '#f57c00';
-
-    return {
-      cropName: identifiedCrop,
-      cropConfidence: identifiedConfidence,
-      disease: diseaseName,
-      diseaseConfidence: 89.4,
-      status: 'Diseased',
-      severity: severityText,
-      severityColor: severityColor,
-      description: isCorn
-        ? 'Foliar infection symptoms detected. Reddish-brown fungal pustules and chlorotic flecks observed on tissue.'
-        : (isTomato
-            ? 'Fungal lesions with concentric rings and chlorotic halos observed on leaf tissue.'
-            : `Fungal foliar lesions detected on ${identifiedCrop} tissue. Prompt management recommended.`),
-      symptoms: isCorn
-        ? [
-            'Scattered cinnamon-brown rust pustules on leaf surface',
-            'Pustules turning darker brown as spores mature',
-            'Localized chlorosis surrounding lesion areas'
-          ]
-        : [
-            'Dark brown circular lesions with concentric target rings',
-            'Chlorotic yellow halos surrounding affected tissue',
-            'Premature leaf senescence on lower foliage'
-          ],
-      recommended_actions: [
-        'Apply targeted Mancozeb (2g/L) or azoxystrobin fungicide according to agronomic guidance',
-        'Improve field drainage and remove severely infected plant foliage',
-        'Avoid overhead irrigation to minimize canopy leaf wetness duration'
-      ],
-      prevention: [
-        'Plant certified rust/blight resistant hybrid cultivars',
-        'Enforce crop rotation with non-host species in following seasons',
-        'Sanitize field implements between handling infected crop sections'
-      ],
-      expertVerificationRequired: false,
-      icon: '🍂',
-    };
-  };
-
-  // ── AI Scan – calls FastAPI /api/scan with smart client-side fallback ───────
+  // ── AI Scan – calls FastAPI /api/scan ───────────────────────────────────────
   const startScan = async () => {
     setBackendError(null);
     setStep('scanning');
@@ -909,72 +475,27 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
         setScanProgress(Math.min(prog, 100));
       }, 180);
 
-    } catch (err) {
-      console.warn('[CropGuard] Backend offline/unreachable, executing intelligent local image diagnosis:', err);
-      
-      const localResult = await analyzeImageLocally(previewUrl || '', uploadedFile, selectedCrop);
-      const fallbackVerification = {
-        isVerified: true,
-        accuracyPercentage: 98.4,
-        confidencePercentage: localResult.diseaseConfidence || localResult.cropConfidence,
-        reliabilityLevel: 'High (Field Validated)',
-        referenceSource: 'ICAR - Indian Council of Agricultural Research & MPKV Rahuri',
-        referenceProtocol: `ICAR Standard Crop Diagnostic Protocol #${(localResult.cropName || 'CROP').toUpperCase().slice(0, 4)}-MH24`,
-        datasetAttribution: 'ICAR National Agronomic Pathology Repository & Multimodal Agricultural Benchmark',
-        scientificCitation: 'ICAR & State Agricultural Universities (SAU) Extension Guidelines (Maharashtra Zone)',
-      };
+    } catch (err: any) {
+      console.warn('[CropGuard] AI scan failed or backend service unavailable:', err);
 
-      setDiagnosis({
-        ...localResult,
-        verification: fallbackVerification,
-      } as any);
-
-      const newRecord: any = {
-        id: Date.now().toString(),
-        date: Date.now(),
-        crop: localResult.cropName,
-        cropName: localResult.cropName,
-        disease: localResult.disease,
-        condition: localResult.disease,
-        severity: localResult.severity,
-        confidence: localResult.diseaseConfidence || localResult.cropConfidence,
-        previewUrl: previewUrl,
-        verification: fallbackVerification,
-        referenceSource: fallbackVerification.referenceSource,
-        accuracyPercentage: fallbackVerification.accuracyPercentage,
-      };
-
-      if (onScanComplete) {
-        onScanComplete({
-          score: localResult.diseaseConfidence || localResult.cropConfidence,
-          crop: newRecord.crop,
-          disease: localResult.disease,
-          severity: localResult.severity,
-        });
+      let errorMessage = 'AI diagnosis unavailable — backend connection failed.';
+      if (
+        err.isConnectionError ||
+        err.name === 'TypeError' ||
+        (err.message && (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')))
+      ) {
+        errorMessage = 'Backend AI service is unavailable. No disease diagnosis was produced. Start the backend service and try again.';
+      } else if (err.isInvalidResponse) {
+        errorMessage = 'AI diagnosis unavailable — backend returned an invalid response. Please try again.';
+      } else if (err.status) {
+        errorMessage = `Backend server error (${err.status}): ${err.message || 'Unable to process image.'}`;
+      } else if (err.message) {
+        errorMessage = err.message;
       }
 
-      let prog = 0;
-      const iv = setInterval(() => {
-        prog += Math.random() * 15 + 8;
-        if (prog >= 100) {
-          prog = 100;
-          clearInterval(iv);
-          saveToHistory(newRecord);
-          if (recordScan) {
-            recordScan({
-              crop: localResult.cropName,
-              fieldId: selectedFieldId || undefined,
-              disease: localResult.disease,
-              confidence: localResult.diseaseConfidence || localResult.cropConfidence,
-              severity: localResult.severity,
-              recommendations: localResult.recommended_actions,
-              previewUrl: previewUrl,
-            });
-          }
-          setTimeout(() => setStep('result'), 400);
-        }
-        setScanProgress(Math.min(prog, 100));
-      }, 150);
+      setBackendError(errorMessage);
+      setStep('preview');
+      setScanProgress(0);
     }
   };
 
