@@ -78,7 +78,12 @@ export default function Dashboard() {
         </>
       )}
       {activeTab === 'farm' && <MyFarm onNavigateTab={setActiveTab} />}
-      {activeTab === 'scan' && <ScanCrop onScanComplete={(data) => setScanResult(data)} />}
+      {activeTab === 'scan' && (
+        <ScanCrop 
+          onScanComplete={(data) => setScanResult(data)} 
+          onNavigateTab={setActiveTab} 
+        />
+      )}
       {activeTab === 'risk' && <RiskForecast weatherData={weatherData} locationData={locationData} scanResult={scanResult} />}
       {activeTab === 'advisory' && (
         <AdvisoryOverview scanResult={scanResult} 

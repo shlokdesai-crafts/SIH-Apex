@@ -589,6 +589,7 @@ def save_crop_scan_record(
     preview_url: Optional[str] = None,
     image_quality: Optional[Dict[str, Any]] = None,
     diagnosis_details: Optional[Dict[str, Any]] = None,
+    field_id: Optional[str] = None,
 ) -> str:
     """
     Persists scan metadata in crop_scans and detailed report in diagnosis_reports.
@@ -601,6 +602,7 @@ def save_crop_scan_record(
     scan_doc = {
         "_id": ObjectId(scan_id_str),
         "userId": user_id or "anonymous",
+        "fieldId": field_id,
         "crop": crop,
         "disease": disease,
         "confidence": round(float(confidence), 4) if confidence is not None else 0.0,

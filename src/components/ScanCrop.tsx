@@ -112,10 +112,11 @@ export interface ScanRecord {
 
 interface ScanCropProps {
   onScanComplete?: (data: { score: number, crop: string, disease: string, severity: string }) => void;
+  onNavigateTab?: (tab: string) => void;
 }
 
-export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
-  const { farmState, recordScan } = useFarm();
+export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProps = {}) {
+  const { farmState, recordScan, scanTarget, clearScanTarget } = useFarm();
   const [selectedFieldId, setSelectedFieldId] = useState<string>('');
   const [step, setStep] = useState<Step>('idle');
   const [dragging, setDragging] = useState(false);
@@ -129,6 +130,112 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
   const [showCamera, setShowCamera] = useState(false);
   const [scanHistory, setScanHistory] = useState<ScanHistoryItem[] | any[]>([]);
   const [showAllCrops, setShowAllCrops] = useState(false);
+
+  // Farming Details State (Required: Cultivated Area & Unit; Optional: Field name, Variety, Sowing date, etc.)
+  const [cultivatedArea, setCultivatedArea] = useState<string>('1.0');
+  const [areaUnit, setAreaUnit] = useState<'Acres' | 'Hectares' | 'Guntha'>('Acres');
+  const [fieldNameInput, setFieldNameInput] = useState<string>('');
+  const [sowingDate, setSowingDate] = useState<string>('');
+  const [cropVariety, setCropVariety] = useState<string>('');
+  const [irrigationMethod, setIrrigationMethod] = useState<string>('');
+  const [soilType, setSoilType] = useState<string>('');
+  const [plantingSeason, setPlantingSeason] = useState<string>('');
+  const [cropNotes, setCropNotes] = useState<string>('');
+  const [showAdditionalDetails, setShowAdditionalDetails] = useState<boolean>(false);
+
+  const handleFieldSelect = (fieldId: string) => {
+    setSelectedFieldId(fieldId);
+    if (fieldId) {
+      const field = farmState?.fields?.find(f => f.id === fieldId);
+      if (field) {
+        if (field.crop) {
+          setSelectedCrop(field.crop);
+          setBackendError(null);
+        }
+        if (field.cultivatedArea !== undefined && field.cultivatedArea > 0) {
+          setCultivatedArea(String(field.cultivatedArea));
+        } else if (field.areaHa) {
+          setCultivatedArea(String(Math.round(field.areaHa * 2.471 * 10) / 10));
+          setAreaUnit('Acres');
+        }
+        if (field.areaUnit && (field.areaUnit === 'Acres' || field.areaUnit === 'Hectares' || field.areaUnit === 'Guntha')) {
+          setAreaUnit(field.areaUnit as any);
+        }
+        setFieldNameInput(field.name || '');
+        setSowingDate(field.sowingDate || '');
+        setCropVariety(field.variety || '');
+        setIrrigationMethod(field.irrigationMethod || '');
+        setSoilType(field.soilType || '');
+        setPlantingSeason(field.season || '');
+        setCropNotes(field.notes || '');
+      }
+    } else {
+      setFieldNameInput('');
+    }
+  };
+
+  const applyCropDetailsIfAvailable = (cropName: string) => {
+    // Check if an existing field matches this crop
+    const matchingField = farmState?.fields?.find(
+      f => f.crop.toLowerCase() === cropName.toLowerCase()
+    );
+    if (matchingField) {
+      setSelectedFieldId(matchingField.id);
+      if (matchingField.cultivatedArea !== undefined && matchingField.cultivatedArea > 0) {
+        setCultivatedArea(String(matchingField.cultivatedArea));
+      } else if (matchingField.areaHa) {
+        setCultivatedArea(String(Math.round(matchingField.areaHa * 2.471 * 10) / 10));
+        setAreaUnit('Acres');
+      }
+      if (matchingField.areaUnit && (matchingField.areaUnit === 'Acres' || matchingField.areaUnit === 'Hectares' || matchingField.areaUnit === 'Guntha')) {
+        setAreaUnit(matchingField.areaUnit as any);
+      }
+      setFieldNameInput(matchingField.name || '');
+      setSowingDate(matchingField.sowingDate || '');
+      setCropVariety(matchingField.variety || '');
+      setIrrigationMethod(matchingField.irrigationMethod || '');
+      setSoilType(matchingField.soilType || '');
+      setPlantingSeason(matchingField.season || '');
+      setCropNotes(matchingField.notes || '');
+      return;
+    }
+
+    // Check if an existing crop record matches
+    const matchingCrop = farmState?.crops?.find(
+      c => c.name.toLowerCase() === cropName.toLowerCase()
+    );
+    if (matchingCrop) {
+      if (matchingCrop.cultivatedArea !== undefined && matchingCrop.cultivatedArea > 0) {
+        setCultivatedArea(String(matchingCrop.cultivatedArea));
+      } else if (matchingCrop.areaHa) {
+        setCultivatedArea(String(Math.round(matchingCrop.areaHa * 2.471 * 10) / 10));
+        setAreaUnit('Acres');
+      }
+      if (matchingCrop.areaUnit && (matchingCrop.areaUnit === 'Acres' || matchingCrop.areaUnit === 'Hectares' || matchingCrop.areaUnit === 'Guntha')) {
+        setAreaUnit(matchingCrop.areaUnit as any);
+      }
+      setSowingDate(matchingCrop.sowingDate || '');
+      setCropVariety(matchingCrop.variety || '');
+      setIrrigationMethod(matchingCrop.irrigationMethod || '');
+      setSoilType(matchingCrop.soilType || '');
+      setPlantingSeason(matchingCrop.season || '');
+      setCropNotes(matchingCrop.notes || '');
+    }
+  };
+
+  // Sync pre-selected field / crop from My Farm navigation
+  useEffect(() => {
+    if (scanTarget) {
+      if (scanTarget.fieldId) {
+        handleFieldSelect(scanTarget.fieldId);
+      } else if (scanTarget.crop) {
+        setSelectedCrop(scanTarget.crop);
+        applyCropDetailsIfAvailable(scanTarget.crop);
+      }
+    }
+  }, [scanTarget, farmState]);
+
+  const selectedField = farmState?.fields?.find(f => f.id === selectedFieldId);
 
   // Load persistent scan history from backend on mount (falling back to localStorage)
   useEffect(() => {
@@ -331,6 +438,12 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
       return;
     }
 
+    const parsedArea = parseFloat(cultivatedArea);
+    if (!cultivatedArea || isNaN(parsedArea) || parsedArea <= 0) {
+      setBackendError("Please enter a valid positive crop area (e.g. 1.5).");
+      return;
+    }
+
     if (!uploadedFile) {
       setStep('preview');
       setBackendError("Please upload a real image from your device to use the AI scan.");
@@ -359,6 +472,7 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
         farmerId: farmState?.farmerId || 'default_farmer',
         farmerName: farmState?.farmDetails?.name || 'Farmer',
         crop: selectedCrop || undefined,
+        fieldId: selectedFieldId || undefined,
       });
 
       if (json.status === 'invalid' || json.status === 'invalid_image') {
@@ -437,6 +551,7 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
 
       const newRecord = {
         id: json.scanId || Date.now().toString(),
+        fieldId: selectedFieldId || undefined,
         date: Date.now(),
         crop: cropName,
         cropName: cropName,
@@ -475,9 +590,26 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
           clearInterval(iv); 
           saveToHistory(newRecord);
           if (recordScan) {
+            let areaHa = parsedArea;
+            if (areaUnit === 'Acres') {
+              areaHa = Math.round((parsedArea / 2.471) * 100) / 100;
+            } else if (areaUnit === 'Guntha') {
+              areaHa = Math.round((parsedArea * 0.0101) * 100) / 100;
+            }
+
             recordScan({
               crop: cropName,
               fieldId: selectedFieldId || undefined,
+              fieldName: fieldNameInput.trim() || undefined,
+              cultivatedArea: parsedArea,
+              areaUnit: areaUnit,
+              areaHa: areaHa,
+              sowingDate: sowingDate.trim() || undefined,
+              variety: cropVariety.trim() || undefined,
+              irrigationMethod: irrigationMethod.trim() || undefined,
+              soilType: soilType.trim() || undefined,
+              season: plantingSeason.trim() || undefined,
+              notes: cropNotes.trim() || undefined,
               disease: diseaseName,
               confidence: diseaseConfidence || cropConfidence,
               severity: severityText,
@@ -492,6 +624,7 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
               previewUrl: finalPreviewUrl,
             });
           }
+          clearScanTarget();
           setTimeout(() => setStep('result'), 400); 
         }
         setScanProgress(Math.min(prog, 100));
@@ -528,8 +661,20 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
     setPreviewUrl(null);
     setScanProgress(0);
     setSelectedCrop(null);
+    setSelectedFieldId('');
     setUploadedFile(null);
     setBackendError(null);
+    setCultivatedArea('1.0');
+    setAreaUnit('Acres');
+    setFieldNameInput('');
+    setSowingDate('');
+    setCropVariety('');
+    setIrrigationMethod('');
+    setSoilType('');
+    setPlantingSeason('');
+    setCropNotes('');
+    setShowAdditionalDetails(false);
+    clearScanTarget();
   };
 
   const loadFileFromUrl = async (url: string, filename: string) => {
@@ -546,10 +691,20 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
   const handleCropClick = (crop: typeof CROPS[0]) => {
     setSelectedCrop(crop.name);
     setBackendError(null);
+    if (selectedFieldId) {
+      const currentField = farmState?.fields?.find(f => f.id === selectedFieldId);
+      if (currentField && currentField.crop.toLowerCase() !== crop.name.toLowerCase()) {
+        const matchingField = farmState?.fields?.find(f => f.crop.toLowerCase() === crop.name.toLowerCase());
+        setSelectedFieldId(matchingField ? matchingField.id : '');
+      }
+    }
+    applyCropDetailsIfAvailable(crop.name);
   };
 
   const handleExampleClick = (ex: { img: string; label: string; color: string }) => {
     setSelectedCrop(null);
+    setSelectedFieldId('');
+    clearScanTarget();
     setPreviewUrl(ex.img);
     setBackendError(null);
     setStep('preview');
@@ -560,6 +715,14 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
   const handleDatabaseCropClick = (crop: (typeof DATABASE_20_CROPS)[0]) => {
     setSelectedCrop(crop.name);
     setBackendError(null);
+    if (selectedFieldId) {
+      const currentField = farmState?.fields?.find(f => f.id === selectedFieldId);
+      if (currentField && currentField.crop.toLowerCase() !== crop.name.toLowerCase()) {
+        const matchingField = farmState?.fields?.find(f => f.crop.toLowerCase() === crop.name.toLowerCase());
+        setSelectedFieldId(matchingField ? matchingField.id : '');
+      }
+    }
+    applyCropDetailsIfAvailable(crop.name);
   };
 
   // ── Scan steps label ─────────────────────────────────────────────────────────
@@ -607,6 +770,241 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
               {/* Persistent hidden image file input across idle and preview states */}
               <input ref={fileInputRef} type="file" accept="image/*" className="sc-hidden-input" onChange={handleFileChange} />
 
+              {/* ── Field Link / Association Bar ── */}
+              <div className="sc-field-bar">
+                <div className="sc-field-bar-info">
+                  <span className="sc-field-bar-icon">🌱</span>
+                  <span className="sc-field-bar-title">Field Association:</span>
+                </div>
+                {farmState?.fields && farmState.fields.length > 0 ? (
+                  <div className="sc-field-bar-controls">
+                    <select
+                      className="sc-field-bar-select"
+                      value={selectedFieldId}
+                      onChange={(e) => handleFieldSelect(e.target.value)}
+                    >
+                      <option value="">-- No field linked (General Scan) --</option>
+                      {farmState.fields.map((f) => (
+                        <option key={f.id} value={f.id}>
+                          {f.name} — {f.crop} ({f.areaHa} Ha)
+                        </option>
+                      ))}
+                    </select>
+                    {selectedFieldId && (
+                      <button
+                        type="button"
+                        className="sc-field-bar-clear"
+                        onClick={() => setSelectedFieldId('')}
+                        title="Clear field link"
+                      >
+                        ✕ Unlink
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="sc-field-bar-empty">
+                    <span>No fields registered in My Farm.</span>
+                    {onNavigateTab && (
+                      <button
+                        type="button"
+                        className="sc-field-bar-add-btn"
+                        onClick={() => onNavigateTab('farm')}
+                      >
+                        + Add Field in My Farm
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* ── Crop & Farming Details Form (Visible during normal scanning workflow in idle & preview) ── */}
+              {(step === 'idle' || step === 'preview') && (
+                <div className="sc-details-card">
+                  <div className="sc-details-header">
+                    <span className="sc-details-icon">📋</span>
+                    <div>
+                      <strong className="sc-details-title">Crop &amp; Farming Details</strong>
+                      <span className="sc-details-subtitle">Specify cultivated area and farm records before scanning</span>
+                    </div>
+                  </div>
+
+                  {/* Crop indicator banner if selected or selection prompt */}
+                  {selectedCrop ? (
+                    <div className="sc-selected-crop-banner" style={{ margin: '0 0 12px 0' }}>
+                      <div className="sc-selected-crop-text">
+                        <span className="sc-selected-crop-label">Target Crop:</span>
+                        <strong className="sc-selected-crop-name">🌾 {selectedCrop}</strong>
+                      </div>
+                      <button
+                        type="button"
+                        className="sc-change-crop-btn"
+                        onClick={() => setSelectedCrop(null)}
+                        title="Change selected crop"
+                      >
+                        Change Crop
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="sc-select-crop-prompt">
+                      <span>💡 Please select the crop you are scanning from <strong>Popular Crops</strong> below.</span>
+                    </div>
+                  )}
+
+                  <div className="sc-details-grid">
+                    {/* Cultivated Area (Required) */}
+                    <div className="sc-input-group">
+                      <label className="sc-label" htmlFor="sc-cultivated-area-input">
+                        Area under this crop <span className="sc-required-star">*</span>
+                      </label>
+                      <div className="sc-area-input-row">
+                        <input
+                          id="sc-cultivated-area-input"
+                          type="number"
+                          min="0.01"
+                          step="0.1"
+                          required
+                          placeholder="Enter crop area"
+                          className={`sc-text-input sc-area-val-input ${
+                            (!cultivatedArea || isNaN(parseFloat(cultivatedArea)) || parseFloat(cultivatedArea) <= 0)
+                              ? 'sc-input-error'
+                              : ''
+                          }`}
+                          value={cultivatedArea}
+                          onChange={(e) => {
+                            setCultivatedArea(e.target.value);
+                            setBackendError(null);
+                          }}
+                        />
+                        <select
+                          className="sc-select-input sc-area-unit-select"
+                          value={areaUnit}
+                          onChange={(e) => setAreaUnit(e.target.value as any)}
+                          aria-label="Area Unit"
+                        >
+                          <option value="Acres">Acres</option>
+                          <option value="Hectares">Hectares</option>
+                          <option value="Guntha">Guntha</option>
+                        </select>
+                      </div>
+                      {(!cultivatedArea || isNaN(parseFloat(cultivatedArea)) || parseFloat(cultivatedArea) <= 0) && (
+                        <div className="sc-area-validation-msg">
+                          ⚠️ Please enter a valid positive crop area (e.g. 1.5).
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Field Link or Name */}
+                    <div className="sc-input-group">
+                      <label className="sc-label" htmlFor="sc-field-name-input">
+                        Field Name {selectedField ? '(Linked)' : '(Optional)'}
+                      </label>
+                      <input
+                        id="sc-field-name-input"
+                        type="text"
+                        placeholder={selectedField ? selectedField.name : "e.g. North Plot, Field 1"}
+                        className="sc-text-input"
+                        value={fieldNameInput}
+                        onChange={(e) => setFieldNameInput(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Collapsible Additional Farming Details */}
+                  <div className="sc-collapsible-wrapper">
+                    <button
+                      type="button"
+                      className="sc-collapsible-toggle"
+                      onClick={() => setShowAdditionalDetails(!showAdditionalDetails)}
+                    >
+                      <span>{showAdditionalDetails ? '▼ Hide Additional Details' : '▶ Additional Farming Details (Optional)'}</span>
+                      <span className="sc-collapsible-hint">{showAdditionalDetails ? 'Collapse' : 'Variety, Sowing date, Soil, Irrigation'}</span>
+                    </button>
+
+                    {showAdditionalDetails && (
+                      <div className="sc-collapsible-content">
+                        <div className="sc-details-grid-sub">
+                          <div className="sc-input-group">
+                            <label className="sc-label">Crop Variety</label>
+                            <input
+                              type="text"
+                              placeholder="e.g. Hybrid Bt-Cotton, Lokwan, Phule"
+                              className="sc-text-input"
+                              value={cropVariety}
+                              onChange={(e) => setCropVariety(e.target.value)}
+                            />
+                          </div>
+
+                          <div className="sc-input-group">
+                            <label className="sc-label">Sowing Date</label>
+                            <input
+                              type="date"
+                              className="sc-text-input"
+                              value={sowingDate}
+                              onChange={(e) => setSowingDate(e.target.value)}
+                            />
+                          </div>
+
+                          <div className="sc-input-group">
+                            <label className="sc-label">Irrigation Method</label>
+                            <select
+                              className="sc-select-input"
+                              value={irrigationMethod}
+                              onChange={(e) => setIrrigationMethod(e.target.value)}
+                            >
+                              <option value="">-- Select Irrigation --</option>
+                              <option value="Drip Irrigation">Drip Irrigation</option>
+                              <option value="Sprinkler">Sprinkler</option>
+                              <option value="Flood / Furrow">Flood / Furrow</option>
+                              <option value="Rainfed">Rainfed</option>
+                            </select>
+                          </div>
+
+                          <div className="sc-input-group">
+                            <label className="sc-label">Soil Type</label>
+                            <select
+                              className="sc-select-input"
+                              value={soilType}
+                              onChange={(e) => setSoilType(e.target.value)}
+                            >
+                              <option value="">-- Select Soil Type --</option>
+                              <option value="Black Clay (Regur)">Black Clay (Regur)</option>
+                              <option value="Alluvial Soil">Alluvial Soil</option>
+                              <option value="Red / Laterite">Red / Laterite</option>
+                              <option value="Sandy Loam">Sandy Loam</option>
+                            </select>
+                          </div>
+
+                          <div className="sc-input-group">
+                            <label className="sc-label">Planting Season</label>
+                            <select
+                              className="sc-select-input"
+                              value={plantingSeason}
+                              onChange={(e) => setPlantingSeason(e.target.value)}
+                            >
+                              <option value="">-- Select Season --</option>
+                              <option value="Kharif (Monsoon)">Kharif (Monsoon)</option>
+                              <option value="Rabi (Winter)">Rabi (Winter)</option>
+                              <option value="Zaid (Summer)">Zaid (Summer)</option>
+                            </select>
+                          </div>
+
+                          <div className="sc-input-group sc-input-full">
+                            <label className="sc-label">Crop Notes / Observations</label>
+                            <textarea
+                              rows={2}
+                              placeholder="Observations, growth status, recent fertilizers..."
+                              className="sc-text-input sc-textarea"
+                              value={cropNotes}
+                              onChange={(e) => setCropNotes(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* IDLE – upload zone */}
               {step === 'idle' && (
                 <div
@@ -617,19 +1015,36 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  {selectedCrop ? (
-                    <div className="sc-idle-crop-badge" onClick={(e) => e.stopPropagation()}>
-                      <span>🌾 Selected Crop: <strong>{selectedCrop}</strong></span>
-                      <button
-                        type="button"
-                        className="sc-idle-crop-clear"
-                        onClick={() => setSelectedCrop(null)}
-                        title="Change crop selection"
-                      >
-                        ✕ Change
-                      </button>
-                    </div>
-                  ) : null}
+                  <div className="sc-idle-badges-container" onClick={(e) => e.stopPropagation()}>
+                    {selectedField ? (
+                      <div className="sc-idle-field-badge">
+                        <span>🌱 Field: <strong>{selectedField.name}</strong> ({selectedField.crop} · {selectedField.areaHa} Ha)</span>
+                        <button
+                          type="button"
+                          className="sc-idle-field-clear"
+                          onClick={() => setSelectedFieldId('')}
+                          title="Unlink field"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : null}
+
+                    {selectedCrop ? (
+                      <div className="sc-idle-crop-badge">
+                        <span>🌾 Selected Crop: <strong>{selectedCrop}</strong></span>
+                        <button
+                          type="button"
+                          className="sc-idle-crop-clear"
+                          onClick={() => setSelectedCrop(null)}
+                          title="Change crop selection"
+                        >
+                          ✕ Change
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
+
                   <div className="sc-cam-icon">
                     <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                       <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
@@ -650,10 +1065,17 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
                 <div className="sc-preview-zone">
                   <img src={previewUrl} alt="Crop preview" className="sc-preview-img" />
                   <div className="sc-preview-overlay">
-                    <div className={`sc-preview-badge ${selectedCrop ? 'sc-preview-badge--selected' : 'sc-preview-badge--empty'}`}>
-                      {selectedCrop ? `🌾 ${selectedCrop}` : '⚠️ No crop selected'}
+                    <div className="sc-preview-badges-wrap">
+                      <div className={`sc-preview-badge ${selectedCrop ? 'sc-preview-badge--selected' : 'sc-preview-badge--empty'}`}>
+                        {selectedCrop ? `🌾 ${selectedCrop}` : '⚠️ No crop selected'}
+                      </div>
+                      {selectedField && (
+                        <div className="sc-preview-badge sc-preview-badge--field">
+                          🌱 {selectedField.name}
+                        </div>
+                      )}
                     </div>
-                    <button className="sc-change-btn" onClick={reset}>Change</button>
+                    <button className="sc-change-btn" onClick={reset}>Change Photo</button>
                   </div>
 
                   {/* Mandatory crop selection prompt banner */}
@@ -665,38 +1087,7 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
                         <span>Select the crop you are scanning from the Popular Crops list below.</span>
                       </div>
                     </div>
-                  ) : (
-                    <div className="sc-selected-crop-banner">
-                      <div className="sc-selected-crop-text">
-                        <span className="sc-selected-crop-label">Selected Crop for Analysis:</span>
-                        <strong className="sc-selected-crop-name">🌾 {selectedCrop}</strong>
-                      </div>
-                      <button
-                        type="button"
-                        className="sc-change-crop-btn"
-                        onClick={() => setSelectedCrop(null)}
-                        title="Change selected crop"
-                      >
-                        Change Crop
-                      </button>
-                    </div>
-                  )}
-
-                  {farmState && farmState.fields && farmState.fields.length > 0 && (
-                    <div style={{ padding: '10px 14px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>🌱 Associate with Field:</span>
-                      <select
-                        value={selectedFieldId}
-                        onChange={(e) => setSelectedFieldId(e.target.value)}
-                        style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.82rem', background: '#ffffff', outline: 'none' }}
-                      >
-                        <option value="">Auto-assign matching field</option>
-                        {farmState.fields.map((f) => (
-                          <option key={f.id} value={f.id}>{f.name} ({f.areaHa} Ha)</option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
+                  ) : null}
                 </div>
               )}
 
@@ -984,8 +1375,8 @@ export default function ScanCrop({ onScanComplete }: ScanCropProps = {}) {
                     <button
                       className="sc-analyse-btn"
                       onClick={startScan}
-                      disabled={!selectedCrop || !uploadedFile}
-                      title={!selectedCrop ? "Please select a crop before continuing." : "Analyse with AI"}
+                      disabled={!selectedCrop || !uploadedFile || !cultivatedArea || isNaN(parseFloat(cultivatedArea)) || parseFloat(cultivatedArea) <= 0}
+                      title={!selectedCrop ? "Please select a crop before continuing." : (!cultivatedArea || isNaN(parseFloat(cultivatedArea)) || parseFloat(cultivatedArea) <= 0) ? "Please enter a valid positive crop area before scanning." : "Analyse with AI"}
                     >
                       🔬 Analyse with AI
                     </button>

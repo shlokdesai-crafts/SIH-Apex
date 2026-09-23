@@ -9,6 +9,8 @@
  * - GET    /api/health
  */
 
+import { getAuthToken } from './authService';
+
 export interface PredictionCandidate {
   crop: string;
   condition: string;
@@ -37,6 +39,7 @@ export interface VerificationDetail {
 
 export interface ScanResponseData {
   scanId?: string;
+  fieldId?: string;
   status: 'valid' | 'success' | 'uncertain' | 'invalid' | 'invalid_image' | 'unsupported_crop' | 'server_error';
   message: string;
   timestamp?: string;
@@ -101,6 +104,7 @@ export interface ScanResponseData {
 export interface ScanHistoryItem {
   id: string;
   farmerId?: string;
+  fieldId?: string;
   crop: string;
   cropName?: string;
   condition: string;
@@ -168,11 +172,13 @@ export async function scanCropImage(
     farmerName?: string;
     farmerId?: string;
     crop?: string;
+    fieldId?: string;
   }
 ): Promise<ScanResponseData> {
   const form = new FormData();
   form.append('file', file);
   if (options?.crop) form.append('crop', options.crop);
+  if (options?.fieldId) form.append('field_id', options.fieldId);
   if (options?.farmerName) form.append('farmer_name', options.farmerName);
   if (options?.farmerId) form.append('farmer_id', options.farmerId);
   if (options?.latitude != null && options?.longitude != null) {
@@ -184,9 +190,16 @@ export async function scanCropImage(
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s max for neural inference
 
+  const headers: Record<string, string> = {};
+  const token = getAuthToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   try {
     const res = await fetch('/api/scan', {
       method: 'POST',
+      headers,
       body: form,
       signal: controller.signal,
     });
@@ -238,11 +251,13 @@ export async function scanCropImage(
 /**
  * Fetch persistent scan history from backend (ordered newest first).
  */
-export async function getScanHistory(farmerId?: string): Promise<ScanHistoryItem[]> {
+export async function getScanHistory(farmerId?: string, fieldId?: string): Promise<ScanHistoryItem[]> {
   try {
-    const url = farmerId
-      ? `/api/scans/history?farmer_id=${encodeURIComponent(farmerId)}`
-      : '/api/scans/history';
+    const params = new URLSearchParams();
+    if (farmerId) params.append('farmer_id', farmerId);
+    if (fieldId) params.append('field_id', fieldId);
+    const qs = params.toString();
+    const url = qs ? `/api/scans/history?${qs}` : '/api/scans/history';
     const res = await fetch(url);
     if (!res.ok) throw new Error(`History fetch failed with status ${res.status}`);
     return await res.json();

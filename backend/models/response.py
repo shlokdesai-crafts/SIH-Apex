@@ -100,6 +100,7 @@ class ScanResponse(BaseModel):
     providing strict typed contracts for the upgraded pipeline.
     """
     scanId: Optional[str] = None
+    fieldId: Optional[str] = None
     status: str                          # "valid" | "success" | "uncertain" | "invalid_image" | "unsupported_crop" | "server_error"
     message: str                         # Human-readable primary message
     timestamp: Optional[str] = None

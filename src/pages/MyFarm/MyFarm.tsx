@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useFarm } from '../../context/FarmContext';
-import type { FarmCrop, PriorityAction } from '../../types/farm';
+import type { FarmCrop, FarmField, PriorityAction } from '../../types/farm';
+import { getCanonicalCropKey, CROP_ICONS } from '../../services/farmService';
 import './MyFarm.css';
 
 interface MyFarmProps {
@@ -8,7 +9,7 @@ interface MyFarmProps {
 }
 
 export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
-  const { farmState, isLoading, addCropRecord, scheduleFieldVisit } = useFarm();
+  const { farmState, isLoading, addCropRecord, scheduleFieldVisit, startScanForField, startScanForCrop } = useFarm();
 
   // Modal states
   const [showAddCropModal, setShowAddCropModal] = useState(false);
@@ -16,6 +17,7 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
   const [showReportModal, setShowReportModal] = useState(false);
   const [showSourceModal, setShowSourceModal] = useState(false);
   const [selectedCrop, setSelectedCrop] = useState<FarmCrop | null>(null);
+  const [selectedField, setSelectedField] = useState<FarmField | null>(null);
   const [selectedAction, setSelectedAction] = useState<PriorityAction | null>(null);
   const [viewAllActivityModal, setViewAllActivityModal] = useState(false);
   const [viewAllFieldsModal, setViewAllFieldsModal] = useState(false);
@@ -54,22 +56,94 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
     lastUpdated,
   } = farmState;
 
-  // Health classification
-  const healthClass =
-    overallHealthScore >= 70 ? 'healthy' : overallHealthScore >= 50 ? 'warning' : 'critical';
-  const healthLabel =
-    overallHealthScore >= 80
-      ? 'Good'
-      : overallHealthScore >= 70
-      ? 'Good'
-      : overallHealthScore >= 50
-      ? 'Attention'
-      : 'Critical';
+  // Genuine Scanned Crops logic: A crop appears in the scanned-crops section ONLY when backed by at least one persisted scan
+  const hasScans = Boolean(farmState.scans && farmState.scans.length > 0);
+
+  const scannedCrops: FarmCrop[] = useMemo(() => {
+    if (!farmState.scans || farmState.scans.length === 0) return [];
+
+    const scansByCropKey = new Map<string, typeof farmState.scans>();
+    farmState.scans.forEach((scan) => {
+      const key = getCanonicalCropKey(scan.crop);
+      if (!scansByCropKey.has(key)) {
+        scansByCropKey.set(key, []);
+      }
+      scansByCropKey.get(key)!.push(scan);
+    });
+
+    const result: FarmCrop[] = [];
+    const processedKeys = new Set<string>();
+
+    // First include existing crops that have scans
+    (crops || []).forEach((c) => {
+      const cKey = getCanonicalCropKey(c.id || c.name);
+      if (scansByCropKey.has(cKey)) {
+        processedKeys.add(cKey);
+        const cropScans = scansByCropKey.get(cKey)!;
+        const latestScan = cropScans[0];
+        result.push({
+          ...c,
+          status: latestScan.status || c.status,
+          detectedDisease: latestScan.disease,
+          severity: latestScan.severity || c.severity,
+          lastScanDate: latestScan.scannedAt?.split(',')[0] || c.lastScanDate,
+          image: latestScan.previewUrl || c.image,
+        });
+      }
+    });
+
+    // Also include any scanned crop not yet in crops array
+    scansByCropKey.forEach((cropScans, key) => {
+      if (!processedKeys.has(key)) {
+        processedKeys.add(key);
+        const latestScan = cropScans[0];
+        const isHealthy = (latestScan.disease || '').toLowerCase().includes('healthy');
+        result.push({
+          id: key,
+          name: latestScan.crop,
+          icon: CROP_ICONS[key] || '🌿',
+          image: latestScan.previewUrl || `/images/crop_${key}.jpg`,
+          status: latestScan.status || (isHealthy ? 'Healthy' : 'Diseased'),
+          healthScore: isHealthy ? 92 : 65,
+          areaHa: 0.5,
+          cultivatedArea: (latestScan as any).cultivatedArea,
+          areaUnit: (latestScan as any).areaUnit || 'Acres',
+          expectedYieldQtHa: 10.0,
+          lastScanDate: latestScan.scannedAt?.split(',')[0] || 'Recently',
+          detectedDisease: latestScan.disease,
+          severity: latestScan.severity,
+        });
+      }
+    });
+
+    return result;
+  }, [farmState.scans, crops]);
+
+  // Health classification: assessed only when genuine scans exist
+  const healthClass = !hasScans
+    ? 'unassessed'
+    : overallHealthScore >= 70
+    ? 'healthy'
+    : overallHealthScore >= 50
+    ? 'warning'
+    : 'critical';
+
+  const healthLabel = !hasScans
+    ? 'Unassessed'
+    : overallHealthScore >= 80
+    ? 'Good'
+    : overallHealthScore >= 70
+    ? 'Good'
+    : overallHealthScore >= 50
+    ? 'Attention'
+    : 'Critical';
 
   // SVG Gauge calculations (radius = 38, circ = 238.76)
   const radius = 38;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (Math.min(100, Math.max(0, overallHealthScore)) / 100) * circumference;
+  const strokeDashoffset = !hasScans
+    ? circumference
+    : circumference - (Math.min(100, Math.max(0, overallHealthScore)) / 100) * circumference;
 
   const handleAddCropSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -188,15 +262,17 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                       />
                     </svg>
                     <div className="gauge-center-text">
-                      <strong>{overallHealthScore}%</strong>
+                      <strong>{hasScans ? `${overallHealthScore}%` : '--'}</strong>
                       <span>{healthLabel}</span>
                     </div>
                   </div>
 
                   <div className={`farm-health-callout ${healthClass}`}>
-                    <span className="callout-icon">🌱</span>
+                    <span className="callout-icon">{hasScans ? '🌱' : '📋'}</span>
                     <div>
-                      {overallHealthScore >= 75
+                      {!hasScans
+                        ? 'Scan your first crop to assess your farm health score and receive AI diagnoses.'
+                        : overallHealthScore >= 75
                         ? 'Your farm is in good condition! Keep up the healthy practices.'
                         : overallHealthScore >= 55
                         ? 'Attention needed: Some fields show moderate risk or early symptoms.'
@@ -207,28 +283,59 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
               </div>
             </div>
 
-            {/* 2. Middle Section: 🌿 My Crops */}
+            {/* 2. Middle Section: 🌿 My Crops (Genuine Scanned Crops Only) */}
             <section className="farm-crops-section">
               <div className="panel-header">
-                <h3>🌿 My Crops</h3>
-                <button
-                  className="panel-view-all-btn"
-                  onClick={() => setShowAddCropModal(true)}
-                >
-                  View All Crops →
-                </button>
+                <h3>🌿 My Crops ({scannedCrops.length})</h3>
+                {scannedCrops.length > 0 && (
+                  <button
+                    className="panel-view-all-btn"
+                    onClick={() => onNavigateTab ? onNavigateTab('scan') : null}
+                  >
+                    + Scan Another Crop →
+                  </button>
+                )}
               </div>
 
-              {crops.length === 0 ? (
-                <div className="empty-state-text">No crops monitored yet. Click &quot;Add Crop Record&quot; to begin.</div>
+              {scannedCrops.length === 0 ? (
+                <div className="farm-empty-scans-card">
+                  <div className="farm-empty-scans-icon">🌱</div>
+                  <h3 className="farm-empty-scans-title">Your farm journey starts here!</h3>
+                  <p className="farm-empty-scans-desc">
+                    You haven&apos;t scanned any crops yet. Scan your first crop to start building your farm records.
+                  </p>
+                  <button
+                    type="button"
+                    className="btn-primary farm-empty-scans-btn"
+                    onClick={() => onNavigateTab ? onNavigateTab('scan') : null}
+                  >
+                    <span>📷</span> Scan Your First Crop
+                  </button>
+                </div>
               ) : (
                 <div className="crops-cards-row">
-                  {crops.map((crop) => {
+                  {scannedCrops.map((crop) => {
                     const statusSlug = crop.status.toLowerCase().replace(/\s+/g, '-');
+                    const cKey = getCanonicalCropKey(crop.id || crop.name);
+                    const matchingField = (fields || []).find(
+                      (f) => getCanonicalCropKey(f.crop) === cKey || f.crop.toLowerCase() === crop.name.toLowerCase()
+                    );
+                    const latestScan = (farmState.scans || []).find(
+                      (s) => getCanonicalCropKey(s.crop) === cKey
+                    );
+                    const areaDisplay = crop.cultivatedArea !== undefined
+                      ? `${crop.cultivatedArea} ${crop.areaUnit || 'Acres'}`
+                      : `${crop.areaHa} Ha`;
+
                     return (
                       <div key={crop.id} className="crop-mini-card">
                         <div className="crop-card-img-wrap">
                           <img src={crop.image} alt={crop.name} />
+                          {matchingField && (
+                            <span className="crop-card-field-badge">
+                              🌱 {matchingField.name}
+                            </span>
+                          )}
                         </div>
                         <div className="crop-card-content">
                           <div className="crop-card-topline">
@@ -240,22 +347,35 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                             </span>
                           </div>
 
+                          <div className="crop-card-condition-line">
+                            <span className="condition-lbl">Latest:</span>
+                            <strong className="condition-val" title={crop.detectedDisease || 'Healthy'}>
+                              {crop.detectedDisease || 'Healthy Plant'}
+                            </strong>
+                          </div>
+
                           <div className="crop-card-metrics">
                             <div className="crop-card-metric-row">
                               <span className="metric-lbl">Area</span>
-                              <strong className="metric-val">{crop.areaHa} Ha</strong>
+                              <strong className="metric-val">{areaDisplay}</strong>
                             </div>
-                            <div className="crop-card-yield-row">
-                              <div className="yield-text-group">
-                                <span className="metric-lbl">Expected Yield</span>
-                                <strong className="metric-val">{crop.expectedYieldQtHa} Qt/Ha</strong>
+                            <div className="crop-card-metric-row">
+                              <span className="metric-lbl">Scanned</span>
+                              <strong className="metric-val">{crop.lastScanDate}</strong>
+                            </div>
+                            {latestScan?.confidence ? (
+                              <div className="crop-card-metric-row">
+                                <span className="metric-lbl">Confidence</span>
+                                <strong className="metric-val" style={{ color: '#16a34a' }}>{latestScan.confidence}%</strong>
                               </div>
+                            ) : null}
+                            <div className="crop-card-yield-row" style={{ marginTop: '6px' }}>
                               <button
-                                className="crop-action-circle-btn"
-                                title={`View ${crop.name} details`}
+                                type="button"
+                                className="crop-card-history-link"
                                 onClick={() => setSelectedCrop(crop)}
                               >
-                                →
+                                View History &amp; Details →
                               </button>
                             </div>
                           </div>
@@ -356,18 +476,36 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                         fieldCrop === 'tomato' ? '🍅' : fieldCrop === 'cotton' ? '☁️' : '🌱';
 
                       return (
-                        <div key={field.id} className="field-list-item">
+                        <div
+                          key={field.id}
+                          className="field-list-item field-list-item--clickable"
+                          onClick={() => setSelectedField(field)}
+                          title={`View ${field.name} details & scan history`}
+                        >
                           <div className="field-item-left">
                             <span className="field-bullet-icon">{fieldIcon}</span>
                             <div className="field-item-names">
                               <strong>{field.name}</strong>
-                              <span>{field.areaHa} Ha</span>
+                              <span>{field.crop} · {field.areaHa} Ha</span>
                             </div>
                           </div>
-                          <span className="field-mid-area">{field.areaHa} Ha</span>
-                          <span className={`status-badge ${statusSlug}`}>
-                            {field.status}
-                          </span>
+                          <div className="field-item-right-group">
+                            <span className={`status-badge ${statusSlug}`}>
+                              {field.status}
+                            </span>
+                            <button
+                              type="button"
+                              className="field-quick-scan-btn"
+                              title={`Scan ${field.name} now`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                startScanForField(field);
+                                if (onNavigateTab) onNavigateTab('scan');
+                              }}
+                            >
+                              📷
+                            </button>
+                          </div>
                         </div>
                       );
                     })}
@@ -427,6 +565,20 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                 <h3>⚡ Quick Actions</h3>
               </div>
               <div className="quick-actions-list">
+                <button
+                  className="quick-action-item"
+                  onClick={() => onNavigateTab ? onNavigateTab('scan') : null}
+                >
+                  <div className="qa-left">
+                    <div className="qa-icon-circle cam">📷</div>
+                    <div className="qa-text">
+                      <strong>Scan Field Crop</strong>
+                      <span>AI disease diagnosis</span>
+                    </div>
+                  </div>
+                  <span className="qa-chevron">›</span>
+                </button>
+
                 <button
                   className="quick-action-item"
                   onClick={() => setShowAddCropModal(true)}
@@ -796,15 +948,48 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
               )}
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', background: '#f8fafc', padding: '12px', borderRadius: '8px', fontSize: '0.84rem' }}>
-                <div><strong>Acreage:</strong> {selectedCrop.areaHa} Hectares</div>
+                <div><strong>Cultivated Area:</strong> {selectedCrop.cultivatedArea !== undefined ? `${selectedCrop.cultivatedArea} ${selectedCrop.areaUnit || 'Acres'} (${selectedCrop.areaHa} Ha)` : `${selectedCrop.areaHa} Hectares`}</div>
                 <div><strong>Expected Yield:</strong> {selectedCrop.expectedYieldQtHa} Qt/Ha</div>
+                {selectedCrop.variety && <div><strong>Variety:</strong> {selectedCrop.variety}</div>}
+                {selectedCrop.sowingDate && <div><strong>Sowing Date:</strong> {selectedCrop.sowingDate}</div>}
+                {selectedCrop.irrigationMethod && <div><strong>Irrigation:</strong> {selectedCrop.irrigationMethod}</div>}
+                {selectedCrop.soilType && <div><strong>Soil Type:</strong> {selectedCrop.soilType}</div>}
+                {selectedCrop.season && <div><strong>Planting Season:</strong> {selectedCrop.season}</div>}
+                {selectedCrop.notes && <div style={{ gridColumn: 'span 2' }}><strong>Crop Notes:</strong> {selectedCrop.notes}</div>}
               </div>
+
+              {/* Crop-Specific Scan History */}
+              {farmState.scans && farmState.scans.filter(s => (s.crop || '').toLowerCase() === selectedCrop.name.toLowerCase()).length > 0 && (
+                <div style={{ marginTop: '12px' }}>
+                  <h5 style={{ margin: '0 0 6px 0', fontSize: '0.86rem', color: '#334155' }}>Recent AI Scans for {selectedCrop.name}:</h5>
+                  <div style={{ maxHeight: '160px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {farmState.scans
+                      .filter(s => (s.crop || '').toLowerCase() === selectedCrop.name.toLowerCase())
+                      .slice(0, 5)
+                      .map(s => (
+                        <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: '#f8fafc', borderRadius: '6px', fontSize: '0.82rem', border: '1px solid #e2e8f0' }}>
+                          <div>
+                            <strong>{s.disease}</strong>
+                            <div style={{ fontSize: '0.74rem', color: '#64748b' }}>{s.scannedAt} · Conf: {s.confidence}%</div>
+                          </div>
+                          <span className={`status-badge ${(s.status || 'healthy').toLowerCase().replace(/\s+/g, '-')}`}>
+                            {s.severity || s.status}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
 
               <div className="farm-modal-actions">
                 <button
                   type="button"
                   className="btn-secondary"
-                  onClick={() => onNavigateTab ? onNavigateTab('scan') : null}
+                  onClick={() => {
+                    startScanForCrop(selectedCrop.name);
+                    setSelectedCrop(null);
+                    if (onNavigateTab) onNavigateTab('scan');
+                  }}
                 >
                   Scan Crop Now 📷
                 </button>
@@ -814,6 +999,108 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                   onClick={() => onNavigateTab ? onNavigateTab('advisory') : null}
                 >
                   View Advisory 💡
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Field Detail Modal with dedicated Field Scan History */}
+      {selectedField && (
+        <div className="farm-modal-overlay" onClick={() => setSelectedField(null)}>
+          <div className="farm-modal-card" style={{ maxWidth: '640px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="farm-modal-header">
+              <h3>🌾 {selectedField.name} — Field Details</h3>
+              <button
+                className="farm-modal-close-btn"
+                onClick={() => setSelectedField(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="farm-modal-body">
+              <div style={{ background: '#f8fafc', padding: '14px 16px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', fontSize: '0.86rem' }}>
+                  <div><strong>Crop Grown:</strong> {selectedField.crop}</div>
+                  <div><strong>Field Area:</strong> {selectedField.areaHa} Hectares</div>
+                  <div>
+                    <strong>Status:</strong>{' '}
+                    <span className={`status-badge ${selectedField.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                      {selectedField.status}
+                    </span>
+                  </div>
+                  <div><strong>Field Health:</strong> {selectedField.healthScore}/100</div>
+                  <div style={{ gridColumn: 'span 2' }}>
+                    <strong>Last Scanned:</strong> {selectedField.lastScanDate || 'No scans recorded'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Scan This Field Action Banner */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '12px 16px', borderRadius: '10px' }}>
+                <div>
+                  <strong style={{ color: '#065f46', display: 'block', fontSize: '0.92rem' }}>Scan This Field with AI</strong>
+                  <span style={{ fontSize: '0.8rem', color: '#047857' }}>Run immediate image diagnostic for {selectedField.crop} in {selectedField.name}</span>
+                </div>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  style={{ background: '#059669', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  onClick={() => {
+                    startScanForField(selectedField);
+                    setSelectedField(null);
+                    if (onNavigateTab) onNavigateTab('scan');
+                  }}
+                >
+                  <span>📷</span> Scan Now
+                </button>
+              </div>
+
+              {/* Field-Specific Scan History */}
+              <div className="field-scan-history-section">
+                <h4 style={{ margin: '14px 0 8px 0', fontSize: '0.92rem', color: '#0f172a' }}>
+                  🕒 Field Diagnostic History ({(farmState.scans || []).filter(s => s.fieldId === selectedField.id).length})
+                </h4>
+                {(farmState.scans || []).filter(s => s.fieldId === selectedField.id).length === 0 ? (
+                  <div className="empty-state-text" style={{ padding: '20px', background: '#f8fafc', borderRadius: '8px' }}>
+                    No scans recorded for this field yet. Click &ldquo;Scan Now&rdquo; above to diagnose this field!
+                  </div>
+                ) : (
+                  <div className="field-scans-list" style={{ maxHeight: '240px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {(farmState.scans || [])
+                      .filter(s => s.fieldId === selectedField.id)
+                      .map((s) => (
+                        <div key={s.id} className="field-scan-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            {s.previewUrl ? (
+                              <img src={s.previewUrl} alt={s.crop} style={{ width: '44px', height: '44px', borderRadius: '6px', objectFit: 'cover' }} />
+                            ) : (
+                              <span style={{ fontSize: '1.4rem' }}>🌿</span>
+                            )}
+                            <div>
+                              <div style={{ fontWeight: 600, fontSize: '0.86rem', color: '#0f172a' }}>{s.disease}</div>
+                              <div style={{ fontSize: '0.76rem', color: '#64748b' }}>
+                                {s.scannedAt} · Confidence: {s.confidence}% · Severity: {s.severity}
+                              </div>
+                            </div>
+                          </div>
+                          <span className={`status-badge ${(s.status || 'healthy').toLowerCase().replace(/\s+/g, '-')}`}>
+                            {s.status}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="farm-modal-actions">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setSelectedField(null)}
+                >
+                  Close
                 </button>
               </div>
             </div>
@@ -933,17 +1220,40 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
             <div className="farm-modal-body">
               <div className="fields-list">
                 {fields.map((f) => (
-                  <div key={f.id} className="field-list-item">
+                  <div
+                    key={f.id}
+                    className="field-list-item field-list-item--clickable"
+                    onClick={() => {
+                      setViewAllFieldsModal(false);
+                      setSelectedField(f);
+                    }}
+                    title={`View ${f.name} details & scan history`}
+                  >
                     <div className="field-item-left">
                       <span className="field-bullet-icon">🌱</span>
                       <div className="field-item-names">
                         <strong>{f.name}</strong>
-                        <span>{f.areaHa} Ha · Last scan: {f.lastScanDate}</span>
+                        <span>{f.crop} · {f.areaHa} Ha · Last scan: {f.lastScanDate}</span>
                       </div>
                     </div>
-                    <span className={`status-badge ${f.status.toLowerCase().replace(/\s+/g, '-')}`}>
-                      {f.status}
-                    </span>
+                    <div className="field-item-right-group">
+                      <span className={`status-badge ${f.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                        {f.status}
+                      </span>
+                      <button
+                        type="button"
+                        className="field-quick-scan-btn"
+                        title={`Scan ${f.name} now`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setViewAllFieldsModal(false);
+                          startScanForField(f);
+                          if (onNavigateTab) onNavigateTab('scan');
+                        }}
+                      >
+                        📷
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

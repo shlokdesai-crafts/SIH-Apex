@@ -1488,3 +1488,371 @@
     flex-direction: column;
   }
 }
+
+/* ================================================================
+   FIELD ASSOCIATION BAR & BADGES
+   ================================================================ */
+.sc-field-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sc-field-bar-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  color: #334155;
+}
+
+.sc-field-bar-icon {
+  font-size: 1.1rem;
+}
+
+.sc-field-bar-title {
+  color: #0f172a;
+}
+
+.sc-field-bar-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  max-width: 420px;
+  justify-content: flex-end;
+}
+
+.sc-field-bar-select {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  color: #1e293b;
+  font-size: 0.84rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  max-width: 100%;
+}
+
+.sc-field-bar-select:focus {
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.12);
+}
+
+.sc-field-bar-clear {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 5px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.sc-field-bar-clear:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+.sc-field-bar-empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.sc-field-bar-add-btn {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #059669;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.sc-field-bar-add-btn:hover {
+  background: #059669;
+  color: #ffffff;
+}
+
+.sc-idle-badges-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.sc-idle-field-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  color: #1d4ed8;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.sc-idle-field-clear {
+  background: none;
+  border: none;
+  color: #1d4ed8;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.sc-idle-field-clear:hover {
+  color: #b91c1c;
+}
+
+.sc-preview-badges-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sc-preview-badge--field {
+  background: rgba(30, 64, 175, 0.88) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+/* ================================================================
+   FARMING & CROP DETAILS COLLECTION CARD (Scan-Driven My Farm)
+   ================================================================ */
+.sc-details-card {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 0 0 14px 0;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.sc-select-crop-prompt {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.sc-area-validation-msg {
+  color: #dc2626;
+  font-size: 0.76rem;
+  font-weight: 500;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sc-text-input.sc-input-error {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.sc-text-input.sc-input-error:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+}
+
+
+.sc-details-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.sc-details-icon {
+  font-size: 1.3rem;
+  background: #ecfdf5;
+  color: #10b981;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.sc-details-title {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.sc-details-subtitle {
+  display: block;
+  font-size: 0.74rem;
+  color: #64748b;
+}
+
+.sc-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+@media (max-width: 600px) {
+  .sc-details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sc-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sc-input-full {
+  grid-column: 1 / -1;
+}
+
+.sc-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.sc-required-star {
+  color: #dc2626;
+  font-weight: 800;
+}
+
+.sc-text-input,
+.sc-select-input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 0.84rem;
+  color: #0f172a;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.sc-text-input:focus,
+.sc-select-input:focus {
+  outline: none;
+  border-color: #16a34a;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+}
+
+.sc-area-input-row {
+  display: flex;
+  gap: 6px;
+}
+
+.sc-area-val-input {
+  flex: 1.2;
+}
+
+.sc-area-unit-select {
+  flex: 1;
+  background: #f1f5f9;
+  font-weight: 600;
+}
+
+.sc-textarea {
+  resize: vertical;
+  min-height: 52px;
+  line-height: 1.4;
+}
+
+/* Collapsible Section */
+.sc-collapsible-wrapper {
+  margin-top: 10px;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 8px;
+}
+
+.sc-collapsible-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  padding: 6px 4px;
+  cursor: pointer;
+  color: #059669;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: left;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.sc-collapsible-toggle:hover {
+  background: #ecfdf5;
+}
+
+.sc-collapsible-hint {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 400;
+}
+
+.sc-collapsible-content {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.sc-details-grid-sub {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 600px) {
+  .sc-details-grid-sub {
+    grid-template-columns: 1fr;
+  }
+}
