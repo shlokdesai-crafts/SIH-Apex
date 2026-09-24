@@ -74,6 +74,12 @@ const GovReportsPage = () => {
 
   useEffect(() => {
     fetchReportData();
+
+    const handleUpdate = () => fetchReportData();
+    window.addEventListener('gov-data-updated', handleUpdate);
+    return () => {
+      window.removeEventListener('gov-data-updated', handleUpdate);
+    };
   }, []);
 
   // Filtered dataset

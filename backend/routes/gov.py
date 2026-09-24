@@ -20,6 +20,7 @@ from db_mongo import (
     get_mongo_submissions,
     update_mongo_submission,
     get_mongo_map_markers,
+    get_mongo_crop_health_summary,
 )
 
 router = APIRouter()
@@ -62,12 +63,23 @@ def stats():
     return get_dashboard_mongo_stats()
 
 
+@router.get("/crop-health-data/summary", summary="Get live crop health data summary")
+def crop_health_summary():
+    return get_mongo_crop_health_summary()
+
+
+@router.post("/crop-health-data/refresh", summary="Refresh live crop health data")
+def crop_health_refresh():
+    return get_mongo_crop_health_summary()
+
+
 @router.get("/submissions", summary="List recent farmer submissions")
 def submissions(
     status: str | None = Query(default=None, description="Filter by status: Pending, Assigned, Resolved, Unidentified, or all"),
     limit: int = Query(default=100, ge=1, le=500),
 ):
     return get_mongo_submissions(limit=limit, status_filter=status)
+
 
 
 @router.get("/map-markers", summary="Get GPS coordinates for map markers")

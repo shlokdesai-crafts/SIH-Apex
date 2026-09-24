@@ -139,6 +139,8 @@ export default function CropHealth() {
     content: ReactNode;
   } | null>(null);
 
+  const [alertsList, setAlertsList] = useState<AlertItem[]>(RECENT_ALERTS);
+
   // ── Load live backend proxy data on mount ────────────────────────
   useEffect(() => {
     let isMounted = true;
@@ -146,14 +148,22 @@ export default function CropHealth() {
       try {
         const res = await fetchOfficialGovAgricultureData();
         if (isMounted && res) {
-          // Connected to backend proxy
+          if (res.recent_alerts && Array.isArray(res.recent_alerts) && res.recent_alerts.length > 0) {
+            setAlertsList(res.recent_alerts);
+          }
         }
       } catch (err) {
         console.warn('[CropHealth] Notice loading gov data:', err);
       }
     }
     loadData();
-    return () => { isMounted = false; };
+
+    const handleUpdate = () => loadData();
+    window.addEventListener('gov-data-updated', handleUpdate);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('gov-data-updated', handleUpdate);
+    };
   }, []);
 
   // ── Active Crop Metrics (Derived & Official) ─────────────────────
@@ -1176,7 +1186,7 @@ export default function CropHealth() {
                 </tr>
               </thead>
               <tbody>
-                {RECENT_ALERTS.map((alt) => (
+                {alertsList.map((alt) => (
                   <tr key={alt.id}>
                     <td style={{ color: '#64748b', whiteSpace: 'nowrap' }}>{alt.date}</td>
                     <td style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>

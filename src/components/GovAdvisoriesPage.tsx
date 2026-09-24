@@ -202,6 +202,12 @@ const GovAdvisoriesPage = () => {
       }
     };
     fetchMongoCaseCounts();
+
+    const handleUpdate = () => fetchMongoCaseCounts();
+    window.addEventListener('gov-data-updated', handleUpdate);
+    return () => {
+      window.removeEventListener('gov-data-updated', handleUpdate);
+    };
   }, []);
 
   // Filtered Advisories
