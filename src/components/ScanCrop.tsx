@@ -84,30 +84,6 @@ export const ALL_AVAILABLE_CROPS: CropItem[] = [
   { name: 'Orange',      img: '/images/crops/orange.jpg',     isModelSupported: false, sourceDataset: 'plantvillage' },
 ];
 
-// ── 20 Crops Database (Official Maharashtra Benchmark Repository) ─────────────
-const DATABASE_20_CROPS = [
-  { id: 'cotton',      name: 'Cotton',      marathi: 'कापूस',   icon: '/images/crops/cotton.png',      sampleImg: '/images/crop_cotton.jpg',    samples: '2,450' },
-  { id: 'soybean',     name: 'Soybean',     marathi: 'सोयाबीन',  icon: '/images/crops/soybean.png',     sampleImg: '/images/crop_soybean.jpg',   samples: '3,200' },
-  { id: 'sugarcane',   name: 'Sugarcane',   marathi: 'ऊस',      icon: '/images/crops/sugarcane.png',   sampleImg: '/images/crop_sugarcane.jpg', samples: '1,890' },
-  { id: 'onion',       name: 'Onion',       marathi: 'कांदा',    icon: '/images/crops/onion.png',       sampleImg: '/images/onion_crop.jpg',     samples: '2,100' },
-  { id: 'pigeon_pea',  name: 'Pigeon Pea',  marathi: 'तूर',      icon: '/images/crops/pigeon_pea.png',  sampleImg: '/images/crops/pigeon_pea.png', samples: '1,450' },
-  { id: 'chickpea',    name: 'Chickpea',    marathi: 'हरभरा',   icon: '/images/crops/chickpea.png',    sampleImg: '/images/crop_chickpea.jpg',  samples: '2,300' },
-  { id: 'maize',       name: 'Maize',       marathi: 'मका',     icon: '/images/crops/maize.png',       sampleImg: '/images/crop_maize.jpg',     samples: '3,850' },
-  { id: 'rice',        name: 'Rice',        marathi: 'तांदूळ',   icon: '/images/crops/rice.png',        sampleImg: '/images/crop_rice.jpg',      samples: '4,500' },
-  { id: 'tomato',      name: 'Tomato',      marathi: 'टोमॅटो',   icon: '/images/crops/tomato.png',      sampleImg: '/images/crop_tomato.jpg',    samples: '5,400' },
-  { id: 'potato',      name: 'Potato',      marathi: 'बटाटा',   icon: '/images/crops/potato.png',      sampleImg: '/images/potato_crop.jpg',    samples: '3,100' },
-  { id: 'brinjal',     name: 'Brinjal',     marathi: 'वांगी',    icon: '/images/crops/brinjal.png',     sampleImg: '/images/crops/brinjal.png',  samples: '1,950' },
-  { id: 'chili',       name: 'Chili',       marathi: 'मिरची',    icon: '/images/crops/chili.png',       sampleImg: '/images/crops/chili.png',    samples: '2,800' },
-  { id: 'cabbage',     name: 'Cabbage',     marathi: 'कोबी',     icon: '/images/crops/cabbage.png',     sampleImg: '/images/crops/cabbage.png',  samples: '1,650' },
-  { id: 'cauliflower', name: 'Cauliflower', marathi: 'फुलकोबी', icon: '/images/crops/cauliflower.png', sampleImg: '/images/crops/cauliflower.png', samples: '1,720' },
-  { id: 'okra',        name: 'Okra',        marathi: 'भेंडी',     icon: '/images/crops/okra.png',        sampleImg: '/images/crops/okra.png',     samples: '1,540' },
-  { id: 'mango',       name: 'Mango',       marathi: 'आंबा',     icon: '/images/crops/mango.png',       sampleImg: '/images/crops/mango.png',    samples: '2,200' },
-  { id: 'banana',      name: 'Banana',      marathi: 'केळी',     icon: '/images/crops/banana.png',      sampleImg: '/images/crops/banana.png',   samples: '2,150' },
-  { id: 'groundnut',   name: 'Groundnut',   marathi: 'शेंगदाणा', icon: '/images/crops/groundnut.png',   sampleImg: '/images/crops/groundnut.png', samples: '2,600' },
-  { id: 'mustard',     name: 'Mustard',     marathi: 'मोहरी',    icon: '/images/crops/mustard.png',     sampleImg: '/images/crops/mustard.png',  samples: '1,400' },
-  { id: 'sunflower',   name: 'Sunflower',   marathi: 'सूर्यफूल', icon: '/images/crops/sunflower.png',   sampleImg: '/images/crops/sunflower.png', samples: '1,850' },
-];
-
 // ── Crop-Specific Validated Agronomic Growth Stages ──────────────────────────
 export const CROP_GROWTH_STAGES: Record<string, string[]> = {
   Cotton: ['Germination & Seedling', 'Squaring Stage', 'Flowering & Boll Formation', 'Boll Opening & Maturity'],
@@ -530,11 +506,6 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
     applyCropDetailsIfAvailable(cropName);
   };
 
-  const handleDatabaseCropClick = (crop: (typeof DATABASE_20_CROPS)[0]) => {
-    handleSelectCropByName(crop.name);
-    // Smooth scroll to top of page so farmer sees selected state
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   const handleExampleClick = (ex: { img: string; label: string; color: string }) => {
     setPreviewUrl(ex.img);

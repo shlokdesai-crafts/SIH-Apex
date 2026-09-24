@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useContext } from 'react';
 import './AdvisoryOverview.css';
 import { AuthContext } from '../auth/AuthContext';
 import type { LocationResult } from '../services/locationService';
+import TranslatedText from './TranslatedText';
 import { getOrganicPreparationDetails } from '../utils/organicGuides';
 import { 
   calculateAdvisory, 

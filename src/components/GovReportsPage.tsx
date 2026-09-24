@@ -21,7 +21,7 @@ const GovReportsPage = () => {
   const { t } = useTranslation();
 
   const [cases, setCases] = useState<MongoCaseRecord[]>([]);
-  const [stats, setStats] = useState({
+  const [_stats, setStats] = useState({
     total: 0,
     resolved: 0,
     pending: 0,
