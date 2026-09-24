@@ -512,6 +512,9 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
     },
 }
 
+# Alias for Grape / Grapes mapping
+CROP_CONFIGS["Grape"] = CROP_CONFIGS["Grapes"]
+
 # ── Backwards-Compatibility Exports for Sugarcane ────────────────────────────
 SUGARCANE_CLASSES = CROP_CONFIGS["Sugarcane"]["classes"]
 NUM_CLASSES = len(SUGARCANE_CLASSES)

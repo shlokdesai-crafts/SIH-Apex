@@ -547,6 +547,8 @@ CROP_DISEASE_PROMPTS: Dict[str, Dict[str, List[str]]] = {
     },
 }
 
+CROP_DISEASE_PROMPTS["Grape"] = CROP_DISEASE_PROMPTS["Grapes"]
+
 _clip_disease_embeds_cache: Dict[str, torch.Tensor] = {}
 
 
@@ -603,8 +605,8 @@ def predict_crop_disease(
         has_cnn_model = bool(model_path and Path(model_path).exists())
 
         probs = None
-        # Prioritize validated, fine-tuned MobileNetV3 checkpoints when available (Potato, Grapes, Onion, etc.)
-        if has_cnn_model and (crop_name in ("Potato", "Grapes", "Onion") or crop_name not in CROP_DISEASE_PROMPTS):
+        # Prioritize validated, fine-tuned MobileNetV3 checkpoints when available (Potato, Grape, Grapes, Onion)
+        if has_cnn_model and (crop_name in ("Potato", "Grape", "Grapes", "Onion") or crop_name not in CROP_DISEASE_PROMPTS):
             try:
                 model, device = _get_crop_inference_model(crop_name)
                 tensor_img = _inference_transform(img).unsqueeze(0).to(device)  # type: ignore[attr-defined]
