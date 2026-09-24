@@ -21,20 +21,13 @@
   flex: 1;
   min-width: 0;
   width: 100%;
-  padding: 24px;
+  padding: 20px 24px;
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 20px;
   box-sizing: border-box;
-  transition: padding-left 0.3s ease-in-out;
-}
-
-@media (min-width: 1201px) {
-  .gov-dashboard-content.sidebar-open {
-    padding-left: 274px;
-  }
 }
 
 .gov-dashboard-grid-row-1 {

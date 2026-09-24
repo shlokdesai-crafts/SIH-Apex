@@ -340,9 +340,10 @@ async def scan_crop(
         location=location or "Unknown",
         latitude=latitude,
         longitude=longitude,
-        preview_url=None,
+        preview_url=saved_web_url,
         image_quality=image_quality.model_dump() if image_quality else None,
         diagnosis_details=disease_detection.model_dump() if disease_detection else None,
+ feature/sage-dataset-expansion
         field_id=clean_field_id,
     )
 
@@ -353,10 +354,8 @@ async def scan_crop(
         disease=condition_name,
         confidence=disease_conf,
         severity=severity,
+ main
         farmer_name=farmer_name or "Anonymous",
-        location=location or "Unknown",
-        latitude=latitude,
-        longitude=longitude,
     )
 
     # ── Step 8: Assemble Response ─────────────────────────────────────────────
