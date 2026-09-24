@@ -216,6 +216,24 @@ DISPLAY_NAMES: Dict[str, str] = {
     "Sunflower": "Sunflower (Suryaphool)",
 }
 
+# Populate all canonical crops (lower-cased) and display names into aliases
+for _c in CANONICAL_CROPS:
+    CROP_ALIASES.setdefault(_c.lower(), _c)
+
+for _canon, _disp in DISPLAY_NAMES.items():
+    CROP_ALIASES.setdefault(_disp.lower(), _canon)
+
+# Additional common variations & synonyms
+CROP_ALIASES.update({
+    "bell pepper": "Chili",
+    "bellpepper": "Chili",
+    "capsicum": "Chili",
+    "paprika": "Chili",
+    "grape": "Grapes",
+    "eggplant": "Brinjal",
+    "aubergine": "Brinjal",
+})
+
 # Maharashtra Agro-climatic Harvest & Regional Details
 MAHARASHTRA_CROP_METADATA: Dict[str, Dict[str, Any]] = {
     "Maize": {
@@ -455,11 +473,16 @@ CONDITION_TYPES: Dict[str, str] = {
 
 
 def normalize_crop_name(name: Optional[str]) -> Optional[str]:
-    """Normalizes any crop input string or alias to canonical crop name."""
+    """Normalizes any crop input string or alias to canonical crop name. Returns None if unsupported."""
     if not name:
         return None
     cleaned = name.strip().lower()
-    return CROP_ALIASES.get(cleaned, name.strip().title())
+    if cleaned in CROP_ALIASES:
+        return CROP_ALIASES[cleaned]
+    title_val = name.strip().title()
+    if title_val in CANONICAL_CROPS:
+        return title_val
+    return None
 
 
 def get_display_crop_name(name: Optional[str]) -> str:

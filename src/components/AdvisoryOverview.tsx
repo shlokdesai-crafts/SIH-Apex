@@ -19,6 +19,7 @@ import {
   type ApiAdvisoryCalculationData,
   type FarmerContextData 
 } from '../services/advisoryApi';
+import { useFarm } from '../context/FarmContext';
 
 interface AdvisoryOverviewProps {
   scanResult?: ScanResultData | null;
@@ -48,12 +49,40 @@ export interface DbFertilizerItem {
 
 export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer }: AdvisoryOverviewProps) {
   const { t } = useTranslation();
+  const { advisoryTarget, clearAdvisoryTarget } = useFarm();
 
-  // Active crop state: initialized from scanResult if present, defaulting to 'tomato'
+  // Active crop state: initialized from advisoryTarget or scanResult if present, defaulting to 'tomato'
   const [selectedCropId, setSelectedCropId] = useState<string>(() => {
+    if (advisoryTarget?.crop) {
+      const key = normalizeCropKey(advisoryTarget.crop);
+      if (key) return key;
+    }
     return scanResult?.crop ? normalizeCropKey(scanResult.crop) : 'tomato';
   });
   const lastScannedCropRef = useRef<string | undefined>(scanResult?.crop);
+
+  // Synchronize when advisoryTarget changes (e.g. navigated from a specific plot in My Farm)
+  useEffect(() => {
+    if (advisoryTarget?.crop) {
+      const cropKey = normalizeCropKey(advisoryTarget.crop);
+      if (cropKey) {
+        setSelectedCropId(cropKey);
+        if (advisoryTarget.cultivatedArea && advisoryTarget.cultivatedArea > 0) {
+          setFieldSize(advisoryTarget.cultivatedArea);
+          if (advisoryTarget.areaUnit && ['Acres', 'Hectares', 'Guntha'].includes(advisoryTarget.areaUnit)) {
+            setFieldUnit(advisoryTarget.areaUnit as 'Acres' | 'Hectares' | 'Guntha');
+          }
+        } else if (advisoryTarget.areaHa && advisoryTarget.areaHa > 0) {
+          setFieldSize(Number((advisoryTarget.areaHa * 2.471).toFixed(1)));
+          setFieldUnit('Acres');
+        }
+        const targetCrop = ADVISORY_DATA[cropKey];
+        if (targetCrop && targetCrop.products) {
+          setSelectedFertilizers(targetCrop.products.map((p) => p.id));
+        }
+      }
+    }
+  }, [advisoryTarget]);
 
   // When a new scan arrives, it automatically becomes the active crop in Advisory
   useEffect(() => {
@@ -158,11 +187,13 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
         const data = await fetchFarmerAdvisoryContext(activeCropId);
         if (data && isMounted) {
           setFarmerContext(data);
-          // Set initial field size from crop cycle or farm if available
-          if (data.cropCycle?.allocatedAcres) {
-            setFieldSize(data.cropCycle.allocatedAcres);
-          } else if (data.farm?.totalArea) {
-            setFieldSize(data.farm.totalArea);
+          // Set initial field size from crop cycle or farm if available and not already set by advisoryTarget
+          if (!advisoryTarget?.cultivatedArea && !advisoryTarget?.areaHa) {
+            if (data.cropCycle?.allocatedAcres) {
+              setFieldSize(data.cropCycle.allocatedAcres);
+            } else if (data.farm?.totalArea) {
+              setFieldSize(data.farm.totalArea);
+            }
           }
         }
       } catch (error) {
@@ -522,13 +553,22 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
       <div className="fert-topbar-nav">
         <button 
           className="fert-back-btn" 
-          onClick={onBack || (() => window.history.back())}
-          aria-label="Back to dashboard"
+          onClick={() => {
+            if (advisoryTarget) {
+              clearAdvisoryTarget();
+            }
+            if (onBack) {
+              onBack();
+            } else {
+              window.history.back();
+            }
+          }}
+          aria-label={advisoryTarget?.from === 'farm' ? 'Back to My Farm' : 'Back to dashboard'}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
-          <span>{t('Back to Dashboard')}</span>
+          <span>{advisoryTarget?.from === 'farm' ? t('Back to My Farm') : t('Back to Dashboard')}</span>
         </button>
 
         <div className="fert-top-tags">
@@ -607,7 +647,7 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
                   <span className="crop-live-dot"></span>
                   <span className="crop-monitored-label">{t('MONITORED CROP')}</span>
                 </div>
-                <span className="crop-field-chip">{farmerContext?.farm?.farmName || crop.field}</span>
+                <span className="crop-field-chip">{advisoryTarget?.fieldName || farmerContext?.farm?.farmName || crop.field}</span>
               </div>
 
               <div className="fert-crop-card-body">
@@ -626,14 +666,33 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
                 <div className="fert-crop-meta">
                   <div className="crop-name-row">
                     <h2 className="fert-crop-name">{crop.name}</h2>
-                    <span className="fert-crop-acres-tag">{farmerContext?.cropCycle?.allocatedAcres ?? crop.acres} Acres</span>
+                    <span className="fert-crop-acres-tag">
+                      {advisoryTarget?.cultivatedArea
+                        ? `${advisoryTarget.cultivatedArea} ${advisoryTarget.areaUnit || 'Acres'}`
+                        : advisoryTarget?.areaHa
+                        ? `${advisoryTarget.areaHa} Ha`
+                        : `${farmerContext?.cropCycle?.allocatedAcres ?? crop.acres} Acres`}
+                    </span>
                   </div>
                   <div className="fert-crop-stage">
                     <span className="stage-flower-icon">🌸</span>
-                    <span>{farmerContext?.cropCycle?.currentStage ?? crop.stage}</span>
+                    <span>{advisoryTarget?.growthStage || farmerContext?.cropCycle?.currentStage || crop.stage}</span>
                   </div>
                   <div className="fert-crop-subdetails">
-                    <span>{farmerContext?.farm?.farmName ?? crop.field} • {farmerContext?.cropCycle?.allocatedAcres ?? crop.acres} Acres | {(farmerContext?.farmer ? `${farmerContext.farmer.district}, ${farmerContext.farmer.state}` : crop.location).split(',')[0]}</span>
+                    <span>
+                      {advisoryTarget?.fieldName || farmerContext?.farm?.farmName || crop.field}
+                      {' • '}
+                      {advisoryTarget?.cultivatedArea
+                        ? `${advisoryTarget.cultivatedArea} ${advisoryTarget.areaUnit || 'Acres'}`
+                        : advisoryTarget?.areaHa
+                        ? `${advisoryTarget.areaHa} Ha`
+                        : `${farmerContext?.cropCycle?.allocatedAcres ?? crop.acres} Acres`}
+                      {advisoryTarget?.variety ? ` • Var: ${advisoryTarget.variety}` : ''}
+                      {advisoryTarget?.soilType ? ` • Soil: ${advisoryTarget.soilType}` : ''}
+                      {advisoryTarget?.irrigationMethod ? ` • ${advisoryTarget.irrigationMethod}` : ''}
+                      {' | '}
+                      {(farmerContext?.farmer ? `${farmerContext.farmer.district}, ${farmerContext.farmer.state}` : crop.location).split(',')[0]}
+                    </span>
                   </div>
                 </div>
               </div>

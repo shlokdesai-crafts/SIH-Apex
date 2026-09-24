@@ -9,6 +9,8 @@
  * - GET    /api/health
  */
 
+import { getAuthToken } from './authService';
+
 export interface PredictionCandidate {
   crop: string;
   condition: string;
@@ -37,6 +39,7 @@ export interface VerificationDetail {
 
 export interface ScanResponseData {
   scanId?: string;
+  fieldId?: string;
   status: 'valid' | 'success' | 'uncertain' | 'invalid' | 'invalid_image' | 'unsupported_crop' | 'server_error';
   message: string;
   timestamp?: string;
@@ -101,6 +104,7 @@ export interface ScanResponseData {
 export interface ScanHistoryItem {
   id: string;
   farmerId?: string;
+  fieldId?: string;
   crop: string;
   cropName?: string;
   condition: string;
@@ -167,24 +171,40 @@ export async function scanCropImage(
     longitude?: number | null;
     farmerName?: string;
     farmerId?: string;
+    crop?: string;
+    fieldId?: string;
+    location?: string;
   }
 ): Promise<ScanResponseData> {
   const form = new FormData();
   form.append('file', file);
+  if (options?.crop) form.append('crop', options.crop);
+  if (options?.fieldId) form.append('field_id', options.fieldId);
   if (options?.farmerName) form.append('farmer_name', options.farmerName);
   if (options?.farmerId) form.append('farmer_id', options.farmerId);
   if (options?.latitude != null && options?.longitude != null) {
     form.append('latitude', options.latitude.toString());
     form.append('longitude', options.longitude.toString());
+  }
+  if (options?.location) {
+    form.append('location', options.location);
+  } else if (options?.latitude != null && options?.longitude != null) {
     form.append('location', `Lat: ${options.latitude.toFixed(4)}, Lng: ${options.longitude.toFixed(4)}`);
   }
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s max for neural inference
 
+  const headers: Record<string, string> = {};
+  const token = getAuthToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   try {
     const res = await fetch('/api/scan', {
       method: 'POST',
+      headers,
       body: form,
       signal: controller.signal,
     });
@@ -195,15 +215,39 @@ export async function scanCropImage(
       try {
         const errJson = await res.json();
         if (errJson.message) errText = errJson.message;
+        else if (errJson.detail) {
+          errText = typeof errJson.detail === 'string' ? errJson.detail : JSON.stringify(errJson.detail);
+        }
       } catch (_) {}
-      throw new Error(errText);
+      const httpErr = new Error(errText);
+      (httpErr as any).status = res.status;
+      (httpErr as any).isHttpError = true;
+      throw httpErr;
     }
 
-    return await res.json();
+    try {
+      return await res.json();
+    } catch (_) {
+      const parseErr = new Error('Backend returned an invalid non-JSON response.');
+      (parseErr as any).isInvalidResponse = true;
+      throw parseErr;
+    }
   } catch (err: any) {
     clearTimeout(timeoutId);
     if (err.name === 'AbortError') {
-      throw new Error('Analysis timed out. Please check your network connection and try again.');
+      const abortErr = new Error('Analysis timed out. Please check your network connection and try again.');
+      (abortErr as any).isTimeout = true;
+      throw abortErr;
+    }
+    if (
+      err.name === 'TypeError' ||
+      (err.message && (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')))
+    ) {
+      const connErr = new Error(
+        'Backend AI service is unavailable. No disease diagnosis was produced. Start the backend service and try again.'
+      );
+      (connErr as any).isConnectionError = true;
+      throw connErr;
     }
     throw err;
   }
@@ -212,11 +256,13 @@ export async function scanCropImage(
 /**
  * Fetch persistent scan history from backend (ordered newest first).
  */
-export async function getScanHistory(farmerId?: string): Promise<ScanHistoryItem[]> {
+export async function getScanHistory(farmerId?: string, fieldId?: string): Promise<ScanHistoryItem[]> {
   try {
-    const url = farmerId
-      ? `/api/scans/history?farmer_id=${encodeURIComponent(farmerId)}`
-      : '/api/scans/history';
+    const params = new URLSearchParams();
+    if (farmerId) params.append('farmer_id', farmerId);
+    if (fieldId) params.append('field_id', fieldId);
+    const qs = params.toString();
+    const url = qs ? `/api/scans/history?${qs}` : '/api/scans/history';
     const res = await fetch(url);
     if (!res.ok) throw new Error(`History fetch failed with status ${res.status}`);
     return await res.json();

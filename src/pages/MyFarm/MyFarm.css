@@ -1234,3 +1234,263 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Fields List & Field Items ── */
+.fields-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 10px;
+  transition: all 0.18s ease;
+}
+
+.field-list-item--clickable {
+  cursor: pointer;
+}
+
+.field-list-item--clickable:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.field-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.field-bullet-icon {
+  font-size: 1.25rem;
+}
+
+.field-item-names strong {
+  display: block;
+  font-size: 0.88rem;
+  color: #0f172a;
+}
+
+.field-item-names span {
+  display: block;
+  font-size: 0.76rem;
+  color: #64748b;
+}
+
+.field-item-right-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-quick-scan-btn {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #059669;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.field-quick-scan-btn:hover {
+  background: #059669;
+  color: #ffffff;
+  border-color: #059669;
+  transform: scale(1.04);
+}
+
+.field-quick-advisory-btn {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 5px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.field-quick-advisory-btn:hover {
+  background: #166534;
+  color: #ffffff;
+  border-color: #166534;
+  transform: scale(1.04);
+}
+
+.crop-card-advisory-btn {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.crop-card-advisory-btn:hover {
+  background: #166534;
+  color: #ffffff;
+  border-color: #166534;
+  transform: translateY(-1px);
+}
+
+.qa-icon-circle.cam {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+/* ── Empty State for Farmers Without Scans ── */
+.farm-empty-scans-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 44px 24px;
+  background: #ffffff;
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  margin: 8px 0;
+}
+
+.farm-empty-scans-icon {
+  font-size: 2.8rem;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.2));
+  animation: pulse-leaf 2.5s ease-in-out infinite;
+}
+
+@keyframes pulse-leaf {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.farm-empty-scans-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.01em;
+}
+
+.farm-empty-scans-desc {
+  font-size: 0.92rem;
+  color: #64748b;
+  max-width: 440px;
+  line-height: 1.5;
+  margin: 0 0 20px 0;
+}
+
+.farm-empty-scans-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #16a34a;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
+  transition: all 0.2s ease;
+}
+
+.farm-empty-scans-btn:hover {
+  background: #15803d;
+  box-shadow: 0 6px 18px rgba(22, 163, 74, 0.45);
+  transform: translateY(-2px);
+}
+
+/* ── Unassessed Health Score Gauge & Callout ── */
+.gauge-fill-ring.unassessed {
+  stroke: #cbd5e1;
+}
+
+.farm-health-callout.unassessed {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+/* ── Scanned Crop Card Enhancements ── */
+.crop-card-field-badge {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  background: rgba(15, 23, 42, 0.82);
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  backdrop-filter: blur(4px);
+  max-width: 90%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.crop-card-condition-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.74rem;
+  margin-bottom: 6px;
+}
+
+.crop-card-condition-line .condition-lbl {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.crop-card-condition-line .condition-val {
+  color: #0f172a;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.crop-card-history-link {
+  background: none;
+  border: none;
+  color: #16a34a;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.15s ease;
+}
+
+.crop-card-history-link:hover {
+  color: #15803d;
+  text-decoration: underline;
+}

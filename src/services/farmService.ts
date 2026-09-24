@@ -376,6 +376,40 @@ export function sanitizeFarmState(state: FarmState, defaultLocation?: string): {
 
   let modified = false;
 
+  // If there are no genuine saved scans, purge any hardcoded demonstration crops, fields, and actions
+  if (!state.scans || state.scans.length === 0) {
+    const mockCropIds = new Set(['cotton', 'soybean', 'onion', 'tomato', 'potato']);
+    const mockFieldIds = new Set(['field-1', 'field-2', 'field-3', 'field-4']);
+    const mockActionIds = new Set(['pa-1', 'pa-2', 'pa-3', 'pa-4']);
+    const mockActivityIds = new Set(['act-1', 'act-2', 'act-3', 'act-4']);
+
+    if (Array.isArray(state.crops) && state.crops.some((c) => mockCropIds.has(c.id))) {
+      state.crops = state.crops.filter((c) => !mockCropIds.has(c.id));
+      modified = true;
+    }
+    if (Array.isArray(state.fields) && state.fields.some((f) => mockFieldIds.has(f.id))) {
+      state.fields = state.fields.filter((f) => !mockFieldIds.has(f.id));
+      modified = true;
+    }
+    if (Array.isArray(state.priorityActions) && state.priorityActions.some((pa) => mockActionIds.has(pa.id))) {
+      state.priorityActions = state.priorityActions.filter((pa) => !mockActionIds.has(pa.id));
+      modified = true;
+    }
+    if (Array.isArray(state.activities) && state.activities.some((act) => mockActivityIds.has(act.id))) {
+      state.activities = state.activities.filter((act) => !mockActivityIds.has(act.id));
+      modified = true;
+    }
+    if (state.overallHealthScore !== 0) {
+      state.overallHealthScore = 0;
+      modified = true;
+    }
+    const realArea = Math.round((state.fields || []).reduce((sum, f) => sum + (f.areaHa || 0), 0) * 100) / 100;
+    if (state.farmDetails.totalAreaHa !== realArea) {
+      state.farmDetails.totalAreaHa = realArea;
+      modified = true;
+    }
+  }
+
   if (Array.isArray(state.crops)) {
     state.crops = state.crops.map((c) => {
       const key = getCanonicalCropKey(c.id || c.name);
@@ -398,7 +432,7 @@ export function sanitizeFarmState(state: FarmState, defaultLocation?: string): {
     });
   }
 
-  if (state.fields && state.crops) {
+  if (state.fields && state.crops && state.scans && state.scans.length > 0) {
     const recalculated = computeOverallHealthScore(state.fields, state.crops);
     if (state.overallHealthScore !== recalculated && recalculated > 0) {
       state.overallHealthScore = recalculated;
@@ -431,25 +465,66 @@ export function getFarmState(farmerId: string, defaultLocation?: string): FarmSt
     console.error('Failed to load farm state from localStorage:', err);
   }
 
-  // If no saved state, initialize with standard profile
-  const initial = createInitialFarmState(farmerId, defaultLocation);
+  // If no saved state, initialize with clean empty farm state
+  const initial = createEmptyFarmState(farmerId, defaultLocation);
   saveFarmState(farmerId, initial);
   return initial;
+}
+
+function sanitizeUrlForStorage(url?: string | null): string | null {
+  if (!url) return null;
+  // Never persist large base64 data URLs in localStorage (which causes QuotaExceededError)
+  if (url.startsWith('data:image/') && url.length > 500) {
+    return null;
+  }
+  return url;
 }
 
 export function saveFarmState(farmerId: string, state: FarmState): void {
   if (!farmerId) farmerId = 'default_farmer';
   const key = `${STORAGE_PREFIX}${farmerId}`;
   try {
-    localStorage.setItem(key, JSON.stringify(state));
+    // Sanitize state so large base64 images don't exceed the 5MB browser quota
+    const sanitizedState: FarmState = {
+      ...state,
+      scans: (state.scans || []).slice(0, 20).map((s: CropScanRecord) => ({
+        ...s,
+        previewUrl: sanitizeUrlForStorage(s.previewUrl),
+      })),
+    };
+    localStorage.setItem(key, JSON.stringify(sanitizedState));
   } catch (err) {
-    console.error('Failed to save farm state to localStorage:', err);
+    console.warn('Failed to save farm state to localStorage (quota exceeded), pruning old records...');
+    try {
+      const trimmedState: FarmState = {
+        ...state,
+        scans: (state.scans || []).slice(0, 5).map((s: CropScanRecord) => ({
+          ...s,
+          previewUrl: null,
+        })),
+      };
+      localStorage.setItem(key, JSON.stringify(trimmedState));
+    } catch (e) {
+      console.error('Failed fallback saving farm state:', e);
+    }
   }
 }
 
 export interface RecordScanInput {
   crop: string;
   fieldId?: string;
+  fieldName?: string;
+  cultivatedArea?: number;
+  areaUnit?: 'Acres' | 'Hectares' | 'Guntha' | string;
+  areaHa?: number;
+  sowingDate?: string;
+  variety?: string;
+  irrigationMethod?: string;
+  soilType?: string;
+  season?: string;
+  notes?: string;
+  growthStage?: string;
+  location?: string;
   disease: string;
   confidence: number;
   severity: string;
@@ -463,6 +538,23 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
   const todayStr = formatTodayDate();
   const scanTimeFormatted = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const scanId = `scan-${Date.now()}`;
+
+  // Standardize areaHa
+  let computedAreaHa = input.areaHa;
+  if (computedAreaHa === undefined || computedAreaHa === null) {
+    if (input.cultivatedArea !== undefined && input.cultivatedArea > 0) {
+      if (input.areaUnit === 'Hectares') {
+        computedAreaHa = input.cultivatedArea;
+      } else if (input.areaUnit === 'Guntha') {
+        computedAreaHa = Math.round(input.cultivatedArea * 0.0101 * 100) / 100;
+      } else {
+        // Default to Acres
+        computedAreaHa = Math.round((input.cultivatedArea / 2.471) * 100) / 100;
+      }
+    } else {
+      computedAreaHa = 0.5;
+    }
+  }
 
   const isHealthy =
     input.disease.toLowerCase().includes('healthy') ||
@@ -502,6 +594,10 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
     recommendations: input.recommendations || [],
     previewUrl: input.previewUrl,
     status: cropStatus,
+    cultivatedArea: input.cultivatedArea,
+    areaUnit: input.areaUnit || 'Acres',
+    growthStage: input.growthStage || undefined,
+    location: input.location || undefined,
   };
 
   const updatedScans = [scanRecord, ...(currentState.scans || [])];
@@ -523,13 +619,23 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
         detectedDisease: input.disease,
         severity: input.severity,
         image: input.previewUrl || c.image,
+        cultivatedArea: input.cultivatedArea !== undefined ? input.cultivatedArea : c.cultivatedArea,
+        areaUnit: input.areaUnit || c.areaUnit,
+        areaHa: computedAreaHa !== undefined ? computedAreaHa : c.areaHa,
+        sowingDate: input.sowingDate || c.sowingDate,
+        variety: input.variety || c.variety,
+        irrigationMethod: input.irrigationMethod || c.irrigationMethod,
+        soilType: input.soilType || c.soilType,
+        season: input.season || c.season,
+        notes: input.notes || c.notes,
+        growthStage: input.growthStage || c.growthStage,
       };
     }
     return c;
   });
 
   if (!cropFound) {
-    // Add new crop dynamically
+    // Add new genuine crop dynamically
     const displayCrop = input.crop;
     const cropIcon = CROP_ICONS[inputCropKey] || '🌿';
     const newCrop: FarmCrop = {
@@ -539,7 +645,16 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
       image: input.previewUrl || `/images/crop_${inputCropKey}.jpg`,
       status: cropStatus,
       healthScore: cropHealth,
-      areaHa: 0.5,
+      areaHa: computedAreaHa,
+      cultivatedArea: input.cultivatedArea,
+      areaUnit: input.areaUnit || 'Acres',
+      sowingDate: input.sowingDate,
+      variety: input.variety,
+      irrigationMethod: input.irrigationMethod,
+      soilType: input.soilType,
+      season: input.season,
+      notes: input.notes,
+      growthStage: input.growthStage,
       expectedYieldQtHa: 10.0,
       lastScanDate: todayStr,
       detectedDisease: input.disease,
@@ -548,33 +663,90 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
     updatedCrops.push(newCrop);
   }
 
-  // 3. Update Field
+  // 3. Update or create Field
   let targetFieldId = input.fieldId;
-  if (!targetFieldId) {
-    const matchingField = currentState.fields.find(
+  let updatedFields = [...currentState.fields];
+
+  if (targetFieldId) {
+    updatedFields = updatedFields.map((f) => {
+      if (f.id === targetFieldId) {
+        return {
+          ...f,
+          status: fieldStatus,
+          healthScore: cropHealth,
+          lastScanDate: todayStr,
+          detectedDisease: input.disease,
+          areaHa: computedAreaHa || f.areaHa,
+          cultivatedArea: input.cultivatedArea !== undefined ? input.cultivatedArea : f.cultivatedArea,
+          areaUnit: input.areaUnit || f.areaUnit,
+          sowingDate: input.sowingDate || f.sowingDate,
+          variety: input.variety || f.variety,
+          irrigationMethod: input.irrigationMethod || f.irrigationMethod,
+          soilType: input.soilType || f.soilType,
+          season: input.season || f.season,
+          notes: input.notes || f.notes,
+          growthStage: input.growthStage || f.growthStage,
+        };
+      }
+      return f;
+    });
+  } else {
+    // Check if an existing field matches this crop
+    const matchingFieldIndex = updatedFields.findIndex(
       (f) => getCanonicalCropKey(f.crop) === inputCropKey || f.crop.toLowerCase() === normalizedInputCrop
     );
-    if (matchingField) {
-      targetFieldId = matchingField.id;
-    }
-  }
-
-  const updatedFields = currentState.fields.map((f) => {
-    const fKey = getCanonicalCropKey(f.crop);
-    if (f.id === targetFieldId || (!targetFieldId && (fKey === inputCropKey || f.crop.toLowerCase() === normalizedInputCrop))) {
-      return {
-        ...f,
+    if (matchingFieldIndex >= 0) {
+      targetFieldId = updatedFields[matchingFieldIndex].id;
+      updatedFields[matchingFieldIndex] = {
+        ...updatedFields[matchingFieldIndex],
         status: fieldStatus,
         healthScore: cropHealth,
         lastScanDate: todayStr,
         detectedDisease: input.disease,
+        areaHa: computedAreaHa || updatedFields[matchingFieldIndex].areaHa,
+        cultivatedArea: input.cultivatedArea !== undefined ? input.cultivatedArea : updatedFields[matchingFieldIndex].cultivatedArea,
+        areaUnit: input.areaUnit || updatedFields[matchingFieldIndex].areaUnit,
+        sowingDate: input.sowingDate || updatedFields[matchingFieldIndex].sowingDate,
+        variety: input.variety || updatedFields[matchingFieldIndex].variety,
+        irrigationMethod: input.irrigationMethod || updatedFields[matchingFieldIndex].irrigationMethod,
+        soilType: input.soilType || updatedFields[matchingFieldIndex].soilType,
+        season: input.season || updatedFields[matchingFieldIndex].season,
+        notes: input.notes || updatedFields[matchingFieldIndex].notes,
+        growthStage: input.growthStage || updatedFields[matchingFieldIndex].growthStage,
       };
+    } else {
+      // Create new genuine field record for this first-time scanned crop
+      targetFieldId = `field-${Date.now()}`;
+      const fieldDisplayName = input.fieldName?.trim() || `Field ${updatedFields.length + 1} - ${input.crop}`;
+      const newField: FarmField = {
+        id: targetFieldId,
+        name: fieldDisplayName,
+        crop: input.crop,
+        areaHa: computedAreaHa,
+        cultivatedArea: input.cultivatedArea,
+        areaUnit: input.areaUnit || 'Acres',
+        healthScore: cropHealth,
+        status: fieldStatus,
+        lastScanDate: todayStr,
+        detectedDisease: input.disease,
+        sowingDate: input.sowingDate,
+        variety: input.variety,
+        irrigationMethod: input.irrigationMethod,
+        soilType: input.soilType,
+        season: input.season,
+        notes: input.notes,
+        growthStage: input.growthStage,
+      };
+      updatedFields.push(newField);
     }
-    return f;
-  });
+  }
 
-  // 4. Recalculate Overall Farm Health Score
+  // Ensure scan record links to the correct fieldId
+  scanRecord.fieldId = targetFieldId;
+
+  // 4. Recalculate Overall Farm Health Score & Total Farm Area
   const overallHealthScore = computeOverallHealthScore(updatedFields, updatedCrops);
+  const totalFarmAreaHa = Math.round(updatedFields.reduce((sum, f) => sum + (f.areaHa || 0), 0) * 100) / 100;
 
   // 5. Update Recent Activity (Newest First)
   const activityStatus: ActivityStatus = isHealthy ? 'Healthy' : 'Diseased';
@@ -641,6 +813,8 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
     lastUpdated: `${todayStr}, ${scanTimeFormatted}`,
     farmDetails: {
       ...currentState.farmDetails,
+      location: input.location?.trim() || currentState.farmDetails.location,
+      totalAreaHa: totalFarmAreaHa,
       lastUpdated: `${todayStr}, ${scanTimeFormatted}`,
     },
   };
@@ -650,7 +824,16 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
 
   // Backwards compatibility with legacy cropguard_history
   try {
-    const legacyHistory = JSON.parse(localStorage.getItem('cropguard_history') || '[]');
+    const rawLegacy = localStorage.getItem('cropguard_history');
+    let legacyHistory: any[] = [];
+    if (rawLegacy) {
+      try {
+        legacyHistory = JSON.parse(rawLegacy);
+      } catch (_) {
+        legacyHistory = [];
+      }
+    }
+    const safePreview = sanitizeUrlForStorage(input.previewUrl);
     const newLegacyItem = {
       id: scanId,
       date: Date.now(),
@@ -658,11 +841,18 @@ export function recordScan(farmerId: string, input: RecordScanInput): FarmState 
       disease: input.disease,
       severity: input.severity,
       confidence: input.confidence,
-      previewUrl: input.previewUrl || null,
+      previewUrl: safePreview,
     };
-    localStorage.setItem('cropguard_history', JSON.stringify([newLegacyItem, ...legacyHistory]));
+    const sanitizedLegacy = [newLegacyItem, ...legacyHistory].slice(0, 25).map((item) => ({
+      ...item,
+      previewUrl: sanitizeUrlForStorage(item.previewUrl),
+    }));
+    localStorage.setItem('cropguard_history', JSON.stringify(sanitizedLegacy));
   } catch (e) {
     console.warn('Failed to sync to cropguard_history:', e);
+    try {
+      localStorage.removeItem('cropguard_history');
+    } catch (_) {}
   }
 
   return updatedState;
