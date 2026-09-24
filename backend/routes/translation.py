@@ -1,5 +1,7 @@
+import json
 import os
-import requests
+import urllib.error
+import urllib.request
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -48,7 +50,8 @@ def translate_text(text: str, src: str, tgt: str) -> str:
         
     headers = {
         "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "User-Agent": "CropGuard-App",
     }
     
     payload = {
@@ -60,31 +63,28 @@ def translate_text(text: str, src: str, tgt: str) -> str:
     }
     
     try:
-        response = requests.post(API_URL, headers=headers, json=payload, timeout=15)
-        
-        if response.status_code == 503:
-            # Model loading, just fallback to english for now rather than blocking the UI for 20s
+        req = urllib.request.Request(API_URL, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST")
+        with urllib.request.urlopen(req, timeout=15) as response:
+            res_body = response.read().decode("utf-8")
+            data = json.loads(res_body)
+            
+            if isinstance(data, list) and len(data) > 0 and 'translation_text' in data[0]:
+                return data[0]['translation_text']
+            elif isinstance(data, dict) and 'translation_text' in data:
+                return data['translation_text']
+            else:
+                print("Unexpected translation format:", data)
+                return text
+                
+    except urllib.error.HTTPError as e:
+        if e.code == 503:
+            # Model loading, fallback to original text rather than blocking
             print("Model is currently loading (503).")
             return text
-            
-        response.raise_for_status()
-        data = response.json()
-        
-        if isinstance(data, list) and len(data) > 0 and 'translation_text' in data[0]:
-            return data[0]['translation_text']
-        elif isinstance(data, dict) and 'translation_text' in data:
-            return data['translation_text']
-        else:
-            print("Unexpected translation format:", data)
-            return text
-            
-    except requests.exceptions.RequestException as e:
-        print(f"Translation API request error (returning original text): {repr(e)}")
+        print(f"Translation API HTTP error (returning original text): {e}")
         return text
     except Exception as e:
-        import traceback
         print(f"Translation error (returning original text): {repr(e)}")
-        # traceback.print_exc()
         return text
 
 @router.post("/translate")

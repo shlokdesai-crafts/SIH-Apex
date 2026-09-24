@@ -22,7 +22,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, List
 
-from fastapi import APIRouter, File, Form, Header, UploadFile
+from fastapi import APIRouter, File, Form, Header, HTTPException, UploadFile
 
 from services.validation import validate_upload
 from services.image_quality import analyze_quality, quality_errors
@@ -45,8 +45,9 @@ from models.response import (
 from ml.inference import predict_crop_disease
 from ml.config import CROP_CONFIGS
 from db import insert_submission, insert_scan_history
-from db_mongo import save_crop_scan_record, verify_auth_token
+from db_mongo import save_crop_scan_record, verify_auth_token, get_farm_by_user
 from data.canonical_mapping import (
+    CANONICAL_CROPS,
     normalize_crop_name,
     get_display_crop_name,
     get_condition_type,
@@ -87,6 +88,8 @@ async def scan_crop(
     user_id: Optional[str] = Form(default=None),
     farmer_name: Optional[str] = Form(default="Anonymous"),
     farmer_id: Optional[str] = Form(default="default_farmer"),
+    crop: Optional[str] = Form(default=None),
+    field_id: Optional[str] = Form(default=None),
     location: Optional[str] = Form(default="Unknown"),
     latitude: Optional[float] = Form(default=None),
     longitude: Optional[float] = Form(default=None),
@@ -98,8 +101,6 @@ async def scan_crop(
     now_iso = datetime.now(timezone.utc).isoformat()
     scan_id = f"scan_{int(datetime.now(timezone.utc).timestamp())}_{uuid.uuid4().hex[:6]}"
 
-<<<<<<< HEAD
-=======
     # Clean field_id if provided
     clean_field_id: Optional[str] = field_id.strip() if (field_id and field_id.strip()) else None
 
@@ -164,7 +165,6 @@ async def scan_crop(
         except Exception as exc:
             logger.warning(f"Field validation lookup encountered error: {exc}")
 
->>>>>>> feature/advisory-safe-refactor
     # ── Step 1: upload validation ─────────────────────────────────────────────
     val_errors, val_warnings, contents = await validate_upload(file)
 
@@ -253,9 +253,10 @@ async def scan_crop(
             crop_analysis=crop_analysis,
         )
 
-    # Normalise canonical and display crop names
-    canonical_crop = normalize_crop_name(crop_id.crop_name) or crop_id.crop_name
-    display_crop = get_display_crop_name(canonical_crop)
+    # Normalise canonical and display crop names (prioritising validated selected crop)
+    if not canonical_crop:
+        canonical_crop = normalize_crop_name(crop_id.crop_name) or crop_id.crop_name
+        display_crop = get_display_crop_name(canonical_crop)
     crop_id.crop_name = display_crop
     crop_conf_pct = round(crop_id.confidence * 100, 1)
 
