@@ -72,15 +72,10 @@ def submissions(
 
 @router.get("/map-markers", summary="Get GPS coordinates for map markers")
 def map_markers(
-    severity: str | None = Query(default=None, description="Filter by severity (e.g., 'High Issues')")
+    severity: str | None = Query(default=None, description="Filter by severity or status")
 ):
-    db_severity = None
-    if severity == "High Issues":
-        db_severity = "Severe"
-    elif severity == "Needs Visit":
-        db_severity = "Unidentified"
-        
-    return get_mongo_map_markers(severity_filter=db_severity)
+    return get_mongo_map_markers(severity_filter=severity)
+
 
 
 @router.get("/field-officers", summary="Get list of available government field officers")

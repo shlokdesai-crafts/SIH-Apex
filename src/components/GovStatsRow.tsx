@@ -37,8 +37,13 @@ const GovStatsRow = ({ onSelectFilter }: GovStatsRowProps) => {
 
   useEffect(() => {
     fetchStats();
+    const handleUpdate = () => fetchStats();
+    window.addEventListener('gov-data-updated', handleUpdate);
     const interval = setInterval(fetchStats, 8000);
-    return () => clearInterval(interval);
+    return () => {
+      window.removeEventListener('gov-data-updated', handleUpdate);
+      clearInterval(interval);
+    };
   }, []);
 
   const fmt = (n: number | undefined) => (n !== undefined ? n.toLocaleString('en-IN') : '0');

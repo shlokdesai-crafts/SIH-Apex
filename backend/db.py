@@ -68,12 +68,11 @@ def init_db() -> None:
             except Exception:
                 pass  # Column already exists
 
-        # Migrate scan_history table: add verification, reference, and field_id columns
+        # Migrate scan_history table: add verification and reference columns
         for col, col_type in (
             ('reference_source', 'TEXT'),
             ('accuracy_score', 'REAL'),
             ('verification_json', 'TEXT'),
-            ('field_id', 'TEXT'),
         ):
             try:
                 conn.execute(f"ALTER TABLE scan_history ADD COLUMN {col} {col_type}")
@@ -270,7 +269,6 @@ def insert_scan_history(
     crop_confidence: float,
     disease_confidence: float,
     farmer_id: str = "default_farmer",
-    field_id: str | None = None,
     condition_type: str = "disease",
     severity: str = "Unknown",
     image_path: str | None = None,
@@ -291,16 +289,16 @@ def insert_scan_history(
         conn.execute(
             """
             INSERT OR REPLACE INTO scan_history (
-                id, farmer_id, field_id, crop_name, predicted_condition, condition_type,
+                id, farmer_id, crop_name, predicted_condition, condition_type,
                 crop_confidence, disease_confidence, severity, image_path,
                 diagnosis_summary, symptoms_json, actions_json, prevention_json,
                 model_name, model_version, data_source, reference_source,
                 accuracy_score, verification_json, created_at, updated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                scan_id, farmer_id, field_id, crop_name, predicted_condition, condition_type,
+                scan_id, farmer_id, crop_name, predicted_condition, condition_type,
                 crop_confidence, disease_confidence, severity, image_path,
                 diagnosis_summary, symptoms_json, actions_json, prevention_json,
                 model_name, model_version, data_source, reference_source,
@@ -311,34 +309,10 @@ def insert_scan_history(
     return scan_id
 
 
-def get_scan_history(
-    farmer_id: str | None = None,
-    field_id: str | None = None,
-    limit: int = 50,
-) -> list[dict]:
+def get_scan_history(farmer_id: str | None = None, limit: int = 50) -> list[dict]:
     """Fetch persistent scan history, newest first."""
     with _get_conn() as conn:
-        if farmer_id and field_id:
-            rows = conn.execute(
-                """
-                SELECT * FROM scan_history
-                WHERE farmer_id = ? AND field_id = ?
-                ORDER BY created_at DESC
-                LIMIT ?
-                """,
-                (farmer_id, field_id, limit),
-            ).fetchall()
-        elif field_id:
-            rows = conn.execute(
-                """
-                SELECT * FROM scan_history
-                WHERE field_id = ?
-                ORDER BY created_at DESC
-                LIMIT ?
-                """,
-                (field_id, limit),
-            ).fetchall()
-        elif farmer_id:
+        if farmer_id:
             rows = conn.execute(
                 """
                 SELECT * FROM scan_history

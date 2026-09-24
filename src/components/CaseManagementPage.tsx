@@ -208,8 +208,13 @@ const CaseManagementPage = ({ initialFilter = 'all' }: CaseManagementPageProps) 
 
   useEffect(() => {
     fetchData();
+    const handleUpdate = () => fetchData();
+    window.addEventListener('gov-data-updated', handleUpdate);
     const interval = setInterval(fetchData, 10000);
-    return () => clearInterval(interval);
+    return () => {
+      window.removeEventListener('gov-data-updated', handleUpdate);
+      clearInterval(interval);
+    };
   }, [fetchData]);
 
   // Handle Officer Assignment

@@ -23,15 +23,105 @@ const GovHeader = ({
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
 
+  const [notifMenuOpen, setNotifMenuOpen] = useState(false);
+  const notifMenuRef = useRef<HTMLDivElement>(null);
+
+  interface NotificationItem {
+    id: string;
+    title: string;
+    desc: string;
+    time: string;
+    icon: string;
+    type: 'high' | 'unident' | 'medium' | 'low';
+    isRead: boolean;
+    targetTab?: string;
+    targetSection?: string;
+  }
+
+  const [notifications, setNotifications] = useState<NotificationItem[]>([
+    {
+      id: 'n1',
+      title: 'Unidentified Cases Alert',
+      desc: 'Expert agronomist review required for unclassified crop scans.',
+      time: '10 mins ago',
+      icon: '🔬',
+      type: 'unident',
+      isRead: false,
+      targetSection: 'unidentified-cases-section',
+    },
+    {
+      id: 'n2',
+      title: 'Pest Outbreak in Jalgaon',
+      desc: '124 farmer reports – Immediate bollworm containment required.',
+      time: '2 hours ago',
+      icon: '🐞',
+      type: 'high',
+      isRead: false,
+      targetTab: 'case-management',
+    },
+    {
+      id: 'n3',
+      title: 'Tomato Early Blight Surge',
+      desc: '86 farmer reports in Ahmednagar following 82% canopy humidity.',
+      time: '3 hours ago',
+      icon: '🍅',
+      type: 'high',
+      isRead: false,
+      targetTab: 'case-management',
+    },
+    {
+      id: 'n4',
+      title: 'Field Visit Assigned',
+      desc: 'Officer Sneha Deshmukh assigned to Nashik onion crop inspection.',
+      time: '5 hours ago',
+      icon: '👤',
+      type: 'medium',
+      isRead: true,
+      targetTab: 'case-management',
+    },
+  ]);
+
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (accountMenuRef.current && !accountMenuRef.current.contains(e.target as Node)) {
         setAccountMenuOpen(false);
       }
+      if (notifMenuRef.current && !notifMenuRef.current.contains(e.target as Node)) {
+        setNotifMenuOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleMarkAllRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  };
+
+  const handleClearNotifications = () => {
+    setNotifications([]);
+  };
+
+  const handleNotificationClick = (item: NotificationItem) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === item.id ? { ...n, isRead: true } : n))
+    );
+    setNotifMenuOpen(false);
+
+    if (item.targetSection) {
+      const el = document.getElementById(item.targetSection);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+    }
+
+    if (item.targetTab) {
+      handleTabChange(item.targetTab);
+    }
+  };
 
   const initials =
     user?.fullName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'GO';
@@ -165,21 +255,77 @@ const GovHeader = ({
           <span className="gov-select-arrow">▼</span>
         </div>
 
-        <div className="gov-notifications" title="12 System Alerts">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            width="18"
-            height="18"
+        {/* ── Notifications Icon & Dropdown ── */}
+        <div className="gov-notif-wrapper" ref={notifMenuRef}>
+          <button
+            className="gov-notifications"
+            onClick={() => setNotifMenuOpen(!notifMenuOpen)}
+            title={`${unreadCount} Unread Notifications`}
+            aria-expanded={notifMenuOpen}
+            aria-haspopup="true"
+            style={{ border: 'none' }}
           >
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-          </svg>
-          <span className="badge">12</span>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              width="18"
+              height="18"
+            >
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
+          </button>
+
+          {notifMenuOpen && (
+            <div className="gov-notif-dropdown">
+              <div className="gov-notif-header">
+                <div className="gov-notif-title">
+                  <span>🔔 {t("Notifications & Alerts")}</span>
+                  {unreadCount > 0 && <span className="gov-notif-count">{unreadCount} new</span>}
+                </div>
+                {unreadCount > 0 && (
+                  <button className="gov-notif-action-btn" onClick={handleMarkAllRead}>
+                    {t("Mark all read")}
+                  </button>
+                )}
+              </div>
+
+              <div className="gov-notif-list">
+                {notifications.length === 0 ? (
+                  <p style={{ padding: '20px', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
+                    {t("No notifications right now")}
+                  </p>
+                ) : (
+                  notifications.map((item) => (
+                    <div
+                      key={item.id}
+                      className={`gov-notif-item ${!item.isRead ? 'unread' : ''}`}
+                      onClick={() => handleNotificationClick(item)}
+                    >
+                      <div className={`gov-notif-icon ${item.type}`}>{item.icon}</div>
+                      <div className="gov-notif-body">
+                        <div className="gov-notif-item-title">{t(item.title)}</div>
+                        <div className="gov-notif-item-desc">{t(item.desc)}</div>
+                        <span className="gov-notif-item-time">{item.time}</span>
+                      </div>
+                      {!item.isRead && <span className="gov-notif-dot" />}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {notifications.length > 0 && (
+                <div className="gov-notif-footer">
+                  <button onClick={handleClearNotifications}>{t("Clear All Notifications")}</button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="gov-account-wrapper" ref={accountMenuRef}>

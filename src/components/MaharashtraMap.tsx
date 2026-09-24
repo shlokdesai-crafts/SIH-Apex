@@ -1,6 +1,6 @@
 import { useTranslation } from '../i18n/useTranslation';
-import { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Popup, CircleMarker } from 'react-leaflet';
+import { useState, useEffect, useCallback } from 'react';
+import { MapContainer, TileLayer, Popup, CircleMarker, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import './MaharashtraMap.css';
 
@@ -12,6 +12,8 @@ interface MarkerData {
   longitude: number;
   crop: string;
   disease?: string | null;
+  ai_result?: string | null;
+  confidence?: number | null;
   severity?: string | null;
   status: string;
   assigned_officer?: string | null;
@@ -19,17 +21,59 @@ interface MarkerData {
   created_at: string;
 }
 
+interface Officer {
+  id: string;
+  name: string;
+  role: string;
+  district: string;
+}
+
 const API = '/api';
 
-const getMarkerColor = (severity?: string | null, status?: string) => {
+const MapResizer = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    const triggerInvalidate = () => {
+      if (map) {
+        map.invalidateSize();
+      }
+    };
+
+    triggerInvalidate();
+    const t1 = setTimeout(triggerInvalidate, 100);
+    const t2 = setTimeout(triggerInvalidate, 400);
+    const t3 = setTimeout(triggerInvalidate, 1000);
+
+    window.addEventListener('resize', triggerInvalidate);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      window.removeEventListener('resize', triggerInvalidate);
+    };
+  }, [map]);
+
+  return null;
+};
+
+const getMarkerColor = (severity?: string | null, status?: string, disease?: string | null) => {
   const sStatus = (status || '').toLowerCase();
+  const lowerDis = (disease || '').toLowerCase();
+
   if (sStatus === 'resolved') return '#10b981'; // green
-  if (sStatus === 'unidentified' || sStatus.includes('unidentified')) return '#8b5cf6'; // purple
+  if (sStatus === 'unidentified' || lowerDis.includes('unidentified')) return '#8b5cf6'; // purple
 
   const lowerSev = severity ? severity.toLowerCase() : '';
   if (lowerSev.includes('severe') || lowerSev.includes('high')) return '#ef4444'; // red
   if (lowerSev.includes('moderate') || lowerSev.includes('medium')) return '#f59e0b'; // orange
   return '#3b82f6'; // blue
+};
+
+const formatConfidence = (conf?: number | null) => {
+  if (conf === undefined || conf === null) return 'N/A';
+  const val = conf > 1 ? conf : conf * 100;
+  return `${Math.round(val)}%`;
 };
 
 const MaharashtraMap = () => {
@@ -39,31 +83,121 @@ const MaharashtraMap = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedCase, setSelectedCase] = useState<MarkerData | null>(null);
 
-  useEffect(() => {
-    const fetchMarkers = () => {
-      setLoading(true);
-      const url =
-        filter === 'All Cases'
-          ? `${API}/map-markers`
-          : `${API}/map-markers?severity=${encodeURIComponent(filter)}`;
+  // Sub-modals for map actions
+  const [officers, setOfficers] = useState<Officer[]>([]);
+  const [assigningCase, setAssigningCase] = useState<MarkerData | null>(null);
+  const [selectedOfficer, setSelectedOfficer] = useState<string>('');
+  const [reviewCase, setReviewCase] = useState<MarkerData | null>(null);
+  const [expertDiagnosis, setExpertDiagnosis] = useState<string>('');
+  const [actionLoading, setActionLoading] = useState<boolean>(false);
 
-      fetch(url)
-        .then((res) => res.json())
-        .then((data) => {
-          if (Array.isArray(data)) {
-            setMarkers(data);
-          } else {
-            setMarkers([]);
-          }
-        })
-        .catch((err) => console.error('Error fetching map markers:', err))
-        .finally(() => setLoading(false));
-    };
+  const fetchMarkers = useCallback(() => {
+    setLoading(true);
+    const url =
+      filter === 'All Cases'
+        ? `${API}/map-markers`
+        : `${API}/map-markers?severity=${encodeURIComponent(filter)}`;
 
-    fetchMarkers();
-    const interval = setInterval(fetchMarkers, 10000);
-    return () => clearInterval(interval);
+    fetch(url)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setMarkers(data);
+        } else {
+          setMarkers([]);
+        }
+      })
+      .catch((err) => console.error('Error fetching map markers:', err))
+      .finally(() => setLoading(false));
   }, [filter]);
+
+  useEffect(() => {
+    fetchMarkers();
+    fetch(`${API}/field-officers`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setOfficers(data);
+      })
+      .catch(() => {});
+
+    const handleUpdate = () => fetchMarkers();
+    window.addEventListener('gov-data-updated', handleUpdate);
+    const interval = setInterval(fetchMarkers, 10000);
+    return () => {
+      window.removeEventListener('gov-data-updated', handleUpdate);
+      clearInterval(interval);
+    };
+  }, [fetchMarkers]);
+
+  const handleConfirmAssign = async () => {
+    if (!assigningCase || !selectedOfficer) return;
+    setActionLoading(true);
+    try {
+      await fetch(`${API}/submissions/${assigningCase.id}/assign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assigned_officer: selectedOfficer }),
+      });
+      setAssigningCase(null);
+      if (selectedCase && selectedCase.id === assigningCase.id) {
+        setSelectedCase((prev) => (prev ? { ...prev, status: 'Assigned', assigned_officer: selectedOfficer } : null));
+      }
+      window.dispatchEvent(new CustomEvent('gov-data-updated'));
+      fetchMarkers();
+    } catch (e) {
+      console.error('Error assigning officer:', e);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleConfirmDiagnosis = async () => {
+    if (!reviewCase || !expertDiagnosis.trim()) return;
+    setActionLoading(true);
+    try {
+      await fetch(`${API}/submissions/${reviewCase.id}/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          disease: expertDiagnosis.trim(),
+          ai_result: expertDiagnosis.trim(),
+          status: 'Assigned',
+        }),
+      });
+      setReviewCase(null);
+      if (selectedCase && selectedCase.id === reviewCase.id) {
+        setSelectedCase((prev) =>
+          prev ? { ...prev, disease: expertDiagnosis.trim(), ai_result: expertDiagnosis.trim(), status: 'Assigned' } : null
+        );
+      }
+      window.dispatchEvent(new CustomEvent('gov-data-updated'));
+      fetchMarkers();
+    } catch (e) {
+      console.error('Error updating diagnosis:', e);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleResolveCase = async (caseId: string) => {
+    setActionLoading(true);
+    try {
+      await fetch(`${API}/submissions/${caseId}/resolve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resolution_notes: 'Diagnosed and resolved by District Agriculture Officer' }),
+      });
+      if (selectedCase && selectedCase.id === caseId) {
+        setSelectedCase((prev) => (prev ? { ...prev, status: 'Resolved' } : null));
+      }
+      window.dispatchEvent(new CustomEvent('gov-data-updated'));
+      fetchMarkers();
+    } catch (e) {
+      console.error('Error resolving case:', e);
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   return (
     <div className="gov-card maha-map">
@@ -77,19 +211,15 @@ const MaharashtraMap = () => {
           >
             <option value="All Cases">{t("All Active Cases")}</option>
             <option value="High Issues">{t("Severe Outbreaks")}</option>
+
             <option value="Needs Visit">{t("Needs Field Visit")}</option>
+            <option value="Unidentified">{t("Unidentified Cases")}</option>
+            <option value="Resolved">{t("Resolved Cases")}</option>
           </select>
         </div>
       </div>
 
-      <div
-        className="gov-map-container"
-        style={{
-          height: '380px',
-          padding: 0,
-          position: 'relative',
-        }}
-      >
+      <div className="gov-map-container">
         {loading && markers.length === 0 && (
           <div className="gov-map-loader">
             <p>{t("Loading official map records...")}</p>
@@ -97,8 +227,10 @@ const MaharashtraMap = () => {
         )}
 
         <MapContainer
-          center={[19.7515, 75.7139]}
-          zoom={6}
+          center={[19.65, 75.8]}
+          zoom={7}
+          zoomControl={true}
+          scrollWheelZoom={false}
           style={{
             height: '100%',
             width: '100%',
@@ -106,6 +238,7 @@ const MaharashtraMap = () => {
             zIndex: 1,
           }}
         >
+          <MapResizer />
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -116,7 +249,7 @@ const MaharashtraMap = () => {
               key={m.id}
               center={[m.latitude, m.longitude]}
               radius={9}
-              fillColor={getMarkerColor(m.severity, m.status)}
+              fillColor={getMarkerColor(m.severity, m.status, m.disease)}
               fillOpacity={0.85}
               color="#ffffff"
               weight={2}
@@ -129,14 +262,17 @@ const MaharashtraMap = () => {
                     🌾 <strong>{t("Crop:")}</strong> {m.crop}
                   </div>
                   <div>
-                    🧪 <strong>{t("Diagnosis:")}</strong> {m.disease || 'Pending Review'}
+                    🧪 <strong>{t("Diagnosis:")}</strong> {m.disease || m.ai_result || 'Pending Review'}
+                  </div>
+                  <div>
+                    📊 <strong>{t("Confidence:")}</strong> {formatConfidence(m.confidence)}
                   </div>
                   <div>
                     ⚠️ <strong>{t("Severity:")}</strong> {m.severity || 'Medium'}
                   </div>
                   <div>
                     📌 <strong>{t("Status:")}</strong>{' '}
-                    <span style={{ fontWeight: 700, color: getMarkerColor(m.severity, m.status) }}>
+                    <span style={{ fontWeight: 700, color: getMarkerColor(m.severity, m.status, m.disease) }}>
                       {m.status}
                     </span>
                   </div>
@@ -183,10 +319,13 @@ const MaharashtraMap = () => {
             <span className="dot moderate" /> {t("Moderate Issue")}
           </div>
           <div className="legend-item">
-            <span className="dot low" /> {t("Resolved / Healthy")}
+            <span className="dot pending" /> {t("Field Visit Needed")}
           </div>
           <div className="legend-item">
-            <span className="dot unident" /> {t("Unidentified")}
+            <span className="dot unident" /> {t("Unidentified Case")}
+          </div>
+          <div className="legend-item">
+            <span className="dot low" /> {t("Resolved / Healthy")}
           </div>
         </div>
       </div>
@@ -197,41 +336,166 @@ const MaharashtraMap = () => {
           <div className="gov-modal-content">
             <h4>📋 {t("Official Case Details")}</h4>
             <p className="sub">
-              Case #{selectedCase.id.substring(selectedCase.id.length - 6).toUpperCase()}
+              Case #{selectedCase.id.length > 8 ? selectedCase.id.substring(selectedCase.id.length - 6).toUpperCase() : selectedCase.id}
             </p>
 
-            <div className="case-detail-rows">
-              <div>
-                <strong>{t("Farmer Name")}:</strong> {selectedCase.farmer_name}
+            <div className="case-detail-grid">
+              <div className="case-detail-item">
+                <strong>{t("Farmer Name")}</strong>
+                <span>{selectedCase.farmer_name}</span>
               </div>
-              <div>
-                <strong>{t("District Location")}:</strong> 📍 {selectedCase.location}
+              <div className="case-detail-item">
+                <strong>{t("District Location")}</strong>
+                <span>📍 {selectedCase.location}</span>
               </div>
-              <div>
-                <strong>{t("GPS Coordinates")}:</strong> {selectedCase.latitude.toFixed(4)}, {selectedCase.longitude.toFixed(4)}
+              <div className="case-detail-item">
+                <strong>{t("GPS Coordinates")}</strong>
+                <span>{selectedCase.latitude.toFixed(4)}, {selectedCase.longitude.toFixed(4)}</span>
               </div>
-              <div>
-                <strong>{t("Crop Species")}:</strong> 🌾 {selectedCase.crop}
+              <div className="case-detail-item">
+                <strong>{t("Crop Species")}</strong>
+                <span>🌾 {selectedCase.crop}</span>
               </div>
-              <div>
-                <strong>{t("AI Diagnosis")}:</strong> 🧪 {selectedCase.disease || 'Pending Review'}
+              <div className="case-detail-item">
+                <strong>{t("AI Diagnosis")}</strong>
+                <span>🧪 {selectedCase.disease || selectedCase.ai_result || 'Pending Review'}</span>
               </div>
-              <div>
-                <strong>{t("Severity")}:</strong> {selectedCase.severity || 'Medium'}
+              <div className="case-detail-item">
+                <strong>{t("AI Confidence")}</strong>
+                <span>📊 {formatConfidence(selectedCase.confidence)}</span>
               </div>
-              <div>
-                <strong>{t("Status")}:</strong> {selectedCase.status}
+              <div className="case-detail-item">
+                <strong>{t("Severity")}</strong>
+                <span>⚠️ {selectedCase.severity || 'Medium'}</span>
+              </div>
+              <div className="case-detail-item">
+                <strong>{t("Status")}</strong>
+                <span style={{ color: getMarkerColor(selectedCase.severity, selectedCase.status, selectedCase.disease), fontWeight: 700 }}>
+                  {selectedCase.status}
+                </span>
               </div>
               {selectedCase.assigned_officer && (
-                <div>
-                  <strong>{t("Assigned Officer")}:</strong> 👤 {selectedCase.assigned_officer}
+                <div className="case-detail-item" style={{ gridColumn: 'span 2' }}>
+                  <strong>{t("Assigned Officer")}</strong>
+                  <span>👤 {selectedCase.assigned_officer}</span>
+                </div>
+              )}
+              {selectedCase.resolution_notes && (
+                <div className="case-detail-item" style={{ gridColumn: 'span 2' }}>
+                  <strong>{t("Resolution Notes")}</strong>
+                  <span>📝 {selectedCase.resolution_notes}</span>
                 </div>
               )}
             </div>
 
-            <div className="modal-actions" style={{ marginTop: '18px' }}>
+            <div className="modal-actions" style={{ marginTop: '18px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button
+                className="btn-confirm"
+                onClick={() => {
+                  setReviewCase(selectedCase);
+                  setExpertDiagnosis(selectedCase.disease && !selectedCase.disease.toLowerCase().includes('unidentified') ? selectedCase.disease : 'Fungal Leaf Spot');
+                }}
+              >
+                🔬 {t("Review/Identify")}
+              </button>
+
+              <button
+                className="btn-confirm secondary"
+                onClick={() => {
+                  setAssigningCase(selectedCase);
+                  setSelectedOfficer(officers[0]?.name || 'Rajesh Patil');
+                }}
+              >
+                👤 {t("Assign Officer")}
+              </button>
+
+              {selectedCase.status !== 'Resolved' && (
+                <button
+                  className="btn-confirm"
+                  style={{ background: '#10b981' }}
+                  onClick={() => handleResolveCase(selectedCase.id)}
+                  disabled={actionLoading}
+                >
+                  ✅ {t("Resolve Case")}
+                </button>
+              )}
+
               <button className="btn-cancel" onClick={() => setSelectedCase(null)}>
-                {t("Close Details")}
+                {t("Close")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Identify Disease Modal */}
+      {reviewCase && (
+        <div className="gov-modal-overlay">
+          <div className="gov-modal-content">
+            <h4>🔬 {t("Agronomist Expert Disease Diagnosis")}</h4>
+            <p>
+              Case #{reviewCase.id.length > 8 ? reviewCase.id.substring(reviewCase.id.length - 6).toUpperCase() : reviewCase.id} — {reviewCase.farmer_name} ({reviewCase.crop})
+            </p>
+
+            <div className="modal-field">
+              <label>{t("Verified Disease Diagnosis")}:</label>
+              <input
+                type="text"
+                value={expertDiagnosis}
+                onChange={(e) => setExpertDiagnosis(e.target.value)}
+                placeholder="e.g. Red Rot Disease, Early Blight, Yellow Mosaic Virus..."
+              />
+            </div>
+
+            <div className="modal-actions">
+              <button className="btn-cancel" onClick={() => setReviewCase(null)}>
+                {t("Cancel")}
+              </button>
+              <button
+                className="btn-confirm"
+                onClick={handleConfirmDiagnosis}
+                disabled={actionLoading || !expertDiagnosis.trim()}
+              >
+                {actionLoading ? t("Saving...") : t("Save Diagnosis")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Assign Officer Modal */}
+      {assigningCase && (
+        <div className="gov-modal-overlay">
+          <div className="gov-modal-content">
+            <h4>👤 {t("Assign Field Extension Officer")}</h4>
+            <p>
+              Case #{assigningCase.id.length > 8 ? assigningCase.id.substring(assigningCase.id.length - 6).toUpperCase() : assigningCase.id} — {assigningCase.farmer_name} ({assigningCase.crop})
+            </p>
+
+            <div className="modal-field">
+              <label>{t("Select Extension Officer")}:</label>
+              <select
+                value={selectedOfficer}
+                onChange={(e) => setSelectedOfficer(e.target.value)}
+              >
+                {officers.map((off) => (
+                  <option key={off.id} value={off.name}>
+                    {off.name} ({off.role} - {off.district})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="modal-actions">
+              <button className="btn-cancel" onClick={() => setAssigningCase(null)}>
+                {t("Cancel")}
+              </button>
+              <button
+                className="btn-confirm"
+                onClick={handleConfirmAssign}
+                disabled={actionLoading}
+              >
+                {actionLoading ? t("Assigning...") : t("Confirm Assignment")}
               </button>
             </div>
           </div>
@@ -242,3 +506,4 @@ const MaharashtraMap = () => {
 };
 
 export default MaharashtraMap;
+

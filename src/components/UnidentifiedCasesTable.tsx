@@ -67,6 +67,10 @@ const UnidentifiedCasesTable = () => {
         if (Array.isArray(data)) setOfficers(data);
       })
       .catch((e) => console.error('Error fetching officers:', e));
+
+    const handleUpdate = () => fetchUnidentifiedCases();
+    window.addEventListener('gov-data-updated', handleUpdate);
+    return () => window.removeEventListener('gov-data-updated', handleUpdate);
   }, []);
 
   const handleConfirmAssign = async () => {
@@ -79,6 +83,7 @@ const UnidentifiedCasesTable = () => {
         body: JSON.stringify({ assigned_officer: selectedOfficer }),
       });
       setAssigningCase(null);
+      window.dispatchEvent(new CustomEvent('gov-data-updated'));
       fetchUnidentifiedCases();
     } catch (e) {
       console.error('Error assigning officer:', e);
@@ -101,6 +106,7 @@ const UnidentifiedCasesTable = () => {
         }),
       });
       setReviewCase(null);
+      window.dispatchEvent(new CustomEvent('gov-data-updated'));
       fetchUnidentifiedCases();
     } catch (e) {
       console.error('Error updating diagnosis:', e);
@@ -118,6 +124,7 @@ const UnidentifiedCasesTable = () => {
         body: JSON.stringify({ resolution_notes: 'Diagnosed and resolved by District Agriculture Team' }),
       });
       setViewingCase(null);
+      window.dispatchEvent(new CustomEvent('gov-data-updated'));
       fetchUnidentifiedCases();
     } catch (e) {
       console.error('Error resolving case:', e);
@@ -173,7 +180,7 @@ const UnidentifiedCasesTable = () => {
             <tbody>
               {cases.map((c) => (
                 <tr key={c.id}>
-                  <td className="case-id-code">#{c.id.substring(c.id.length - 6).toUpperCase()}</td>
+                  <td className="case-id-code">#{c.id.length > 8 ? c.id.substring(c.id.length - 6).toUpperCase() : c.id}</td>
                   <td className="gov-fw-500">{c.farmer_name}</td>
                   <td>📍 {c.location}</td>
                   <td>🌾 {c.crop}</td>
@@ -191,7 +198,7 @@ const UnidentifiedCasesTable = () => {
                     )}
                   </td>
                   <td>
-                    <div style={{ display: 'flex', gap: '6px' }}>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                       <button
                         className="gov-action-btn secondary"
                         onClick={() => setViewingCase(c)}
@@ -204,7 +211,7 @@ const UnidentifiedCasesTable = () => {
                         className="gov-action-btn primary"
                         onClick={() => {
                           setReviewCase(c);
-                          setExpertDiagnosis(c.disease && c.disease !== 'AI Unidentified' ? c.disease : 'Fungal Leaf Spot');
+                          setExpertDiagnosis(c.disease && !c.disease.toLowerCase().includes('unidentified') ? c.disease : 'Fungal Leaf Spot');
                         }}
                       >
                         {t("Review/Identify")}
@@ -218,6 +225,16 @@ const UnidentifiedCasesTable = () => {
                         }}
                       >
                         {t("Assign Visit")}
+                      </button>
+
+                      <button
+                        className="gov-action-btn success"
+                        style={{ background: '#10b981', color: '#fff', border: 'none' }}
+                        onClick={() => handleResolveCase(c.id)}
+                        disabled={actionLoading}
+                        title="Resolve Case"
+                      >
+                        {t("Resolve")}
                       </button>
                     </div>
                   </td>

@@ -22,9 +22,6 @@ from dotenv import load_dotenv
 from pymongo import MongoClient, ASCENDING, DESCENDING, IndexModel
 from pymongo.errors import PyMongoError, DuplicateKeyError
 from bson import ObjectId
-import certifi
-import uuid
-import sqlite3
 
 # Load environment
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / ".env")
@@ -35,35 +32,6 @@ logger = logging.getLogger(__name__)
 # Secret for HMAC token signing
 AUTH_SECRET = os.getenv("AUTH_SECRET", "cropguard_sih_secure_secret_key_2026")
 MONGO_URL = os.getenv("MONGO_URL", "")
-
-SQLITE_DB_PATH = Path(__file__).resolve().parent / "submissions.db"
-
-
-def _get_sqlite_conn():
-    conn = sqlite3.connect(SQLITE_DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-
-def _ensure_sqlite_users_table():
-    with _get_sqlite_conn() as conn:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id TEXT PRIMARY KEY,
-                phone TEXT UNIQUE NOT NULL,
-                fullName TEXT NOT NULL,
-                passwordHash TEXT NOT NULL,
-                location TEXT NOT NULL,
-                district TEXT,
-                language TEXT NOT NULL,
-                role TEXT NOT NULL,
-                email TEXT,
-                createdAt TEXT NOT NULL,
-                updatedAt TEXT NOT NULL
-            )
-        """)
-        conn.commit()
-
 
 # Clean connection URI if it has template brackets
 if "<" in MONGO_URL and ">" in MONGO_URL:
@@ -236,63 +204,29 @@ def create_user(
     district: Optional[str] = None,
 ) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
     """Registers a new user and provisions their initial Farm record."""
+    db = get_db()
+    if db is None:
+        return False, None, "Database unavailable"
+
     phone = phone.strip()
     if not phone or not password:
         return False, None, "Phone and password required"
-
-    now = datetime.now(timezone.utc)
-    pwd_hash = hash_password(password)
-    dist = district or location.split(",")[0].strip()
-    name = full_name.strip() or "Farmer"
-    user_role = role or "Farmer"
-
-    db = get_db()
-    if db is None:
-        # SQLite offline-first fallback
-        try:
-            _ensure_sqlite_users_table()
-            with _get_sqlite_conn() as conn:
-                cur = conn.cursor()
-                cur.execute("SELECT id FROM users WHERE phone = ?", (phone,))
-                if cur.fetchone():
-                    return False, None, "User with this phone number already exists"
-                
-                user_id = f"usr_{uuid.uuid4().hex[:12]}"
-                cur.execute("""
-                    INSERT INTO users (id, phone, fullName, passwordHash, location, district, language, role, email, createdAt, updatedAt)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (user_id, phone, name, pwd_hash, location, dist, language, user_role, email.strip() if email else None, now.isoformat(), now.isoformat()))
-                conn.commit()
-
-            user_public = {
-                "id": user_id,
-                "phone": phone,
-                "fullName": name,
-                "location": location,
-                "district": dist,
-                "language": language,
-                "role": user_role,
-                "email": email.strip() if email else None,
-                "createdAt": now.isoformat(),
-            }
-            token = create_auth_token(user_id, phone, user_role)
-            return True, {"user": user_public, "token": token}, None
-        except Exception as exc:
-            logger.error(f"Error creating user in SQLite: {exc}")
-            return False, None, str(exc)
 
     existing = db.users.find_one({"phone": phone})
     if existing:
         return False, None, "User with this phone number already exists"
 
+    now = datetime.now(timezone.utc)
+    pwd_hash = hash_password(password)
+
     user_doc = {
         "phone": phone,
-        "fullName": name,
+        "fullName": full_name.strip() or "Farmer",
         "passwordHash": pwd_hash,
         "location": location,
-        "district": dist,
+        "district": district or location.split(",")[0].strip(),
         "language": language,
-        "role": user_role,
+        "role": role or "Farmer",
         "email": email.strip() if email else None,
         "createdAt": now,
         "updatedAt": now,
@@ -321,11 +255,11 @@ def create_user(
             "location": location,
             "district": user_doc["district"],
             "language": language,
-            "role": user_role,
+            "role": role,
             "email": user_doc["email"],
             "createdAt": now.isoformat(),
         }
-        token = create_auth_token(user_id, phone, user_role)
+        token = create_auth_token(user_id, phone, role)
         return True, {"user": user_public, "token": token}, None
     except DuplicateKeyError:
         return False, None, "User with this phone number already exists"
@@ -336,39 +270,11 @@ def create_user(
 
 def authenticate_user(phone: str, password: str) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
     """Authenticates user with phone and password."""
-    phone = phone.strip()
     db = get_db()
     if db is None:
-        try:
-            _ensure_sqlite_users_table()
-            with _get_sqlite_conn() as conn:
-                cur = conn.cursor()
-                cur.execute("SELECT * FROM users WHERE phone = ?", (phone,))
-                row = cur.fetchone()
-                if not row:
-                    return False, None, "Account not found. Please sign up."
-                if not verify_password(password, row["passwordHash"]):
-                    return False, None, "Incorrect password."
-                
-                user_id = str(row["id"])
-                user_role = row["role"] or "Farmer"
-                token = create_auth_token(user_id, phone, user_role)
-                user_public = {
-                    "id": user_id,
-                    "phone": row["phone"],
-                    "fullName": row["fullName"],
-                    "location": row["location"],
-                    "district": row["district"] or "",
-                    "language": row["language"] or "en",
-                    "role": user_role,
-                    "email": row["email"],
-                    "createdAt": row["createdAt"],
-                }
-                return True, {"user": user_public, "token": token}, None
-        except Exception as exc:
-            logger.error(f"Error authenticating user in SQLite: {exc}")
-            return False, None, str(exc)
+        return False, None, "Database unavailable"
 
+    phone = phone.strip()
     user = db.users.find_one({"phone": phone})
     if not user:
         return False, None, "Account not found. Please sign up."
@@ -397,31 +303,10 @@ def authenticate_user(phone: str, password: str) -> Tuple[bool, Optional[Dict[st
 
 
 def get_user_by_id(user_id: str) -> Optional[Dict[str, Any]]:
-    """Fetches user profile by ObjectId or SQLite ID."""
+    """Fetches user profile by ObjectId."""
     db = get_db()
     if db is None:
-        try:
-            _ensure_sqlite_users_table()
-            with _get_sqlite_conn() as conn:
-                cur = conn.cursor()
-                cur.execute("SELECT * FROM users WHERE id = ?", (user_id,))
-                row = cur.fetchone()
-                if not row:
-                    return None
-                return {
-                    "id": str(row["id"]),
-                    "phone": row["phone"],
-                    "fullName": row["fullName"],
-                    "location": row["location"],
-                    "district": row["district"] or "",
-                    "language": row["language"] or "en",
-                    "role": row["role"] or "Farmer",
-                    "email": row["email"],
-                    "createdAt": row["createdAt"],
-                }
-        except Exception:
-            return None
-
+        return None
     try:
         user = db.users.find_one({"_id": ObjectId(user_id)})
         if not user:
@@ -445,27 +330,13 @@ def get_user_by_id(user_id: str) -> Optional[Dict[str, Any]]:
 
 def update_user_profile(user_id: str, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """Updates user profile preferences."""
+    db = get_db()
+    if db is None:
+        return None
     allowed_fields = {"fullName", "location", "district", "language", "email"}
     filtered = {k: v for k, v in updates.items() if k in allowed_fields and v is not None}
     if not filtered:
         return get_user_by_id(user_id)
-
-    db = get_db()
-    if db is None:
-        try:
-            _ensure_sqlite_users_table()
-            with _get_sqlite_conn() as conn:
-                cur = conn.cursor()
-                now_iso = datetime.now(timezone.utc).isoformat()
-                set_clauses = [f"{k} = ?" for k in filtered.keys()]
-                set_clauses.append("updatedAt = ?")
-                values = list(filtered.values()) + [now_iso, user_id]
-                cur.execute(f"UPDATE users SET {', '.join(set_clauses)} WHERE id = ?", values)
-                conn.commit()
-                return get_user_by_id(user_id)
-        except Exception as exc:
-            logger.error(f"Failed to update profile in SQLite: {exc}")
-            return None
 
     filtered["updatedAt"] = datetime.now(timezone.utc)
     try:
@@ -590,7 +461,6 @@ def save_crop_scan_record(
     preview_url: Optional[str] = None,
     image_quality: Optional[Dict[str, Any]] = None,
     diagnosis_details: Optional[Dict[str, Any]] = None,
-    field_id: Optional[str] = None,
     farmer_name: Optional[str] = "Anonymous",
     priority: Optional[str] = None,
 ) -> str:
@@ -621,9 +491,10 @@ def save_crop_scan_record(
     scan_doc = {
         "_id": ObjectId(scan_id_str),
         "userId": user_id or "anonymous",
-        "fieldId": field_id,
-        "crop": crop,
-        "disease": disease,
+        "farmer_name": farmer_name or "Anonymous",
+        "crop": crop or "Unknown",
+        "disease": disease or "Unidentified",
+        "ai_result": disease or "Unidentified",
         "confidence": round(float(confidence), 4) if confidence is not None else 0.0,
         "severity": severity or "None",
         "status": final_status,
@@ -913,13 +784,22 @@ def get_user_advisories(user_id: str, limit: int = 20) -> List[Dict[str, Any]]:
 
 # ── Live Aggregations for Dashboard & MongoDB Case Management ───────────────
 
+UNIDENTIFIED_QUERY_OR = [
+    {"status": "Unidentified"},
+    {"disease": {"$regex": "unidentified", "$options": "i"}},
+    {"ai_result": {"$regex": "unidentified", "$options": "i"}},
+    {"disease": None},
+    {"disease": "Unknown"},
+    {"confidence": {"$lt": 0.65}},
+]
+
 def seed_mongo_demo_cases_if_empty():
-    """Seeds initial demo scan records into MongoDB Atlas if crop_scans is empty."""
+    """Seeds initial demo scan records into MongoDB Atlas if crop_scans count is low."""
     db = get_db()
     if db is None:
         return
     try:
-        if db.crop_scans.count_documents({}) > 0:
+        if db.crop_scans.count_documents({}) >= 5:
             return
 
         demo_cases = [
@@ -928,6 +808,8 @@ def seed_mongo_demo_cases_if_empty():
                 "userId": "farmer_1",
                 "farmer_name": "Mahesh Pawar",
                 "location": "Latur",
+                "latitude": 18.4088,
+                "longitude": 76.5604,
                 "crop": "Sugarcane",
                 "disease": "Red Rot Disease",
                 "ai_result": "Red Rot Disease",
@@ -945,6 +827,8 @@ def seed_mongo_demo_cases_if_empty():
                 "userId": "farmer_2",
                 "farmer_name": "Tukaram Desai",
                 "location": "Kolhapur",
+                "latitude": 16.7050,
+                "longitude": 74.2433,
                 "crop": "Sugarcane",
                 "disease": "Unidentified Disease",
                 "ai_result": "Unidentified Disease",
@@ -960,8 +844,29 @@ def seed_mongo_demo_cases_if_empty():
             {
                 "_id": ObjectId(),
                 "userId": "farmer_3",
+                "farmer_name": "Sanjay Patil",
+                "location": "Satara",
+                "latitude": 17.6805,
+                "longitude": 74.0183,
+                "crop": "Soybean",
+                "disease": "Unidentified Leaf Spot",
+                "ai_result": "Unidentified Leaf Spot",
+                "confidence": 0.38,
+                "severity": "Moderate",
+                "status": "Unidentified",
+                "priority": "Medium",
+                "previewUrl": "/images/crop_healthy_leaf.jpg",
+                "scannedAt": datetime.now(timezone.utc),
+                "assigned_officer": None,
+                "resolution_notes": None,
+            },
+            {
+                "_id": ObjectId(),
+                "userId": "farmer_4",
                 "farmer_name": "Rekha Gaikwad",
                 "location": "Nanded",
+                "latitude": 19.1383,
+                "longitude": 77.3210,
                 "crop": "Soybean",
                 "disease": "Yellow Mosaic Virus",
                 "ai_result": "Yellow Mosaic Virus",
@@ -976,9 +881,11 @@ def seed_mongo_demo_cases_if_empty():
             },
             {
                 "_id": ObjectId(),
-                "userId": "farmer_4",
+                "userId": "farmer_5",
                 "farmer_name": "Suresh Mali",
                 "location": "Dhule",
+                "latitude": 20.9042,
+                "longitude": 74.7749,
                 "crop": "Cotton",
                 "disease": "Boll Rot",
                 "ai_result": "Boll Rot",
@@ -991,6 +898,63 @@ def seed_mongo_demo_cases_if_empty():
                 "assigned_officer": "Sanjay More",
                 "resolution_notes": "Applied copper oxychloride spray. Field visit verified clear improvement.",
             },
+            {
+                "_id": ObjectId(),
+                "userId": "farmer_6",
+                "farmer_name": "Ramesh Patil",
+                "location": "Nashik",
+                "latitude": 19.9975,
+                "longitude": 73.7898,
+                "crop": "Cotton",
+                "disease": "Leaf Blight",
+                "ai_result": "Leaf Blight",
+                "confidence": 0.87,
+                "severity": "Moderate",
+                "status": "Resolved",
+                "priority": "Medium",
+                "previewUrl": "/images/crop_healthy_leaf.jpg",
+                "scannedAt": datetime.now(timezone.utc),
+                "assigned_officer": "Sneha Deshmukh",
+                "resolution_notes": "Foliar spray applied successfully.",
+            },
+            {
+                "_id": ObjectId(),
+                "userId": "farmer_7",
+                "farmer_name": "Balasaheb Gite",
+                "location": "Ahmednagar",
+                "latitude": 19.0948,
+                "longitude": 74.7480,
+                "crop": "Tomato",
+                "disease": "Early Blight (fungal)",
+                "ai_result": "Early Blight (fungal)",
+                "confidence": 0.88,
+                "severity": "Severe",
+                "status": "Pending",
+                "priority": "High",
+                "previewUrl": "/images/crop_healthy_leaf.jpg",
+                "scannedAt": datetime.now(timezone.utc),
+                "assigned_officer": None,
+                "resolution_notes": None,
+            },
+            {
+                "_id": ObjectId(),
+                "userId": "farmer_8",
+                "farmer_name": "Anil Sutar",
+                "location": "Pune",
+                "latitude": 18.5204,
+                "longitude": 73.8567,
+                "crop": "Potato",
+                "disease": "Late Blight",
+                "ai_result": "Late Blight",
+                "confidence": 0.89,
+                "severity": "Severe",
+                "status": "Pending",
+                "priority": "High",
+                "previewUrl": "/images/crop_healthy_leaf.jpg",
+                "scannedAt": datetime.now(timezone.utc),
+                "assigned_officer": None,
+                "resolution_notes": None,
+            }
         ]
         db.crop_scans.insert_many(demo_cases)
         logger.info("[MongoDB] Seeded demo cases into crop_scans.")
@@ -1014,13 +978,11 @@ def get_dashboard_mongo_stats() -> Dict[str, Any]:
         total = db.crop_scans.count_documents({})
         resolved = db.crop_scans.count_documents({"status": "Resolved"})
         needs_visit = db.crop_scans.count_documents({"status": {"$in": ["Pending", "Assigned", "Needs Field Visit"]}})
-        unidentified = db.crop_scans.count_documents({
-            "$or": [
-                {"status": "Unidentified"},
-                {"disease": "AI Unidentified"},
-                {"ai_result": "AI Unidentified"},
-            ]
-        })
+        unidentified_query = {
+            "status": {"$ne": "Resolved"},
+            "$or": UNIDENTIFIED_QUERY_OR
+        }
+        unidentified = db.crop_scans.count_documents(unidentified_query)
         unique_crops = len([c for c in db.crop_scans.distinct("crop") if c and c != "Unknown"])
 
         return {
@@ -1054,11 +1016,10 @@ def get_mongo_submissions(limit: int = 100, status_filter: Optional[str] = None)
             if sf == "pending":
                 query["status"] = {"$in": ["Pending", "Assigned", "Needs Field Visit"]}
             elif sf == "unidentified":
-                query["$or"] = [
-                    {"status": "Unidentified"},
-                    {"disease": "AI Unidentified"},
-                    {"ai_result": "AI Unidentified"},
-                ]
+                query = {
+                    "status": {"$ne": "Resolved"},
+                    "$or": UNIDENTIFIED_QUERY_OR
+                }
             else:
                 query["status"] = status_filter
 
@@ -1111,12 +1072,18 @@ def update_mongo_submission(
             update_doc["status"] = status
         if assigned_officer is not None:
             update_doc["assigned_officer"] = assigned_officer
+            if not status:
+                update_doc["status"] = "Assigned"
         if resolution_notes is not None:
             update_doc["resolution_notes"] = resolution_notes
         if priority is not None:
             update_doc["priority"] = priority
         if disease is not None:
             update_doc["disease"] = disease
+            # If disease is provided and not unidentified, update confidence if it was low
+            if "unidentified" not in disease.lower() and status is None:
+                update_doc["status"] = "Assigned" if assigned_officer else "Pending"
+                update_doc["confidence"] = 0.95
         if ai_result is not None:
             update_doc["ai_result"] = ai_result
 
@@ -1162,20 +1129,26 @@ def get_mongo_map_markers(severity_filter: Optional[str] = None) -> List[Dict[st
         "aurangabad": (19.8762, 75.3433),
         "beed": (18.9891, 75.7601),
         "sangli": (16.8524, 74.5815),
+        "jalgaon": (21.0077, 75.5626),
+        "ahmednagar": (19.0948, 74.7480),
     }
 
     try:
         seed_mongo_demo_cases_if_empty()
         query: Dict[str, Any] = {}
         if severity_filter and severity_filter != "All Cases":
-            if severity_filter == "High Issues" or severity_filter == "Severe":
-                query["severity"] = "Severe"
-            elif severity_filter == "Needs Visit" or severity_filter == "Unidentified":
-                query["$or"] = [
-                    {"status": "Unidentified"},
-                    {"disease": "AI Unidentified"},
-                    {"status": "Pending"},
-                ]
+            sf = severity_filter.lower()
+            if sf in ["high issues", "severe", "high"]:
+                query["severity"] = {"$in": ["Severe", "High"]}
+            elif sf in ["needs visit", "pending"]:
+                query["status"] = {"$in": ["Pending", "Assigned", "Needs Field Visit"]}
+            elif sf == "unidentified":
+                query = {
+                    "status": {"$ne": "Resolved"},
+                    "$or": UNIDENTIFIED_QUERY_OR
+                }
+            elif sf == "resolved":
+                query["status"] = "Resolved"
             else:
                 query["severity"] = severity_filter
 
@@ -1186,8 +1159,9 @@ def get_mongo_map_markers(severity_filter: Optional[str] = None) -> List[Dict[st
             lat = doc.get("latitude")
             lng = doc.get("longitude")
 
-            # Fallback coordinate resolution if coordinates are missing
-            if lat is None or lng is None:
+            # Fallback coordinate resolution if coordinates are missing or invalid
+            is_valid_coord = lat is not None and lng is not None and (15.0 <= float(lat) <= 23.0) and (72.0 <= float(lng) <= 82.0)
+            if not is_valid_coord:
                 loc_str = str(doc.get("location") or "").lower()
                 base_lat, base_lng = 19.7515, 75.7139 # Maharashtra center
                 for dist_key, coords in DISTRICT_COORDS.items():
@@ -1197,8 +1171,8 @@ def get_mongo_map_markers(severity_filter: Optional[str] = None) -> List[Dict[st
                 
                 # Add tiny deterministic jitter so markers in same district don't stack exactly on top of each other
                 hash_val = sum(ord(c) for c in doc_id)
-                lat = base_lat + ((hash_val % 37) - 18) * 0.008
-                lng = base_lng + ((hash_val % 43) - 21) * 0.008
+                lat = base_lat + ((hash_val % 37) - 18) * 0.006
+                lng = base_lng + ((hash_val % 43) - 21) * 0.006
 
             markers.append({
                 "id": doc_id,
@@ -1208,8 +1182,11 @@ def get_mongo_map_markers(severity_filter: Optional[str] = None) -> List[Dict[st
                 "longitude": float(lng),
                 "crop": doc.get("crop") or "Unknown",
                 "disease": doc.get("disease") or doc.get("ai_result") or "Pending Review",
+                "ai_result": doc.get("ai_result") or doc.get("disease") or "Pending Review",
+                "confidence": doc.get("confidence"),
                 "severity": doc.get("severity") or "Moderate",
                 "status": doc.get("status") or "Pending",
+                "priority": doc.get("priority"),
                 "assigned_officer": doc.get("assigned_officer"),
                 "resolution_notes": doc.get("resolution_notes"),
                 "created_at": str(doc.get("scannedAt")),
@@ -1218,3 +1195,4 @@ def get_mongo_map_markers(severity_filter: Optional[str] = None) -> List[Dict[st
     except Exception as exc:
         logger.error(f"Error fetching mongo map markers: {exc}")
         return []
+
