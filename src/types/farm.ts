@@ -26,6 +26,15 @@ export interface FarmCrop {
   lastScanDate: string;
   detectedDisease?: string;
   severity?: string;
+  cultivatedArea?: number;
+  areaUnit?: 'Acres' | 'Hectares' | 'Guntha' | string;
+  sowingDate?: string;
+  variety?: string;
+  irrigationMethod?: string;
+  soilType?: string;
+  season?: string;
+  notes?: string;
+  growthStage?: string;
 }
 
 export interface FarmField {
@@ -37,6 +46,15 @@ export interface FarmField {
   status: FieldStatus;
   lastScanDate: string;
   detectedDisease?: string;
+  cultivatedArea?: number;
+  areaUnit?: string;
+  sowingDate?: string;
+  variety?: string;
+  irrigationMethod?: string;
+  soilType?: string;
+  season?: string;
+  notes?: string;
+  growthStage?: string;
 }
 
 export interface CropScanRecord {
@@ -51,6 +69,10 @@ export interface CropScanRecord {
   recommendations: string[];
   previewUrl?: string | null;
   status: CropStatus;
+  cultivatedArea?: number;
+  areaUnit?: string;
+  growthStage?: string;
+  location?: string;
 }
 
 export interface FarmActivity {

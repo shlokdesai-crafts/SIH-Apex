@@ -791,10 +791,143 @@
   letter-spacing: 0.2px;
 }
 .sc-analyse-btn:hover { opacity: 0.92; transform: translateY(-2px); }
+.sc-analyse-btn:disabled {
+  background: #cbd5e1;
+  color: #64748b;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+  opacity: 0.8;
+}
 
-/* ================================================================
-   POPULAR CROPS CARD
-   ================================================================ */
+/* ── Mandatory Crop Selection Banners & Badges ── */
+.sc-crop-required-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fffbeb;
+  border: 1.5px solid #fcd34d;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 10px 0 4px;
+}
+
+.sc-crop-required-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.sc-crop-required-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sc-crop-required-text strong {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #92400e;
+}
+
+.sc-crop-required-text span {
+  font-size: 12px;
+  color: #b45309;
+}
+
+.sc-selected-crop-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 10px 0 4px;
+}
+
+.sc-selected-crop-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sc-selected-crop-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #166534;
+}
+
+.sc-selected-crop-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: #14532d;
+  background: #dcfce7;
+  padding: 3px 10px;
+  border-radius: 16px;
+  border: 1px solid #bbf7d0;
+}
+
+.sc-change-crop-btn {
+  background: #ffffff;
+  color: #166534;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.sc-change-crop-btn:hover {
+  background: #dcfce7;
+  border-color: #4ade80;
+}
+
+.sc-idle-crop-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #e8f5e9;
+  border: 1px solid #a5d6a7;
+  color: #1b5e20;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.sc-idle-crop-clear {
+  background: none;
+  border: none;
+  color: #2e7d32;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-left: 4px;
+}
+
+.sc-idle-crop-clear:hover {
+  background: #c8e6c9;
+}
+
+.sc-preview-badge--selected {
+  background: rgba(240, 253, 244, 0.95);
+  color: #14532d;
+  border: 1px solid #86efac;
+}
+
+.sc-preview-badge--empty {
+  background: rgba(254, 243, 199, 0.95);
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
 .sc-crops-card {
   background: #fff;
   border-radius: 16px;
@@ -828,6 +961,12 @@
   padding: 4px 10px;
   border-radius: 14px;
   white-space: nowrap;
+  border: none;
+  transition: background 0.15s, transform 0.1s;
+}
+.sc-view-all:hover {
+  background: #c8e6c9;
+  transform: translateY(-1px);
 }
 
 .sc-crops-scroll {
@@ -835,6 +974,19 @@
   gap: 8px;
   overflow-x: auto;
   padding-bottom: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: #c8e6c9 transparent;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sc-crops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 12px 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 6px 2px;
   scrollbar-width: thin;
   scrollbar-color: #c8e6c9 transparent;
 }
@@ -1334,5 +1486,902 @@
 
   .sc-action-btns-row {
     flex-direction: column;
+  }
+}
+
+/* ================================================================
+   FIELD ASSOCIATION BAR & BADGES
+   ================================================================ */
+.sc-field-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sc-field-bar-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  color: #334155;
+}
+
+.sc-field-bar-icon {
+  font-size: 1.1rem;
+}
+
+.sc-field-bar-title {
+  color: #0f172a;
+}
+
+.sc-field-bar-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  max-width: 420px;
+  justify-content: flex-end;
+}
+
+.sc-field-bar-select {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  color: #1e293b;
+  font-size: 0.84rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  max-width: 100%;
+}
+
+.sc-field-bar-select:focus {
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.12);
+}
+
+.sc-field-bar-clear {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 5px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.sc-field-bar-clear:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+.sc-field-bar-empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.sc-field-bar-add-btn {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #059669;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.sc-field-bar-add-btn:hover {
+  background: #059669;
+  color: #ffffff;
+}
+
+.sc-idle-badges-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.sc-idle-field-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  color: #1d4ed8;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.sc-idle-field-clear {
+  background: none;
+  border: none;
+  color: #1d4ed8;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.sc-idle-field-clear:hover {
+  color: #b91c1c;
+}
+
+.sc-preview-badges-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sc-preview-badge--field {
+  background: rgba(30, 64, 175, 0.88) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+/* ================================================================
+   FARMING & CROP DETAILS COLLECTION CARD (Scan-Driven My Farm)
+   ================================================================ */
+.sc-details-card {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 0 0 14px 0;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.sc-select-crop-prompt {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.sc-area-validation-msg {
+  color: #dc2626;
+  font-size: 0.76rem;
+  font-weight: 500;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sc-text-input.sc-input-error {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.sc-text-input.sc-input-error:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+}
+
+
+.sc-details-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.sc-details-icon {
+  font-size: 1.3rem;
+  background: #ecfdf5;
+  color: #10b981;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.sc-details-title {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.sc-details-subtitle {
+  display: block;
+  font-size: 0.74rem;
+  color: #64748b;
+}
+
+.sc-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+@media (max-width: 600px) {
+  .sc-details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sc-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sc-input-full {
+  grid-column: 1 / -1;
+}
+
+.sc-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.sc-required-star {
+  color: #dc2626;
+  font-weight: 800;
+}
+
+.sc-text-input,
+.sc-select-input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 0.84rem;
+  color: #0f172a;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.sc-text-input:focus,
+.sc-select-input:focus {
+  outline: none;
+  border-color: #16a34a;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+}
+
+.sc-area-input-row {
+  display: flex;
+  gap: 6px;
+}
+
+.sc-area-val-input {
+  flex: 1.2;
+}
+
+.sc-area-unit-select {
+  flex: 1;
+  background: #f1f5f9;
+  font-weight: 600;
+}
+
+.sc-textarea {
+  resize: vertical;
+  min-height: 52px;
+  line-height: 1.4;
+}
+
+/* ================================================================
+   SIMPLIFIED STEP WORKFLOW CONTAINER & STEP CARDS
+   ================================================================ */
+.sc-workflow-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.sc-step-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.sc-step-card:hover {
+  border-color: #d1d5db;
+}
+
+.sc-step-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.sc-step-badge {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
+  margin-top: 2px;
+}
+
+.sc-step-badge--optional {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+}
+
+.sc-step-header-text {
+  flex: 1;
+}
+
+.sc-step-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sc-step-subtitle {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 3px 0 0;
+  line-height: 1.4;
+}
+
+.sc-optional-tag {
+  font-size: 12px;
+  font-weight: 500;
+  color: #0369a1;
+  background: #e0f2fe;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.sc-step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── STEP 1: Search & Selector ── */
+.sc-crop-search-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.sc-crop-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.sc-crop-search-icon {
+  position: absolute;
+  left: 12px;
+  font-size: 14px;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.sc-crop-search-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 34px 0 34px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 13.5px;
+  background: #ffffff;
+  color: #1f2937;
+  box-sizing: border-box;
+  transition: all 0.2s;
+}
+
+.sc-crop-search-input:focus {
+  border-color: #16a34a;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+}
+
+.sc-crop-search-clear {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  line-height: 1;
+}
+
+.sc-crop-search-clear:hover {
+  color: #4b5563;
+}
+
+.sc-crop-select-dropdown-wrap {
+  width: 100%;
+}
+
+.sc-crop-select-dropdown {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 13px;
+  background: #f9fafb;
+  color: #1f2937;
+  font-weight: 500;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.2s;
+}
+
+.sc-crop-select-dropdown:focus {
+  border-color: #16a34a;
+  outline: none;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+}
+
+/* ── Selected Crop Highlight Banner ── */
+.sc-selected-crop-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  border-radius: 12px;
+  padding: 10px 14px;
+  gap: 12px;
+}
+
+.sc-selected-crop-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sc-selected-crop-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #16a34a;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.sc-selected-crop-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.sc-selected-crop-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #166534;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.sc-selected-crop-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: #14532d;
+}
+
+.sc-change-crop-btn {
+  background: #ffffff;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.sc-change-crop-btn:hover {
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
+/* ── Popular Crops Cards Grid ── */
+.sc-popular-crops-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.sc-popular-crops-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sc-popular-crops-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sc-popular-hint {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.sc-popular-crops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+  gap: 10px;
+}
+
+.sc-crop-card-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #ffffff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 10px 8px 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  text-align: center;
+  outline: none;
+}
+
+.sc-crop-card-btn:hover {
+  border-color: #86efac;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.sc-crop-card-btn--active {
+  border-color: #16a34a !important;
+  background: #f0fdf4 !important;
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.25), 0 4px 12px rgba(22, 163, 74, 0.15) !important;
+  transform: translateY(-2px);
+}
+
+.sc-crop-card-img-wrap {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  margin-bottom: 6px;
+}
+
+.sc-crop-card-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.sc-crop-card-badge {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #16a34a;
+  color: #ffffff;
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 8px;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.sc-crop-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-top: 2px;
+  line-height: 1.2;
+}
+
+.sc-crop-card-btn--active .sc-crop-card-title {
+  color: #15803d;
+  font-weight: 700;
+}
+
+.sc-crops-empty-search {
+  padding: 16px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 13px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px dashed #d1d5db;
+}
+
+/* ── STEP 2: Basic Farm Details ── */
+.sc-basic-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+@media (max-width: 640px) {
+  .sc-basic-details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sc-location-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.sc-location-input {
+  flex: 1;
+}
+
+.sc-gps-btn {
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  color: #15803d;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0 14px;
+  height: 42px;
+  border-radius: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-sizing: border-box;
+}
+
+.sc-gps-btn:hover:not(:disabled) {
+  background: #dcfce7;
+  border-color: #16a34a;
+}
+
+.sc-gps-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.sc-location-feedback {
+  font-size: 12px;
+  color: #047857;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* ── Edit Farm Details Link ── */
+.sc-edit-farm-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+
+.sc-edit-farm-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #15803d;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.15s, transform 0.15s;
+  text-decoration: none;
+}
+
+.sc-edit-farm-btn:hover {
+  color: #166534;
+  text-decoration: underline;
+  transform: translateX(2px);
+}
+
+.sc-edit-farm-sub {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* ── Growing Stage (Optional & Compact) ── */
+.sc-stage-compact-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  padding-top: 4px;
+  flex-wrap: wrap;
+}
+
+.sc-stage-input-group {
+  flex: 1;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sc-growth-stage-select {
+  height: 42px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.sc-stage-inline-hint {
+  flex: 1.2;
+  min-width: 220px;
+  font-size: 12px;
+  color: #1e40af;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 8px 12px;
+  line-height: 1.4;
+}
+
+/* ── STEP 3: Scan & Analyze ── */
+.sc-preview-badge--stage {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+.sc-analyse-btn {
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: 800;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
+  transition: all 0.2s;
+  margin-top: 8px;
+  letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.sc-analyse-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #15803d, #166534);
+  box-shadow: 0 6px 18px rgba(22, 163, 74, 0.45);
+  transform: translateY(-1px);
+}
+
+.sc-analyse-btn:disabled {
+  background: #9ca3af !important;
+  cursor: not-allowed;
+  box-shadow: none !important;
+  opacity: 0.65;
+  transform: none !important;
+}
+
+.sc-farm-sync-banner {
+  margin: 16px 0;
+  padding: 12px 16px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sc-farm-sync-check {
+  font-size: 1.2rem;
+  color: #16a34a;
+  font-weight: 800;
+}
+
+.sc-farm-sync-text {
+  font-size: 0.86rem;
+  color: #166534;
+  font-weight: 600;
+}
+
+.sc-result-footer-note {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.sc-action-btn.sc-action-outline {
+  background: transparent;
+  border: 1.5px solid #16a34a;
+  color: #16a34a;
+  font-weight: 700;
+}
+
+.sc-action-btn.sc-action-outline:hover {
+  background: #f0fdf4;
+}
+
+@media (max-width: 768px) {
+  .sc-crop-search-wrap {
+    grid-template-columns: 1fr;
+  }
+  .sc-popular-crops-grid {
+    grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+  }
+  .sc-step-card {
+    padding: 16px 14px;
   }
 }

@@ -1,217 +1,340 @@
 import { useTranslation } from '../i18n/useTranslation';
 import { useEffect, useState, useCallback } from 'react';
 import './RecentSubmissions.css';
-import { GOV_SUBMISSIONS, GOV_SUMMARY_STATS } from '../services/govDataService';
+
 interface Submission {
-  id: number;
+  id: string;
   farmer_name: string;
   location: string;
   crop: string;
   ai_result: string;
-  disease: string | null;
-  confidence: number | null;
-  severity: string | null;
+  disease?: string | null;
+  confidence?: number | null;
+  severity?: string | null;
   status: string;
   created_at: string;
+  assigned_officer?: string | null;
+  resolution_notes?: string | null;
 }
+
+interface Officer {
+  id: string;
+  name: string;
+  role: string;
+  district: string;
+}
+
 const API = '/api';
+
 const statusClass = (status: string) => {
-  if (status === 'Resolved') return 'success';
-  if (status === 'Unidentified') return 'danger';
-  if (status === 'Assigned') return 'info';
-  return 'warning'; // Pending
+  const s = (status || '').toLowerCase();
+  if (s === 'resolved') return 'success';
+  if (s === 'unidentified' || s.includes('unidentified')) return 'danger';
+  if (s === 'assigned') return 'info';
+  return 'warning';
 };
-const DEFAULT_SUBMISSIONS: Submission[] = GOV_SUBMISSIONS.map(s => ({
-  id: s.id,
-  farmer_name: s.farmerName,
-  location: s.location,
-  crop: s.crop,
-  ai_result: s.aiResult,
-  disease: s.issue || null,
-  confidence: s.confidence,
-  severity: s.severity,
-  status: s.status === 'Needs Visit' ? 'Assigned' : s.status,
-  created_at: s.date || new Date().toISOString()
-}));
+
 const RecentSubmissions = () => {
-  const {
-    t
-  } = useTranslation();
-  const [submissions, setSubmissions] = useState<Submission[]>(DEFAULT_SUBMISSIONS);
+  const { t } = useTranslation();
+
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [activeTab, setActiveTab] = useState<string | null>(null);
   const [counts, setCounts] = useState({
-    total: GOV_SUMMARY_STATS.totalSubmissions,
-    pending: GOV_SUMMARY_STATS.needsFieldVisit,
-    resolved: GOV_SUMMARY_STATS.issuesResolved,
-    unidentified: GOV_SUMMARY_STATS.unidentifiedCases
+    total: 0,
+    pending: 0,
+    resolved: 0,
+    unidentified: 0,
   });
   const [loading, setLoading] = useState(false);
-  const fetchStats = useCallback(() => {
-    fetch(`${API}/stats`).then(r => r.json()).then(s => {
-      if (s && s.total_submissions !== undefined) {
-        setCounts({
-          total: s.total_submissions,
-          pending: s.needs_field_visit,
-          resolved: s.resolved,
-          unidentified: s.unidentified
-        });
-      }
-    }).catch(() => {});
+  const [officers, setOfficers] = useState<Officer[]>([]);
+
+  // Assign Officer Modal state
+  const [assigningSub, setAssigningSub] = useState<Submission | null>(null);
+  const [selectedOfficer, setSelectedOfficer] = useState<string>('');
+  const [actionLoading, setActionLoading] = useState<boolean>(false);
+
+  // Fetch Officers List
+  useEffect(() => {
+    fetch(`${API}/field-officers`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setOfficers(data);
+      })
+      .catch((e) => console.error('Error fetching officers:', e));
   }, []);
+
+  const fetchStats = useCallback(() => {
+    fetch(`${API}/stats`)
+      .then((r) => r.json())
+      .then((s) => {
+        if (s && s.total_submissions !== undefined) {
+          setCounts({
+            total: s.total_submissions,
+            pending: s.needs_field_visit,
+            resolved: s.resolved,
+            unidentified: s.unidentified,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const fetchSubmissions = useCallback((statusFilter: string | null) => {
     setLoading(true);
-    const url = statusFilter ? `${API}/submissions?status=${statusFilter}&limit=50` : `${API}/submissions?limit=50`;
-    fetch(url).then(r => r.json()).then(data => {
-      if (Array.isArray(data) && data.length > 0) {
-        setSubmissions(data);
-      } else {
-        const filtered = statusFilter ? DEFAULT_SUBMISSIONS.filter(s => {
-          if (statusFilter === 'Pending') return s.status === 'Pending' || s.status === 'Assigned';
-          return s.status.toLowerCase() === statusFilter.toLowerCase();
-        }) : DEFAULT_SUBMISSIONS;
-        setSubmissions(filtered);
-      }
-    }).catch(() => {
-      const filtered = statusFilter ? DEFAULT_SUBMISSIONS.filter(s => {
-        if (statusFilter === 'Pending') return s.status === 'Pending' || s.status === 'Assigned';
-        return s.status.toLowerCase() === statusFilter.toLowerCase();
-      }) : DEFAULT_SUBMISSIONS;
-      setSubmissions(filtered);
-    }).finally(() => setLoading(false));
+    const url = statusFilter
+      ? `${API}/submissions?status=${encodeURIComponent(statusFilter)}&limit=50`
+      : `${API}/submissions?limit=50`;
+
+    fetch(url)
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setSubmissions(data);
+        } else {
+          setSubmissions([]);
+        }
+      })
+      .catch((e) => {
+        console.error('Error fetching submissions:', e);
+        setSubmissions([]);
+      })
+      .finally(() => setLoading(false));
   }, []);
+
   useEffect(() => {
     fetchStats();
-    fetchSubmissions(null);
+    fetchSubmissions(activeTab);
     const interval = setInterval(() => {
       fetchStats();
       fetchSubmissions(activeTab);
     }, 10000);
     return () => clearInterval(interval);
   }, [activeTab, fetchStats, fetchSubmissions]);
+
   const handleTabChange = (tab: string | null) => {
     setActiveTab(tab);
     fetchSubmissions(tab);
   };
-  const handleAction = async (sub: Submission) => {
-    const endpoint = sub.status === 'Resolved' ? null : sub.status === 'Assigned' ? `${API}/submissions/${sub.id}/resolve` : sub.status === 'Unidentified' ? `${API}/submissions/${sub.id}/assign` : `${API}/submissions/${sub.id}/assign`;
-    if (!endpoint) return;
-    try {
-      await fetch(endpoint, {
-        method: 'POST'
-      });
-    } catch {
-      setSubmissions(prev => prev.map(s => {
-        if (s.id === sub.id) {
-          const nextStatus = s.status === 'Assigned' ? 'Resolved' : 'Assigned';
-          return {
-            ...s,
-            status: nextStatus
-          };
-        }
-        return s;
-      }));
+
+  const handleActionClick = (sub: Submission) => {
+    const s = sub.status.toLowerCase();
+    if (s === 'resolved') {
+      return;
     }
-    fetchStats();
-    fetchSubmissions(activeTab);
+    if (s === 'assigned') {
+      // Mark as Resolved
+      handleResolveCase(sub.id);
+    } else {
+      // Open Assign Officer modal
+      setAssigningSub(sub);
+      setSelectedOfficer(officers[0]?.name || 'Rajesh Patil');
+    }
   };
+
+  const handleResolveCase = async (subId: string) => {
+    setActionLoading(true);
+    try {
+      await fetch(`${API}/submissions/${subId}/resolve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resolution_notes: 'Resolved by District Officer via Government Dashboard' }),
+      });
+      fetchStats();
+      fetchSubmissions(activeTab);
+    } catch (e) {
+      console.error('Error resolving case:', e);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleConfirmAssign = async () => {
+    if (!assigningSub || !selectedOfficer) return;
+    setActionLoading(true);
+    try {
+      await fetch(`${API}/submissions/${assigningSub.id}/assign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assigned_officer: selectedOfficer }),
+      });
+      setAssigningSub(null);
+      fetchStats();
+      fetchSubmissions(activeTab);
+    } catch (e) {
+      console.error('Error assigning officer:', e);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const actionLabel = (status: string) => {
-    if (status === 'Resolved') return 'View Advice';
-    if (status === 'Assigned') return 'Mark Resolved';
-    if (status === 'Unidentified') return 'Assign Officer';
+    const s = status.toLowerCase();
+    if (s === 'resolved') return 'Resolved';
+    if (s === 'assigned') return 'Mark Resolved';
     return 'Assign Officer';
   };
+
   const actionStyle = (status: string) => {
-    if (status === 'Resolved') return 'outline';
-    if (status === 'Assigned') return 'success';
+    const s = status.toLowerCase();
+    if (s === 'resolved') return 'outline';
+    if (s === 'assigned') return 'success';
     return 'primary';
   };
+
   const formatDate = (iso: string) => {
     try {
       return new Date(iso).toLocaleDateString('en-IN', {
         day: '2-digit',
         month: 'short',
-        year: 'numeric'
+        year: 'numeric',
       });
     } catch {
       return iso;
     }
   };
-  return <div className="gov-card recent-submissions">
+
+  return (
+    <div className="gov-card recent-submissions">
       <div className="gov-card-header">
         <h3 className="gov-card-title">{t("Recent Farmer Submissions")}</h3>
-        <span className="gov-view-all" style={{
-        fontSize: '0.8rem',
-        color: '#888'
-      }}>{t("Auto-refreshes every 10s")}</span>
+        <span className="gov-view-all" style={{ fontSize: '0.8rem', color: '#64748b' }}>
+          {t("Live Field Intelligence")}
+        </span>
       </div>
 
       <div className="gov-tabs">
-        <button className={`gov-tab ${activeTab === null ? 'active' : ''}`} onClick={() => handleTabChange(null)}>{t("All (")}{(counts.total ?? 0).toLocaleString()})
+        <button
+          className={`gov-tab ${activeTab === null ? 'active' : ''}`}
+          onClick={() => handleTabChange(null)}
+        >
+          {t("All")} ({(counts.total ?? 0).toLocaleString()})
         </button>
-        <button className={`gov-tab ${activeTab === 'Pending' ? 'active' : ''}`} onClick={() => handleTabChange('Pending')}>{t("Pending (")}{(counts.pending ?? 0).toLocaleString()})
+        <button
+          className={`gov-tab ${activeTab === 'Pending' ? 'active' : ''}`}
+          onClick={() => handleTabChange('Pending')}
+        >
+          {t("Pending")} ({(counts.pending ?? 0).toLocaleString()})
         </button>
-        <button className={`gov-tab ${activeTab === 'Resolved' ? 'active' : ''}`} onClick={() => handleTabChange('Resolved')}>{t("Resolved (")}{(counts.resolved ?? 0).toLocaleString()})
+        <button
+          className={`gov-tab ${activeTab === 'Resolved' ? 'active' : ''}`}
+          onClick={() => handleTabChange('Resolved')}
+        >
+          {t("Resolved")} ({(counts.resolved ?? 0).toLocaleString()})
         </button>
-        <button className={`gov-tab highlight ${activeTab === 'Unidentified' ? 'active' : ''}`} onClick={() => handleTabChange('Unidentified')}>{t("Unidentified (")}{(counts.unidentified ?? 0).toLocaleString()})
+        <button
+          className={`gov-tab highlight ${activeTab === 'Unidentified' ? 'active' : ''}`}
+          onClick={() => handleTabChange('Unidentified')}
+        >
+          {t("Unidentified")} ({(counts.unidentified ?? 0).toLocaleString()})
         </button>
       </div>
 
       <div className="gov-table-container">
-        {loading ? <p style={{
-        padding: '1rem',
-        textAlign: 'center',
-        color: '#888'
-      }}>{t("Loading…")}</p> : submissions.length === 0 ? <p style={{
-        padding: '2rem',
-        textAlign: 'center',
-        color: '#aaa'
-      }}>{t("No submissions yet. Farmers will appear here after they submit crop scans.")}</p> : <table className="gov-table">
+        {loading ? (
+          <p style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
+            {t("Loading active submissions...")}
+          </p>
+        ) : submissions.length === 0 ? (
+          <p style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
+            {t("No submissions found matching filter.")}
+          </p>
+        ) : (
+          <table className="gov-table">
             <thead>
               <tr>
-                <th><input type="checkbox" /></th>
-                <th>{t("Icon")}</th>
+                <th>#Case ID</th>
                 <th>{t("Farmer Name")}</th>
                 <th>{t("Location")}</th>
                 <th>{t("Crop")}</th>
                 <th>{t("AI Result")}</th>
                 <th>{t("Severity")}</th>
+                <th>{t("Assigned Officer")}</th>
                 <th>{t("Date")}</th>
                 <th>{t("Status")}</th>
                 <th>{t("Action")}</th>
               </tr>
             </thead>
             <tbody>
-              {submissions.map(sub => <tr key={sub.id}>
-                  <td><input type="checkbox" /></td>
-                  <td>
-                    <div className="gov-crop-img-placeholder">🍃</div>
-                  </td>
+              {submissions.map((sub) => (
+                <tr key={sub.id}>
+                  <td className="case-id-code">#{sub.id.substring(sub.id.length - 6).toUpperCase()}</td>
                   <td className="gov-fw-500">{sub.farmer_name}</td>
-                  <td>{sub.location}</td>
-                  <td>{sub.crop}</td>
+                  <td>📍 {sub.location}</td>
+                  <td>🌾 {sub.crop}</td>
                   <td>
-                    {sub.ai_result}
-                    {sub.confidence !== null && sub.confidence !== undefined ? ` (${(sub.confidence * 100).toFixed(0)}%)` : ''}
+                    <strong>{sub.disease || sub.ai_result}</strong>
+                    {sub.confidence !== null && sub.confidence !== undefined
+                      ? ` (${(sub.confidence * 100).toFixed(0)}%)`
+                      : ''}
                   </td>
-                  <td>{sub.severity ?? '—'}</td>
-                  <td style={{
-              fontSize: '0.78rem',
-              color: '#888'
-            }}>{formatDate(sub.created_at)}</td>
+                  <td>{sub.severity ?? 'Medium'}</td>
+                  <td>
+                    {sub.assigned_officer ? (
+                      <span className="officer-pill">👤 {sub.assigned_officer}</span>
+                    ) : (
+                      <span className="unassigned-text">{t("Unassigned")}</span>
+                    )}
+                  </td>
+                  <td style={{ fontSize: '0.78rem', color: '#64748b' }}>{formatDate(sub.created_at)}</td>
                   <td>
                     <span className={`gov-status-badge ${statusClass(sub.status)}`}>
                       {sub.status}
                     </span>
                   </td>
                   <td>
-                    <button className={`gov-action-btn ${actionStyle(sub.status)}`} onClick={() => handleAction(sub)} disabled={sub.status === 'Resolved'}>
+                    <button
+                      className={`gov-action-btn ${actionStyle(sub.status)}`}
+                      onClick={() => handleActionClick(sub)}
+                      disabled={sub.status.toLowerCase() === 'resolved' || actionLoading}
+                    >
                       {actionLabel(sub.status)}
                     </button>
                   </td>
-                </tr>)}
+                </tr>
+              ))}
             </tbody>
-          </table>}
+          </table>
+        )}
       </div>
-    </div>;
+
+      {/* Assign Officer Modal */}
+      {assigningSub && (
+        <div className="gov-modal-overlay">
+          <div className="gov-modal-content">
+            <h4>👤 {t("Assign Extension Field Officer")}</h4>
+            <p>Case #{assigningSub.id.substring(assigningSub.id.length - 6).toUpperCase()} — {assigningSub.farmer_name} ({assigningSub.crop})</p>
+
+            <div className="modal-field">
+              <label>{t("Select Government Officer")}:</label>
+              <select
+                value={selectedOfficer}
+                onChange={(e) => setSelectedOfficer(e.target.value)}
+              >
+                {officers.map((off) => (
+                  <option key={off.id} value={off.name}>
+                    {off.name} ({off.role} - {off.district})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="modal-actions">
+              <button className="btn-cancel" onClick={() => setAssigningSub(null)}>
+                {t("Cancel")}
+              </button>
+              <button
+                className="btn-confirm"
+                onClick={handleConfirmAssign}
+                disabled={actionLoading}
+              >
+                {actionLoading ? t("Assigning...") : t("Confirm Assignment")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
+
 export default RecentSubmissions;

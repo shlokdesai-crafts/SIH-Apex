@@ -68,6 +68,7 @@ def _format_history_entry(row: dict) -> dict:
     return {
         "id": row.get("id"),
         "farmerId": row.get("farmer_id", "default_farmer"),
+        "fieldId": row.get("field_id"),
         "crop": crop_name,
         "cropName": crop_name,
         "condition": condition,
@@ -103,10 +104,11 @@ def _format_history_entry(row: dict) -> dict:
 @router.get("/scans/history", summary="List persistent crop scan history")
 def list_history(
     farmer_id: Optional[str] = Query(default=None, description="Optional farmer ID filter"),
+    field_id: Optional[str] = Query(default=None, description="Optional field ID filter"),
     limit: int = Query(default=50, ge=1, le=200, description="Max records to return"),
 ):
     """Returns recent persistent crop scans, newest first."""
-    rows = get_scan_history(farmer_id=farmer_id, limit=limit)
+    rows = get_scan_history(farmer_id=farmer_id, field_id=field_id, limit=limit)
     return [_format_history_entry(r) for r in rows]
 
 

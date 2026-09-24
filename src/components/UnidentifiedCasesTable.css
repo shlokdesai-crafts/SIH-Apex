@@ -8,3 +8,45 @@
   height: 24px;
   font-size: 12px;
 }
+
+.gov-empty-unidentified {
+  text-align: center;
+  padding: 36px 20px;
+  color: #475569;
+}
+
+.gov-empty-unidentified .empty-icon {
+  font-size: 32px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.gov-empty-unidentified h4 {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.gov-empty-unidentified p {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.case-detail-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+  font-size: 13.5px;
+  color: #1e293b;
+  text-align: left;
+}
+
+.case-detail-rows div {
+  padding: 6px 10px;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}

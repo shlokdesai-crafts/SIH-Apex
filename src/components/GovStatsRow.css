@@ -2,6 +2,7 @@
   display: flex;
   gap: 20px;
   justify-content: space-between;
+  flex-wrap: wrap;
 }
 
 .gov-stat-card {
@@ -12,8 +13,25 @@
   align-items: center;
   gap: 16px;
   flex: 1;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+  min-width: 200px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
   border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.gov-stat-card.clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.gov-stat-card.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
+}
+
+.gov-stat-card.highlight-danger {
+  border-left: 4px solid #ef4444;
 }
 
 .gov-stat-icon {
@@ -40,28 +58,24 @@
 .gov-stat-title {
   margin: 0;
   font-size: 13px;
-  color: #4a5568;
+  color: #475569;
   font-weight: 500;
 }
 
 .gov-stat-value {
   margin: 4px 0;
   font-size: 24px;
-  font-weight: 700;
-  color: #1a202c;
+  font-weight: 800;
+  color: #0f172a;
 }
-
-.gov-stat-trend {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.gov-stat-trend.positive { color: #38a169; }
-.gov-stat-trend.negative { color: #e53e3e; }
 
 .gov-stat-desc {
   margin: 0;
-  font-size: 11px;
-  color: #718096;
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+.gov-stat-desc.action-link {
+  color: #dc2626;
+  font-weight: 700;
 }

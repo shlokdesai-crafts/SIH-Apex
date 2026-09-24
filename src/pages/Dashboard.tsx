@@ -23,6 +23,7 @@ export interface ScanResultData {
 export default function Dashboard() {
   const { user } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState('home');
+  const [previousTab, setPreviousTab] = useState<string>('home');
   const [scanResult, setScanResult] = useState<ScanResultData | null>(() => {
     try {
       const stored = localStorage.getItem('cropguard_history');
@@ -43,6 +44,15 @@ export default function Dashboard() {
   });
   const [locationData, setLocationData] = useState<LocationResult | null>(null);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+
+  const handleNavigateTab = (newTab: string) => {
+    if (newTab !== activeTab) {
+      if (activeTab !== 'fertilizer') {
+        setPreviousTab(activeTab);
+      }
+      setActiveTab(newTab);
+    }
+  };
 
   useEffect(() => {
     async function init() {
@@ -78,20 +88,25 @@ export default function Dashboard() {
 
   return (
     <FarmProvider>
-      <Header activeTab={activeTab === 'fertilizer' ? 'advisory' : activeTab} setActiveTab={setActiveTab} />
+      <Header activeTab={activeTab === 'fertilizer' ? 'advisory' : activeTab} setActiveTab={handleNavigateTab} />
       {activeTab === 'home' && (
         <>
           <Hero />
           <StatsRow scanResult={scanResult} weatherData={weatherData} locationData={locationData} />
-          <PanelsRow scanResult={scanResult} locationData={locationData} setActiveTab={setActiveTab} />
+          <PanelsRow scanResult={scanResult} locationData={locationData} setActiveTab={handleNavigateTab} />
         </>
       )}
-      {activeTab === 'farm' && <MyFarm onNavigateTab={setActiveTab} />}
-      {activeTab === 'scan' && <ScanCrop onScanComplete={(data) => setScanResult(data)} />}
+      {activeTab === 'farm' && <MyFarm onNavigateTab={handleNavigateTab} />}
+      {activeTab === 'scan' && (
+        <ScanCrop 
+          onScanComplete={(data) => setScanResult(data)} 
+          onNavigateTab={handleNavigateTab} 
+        />
+      )}
       {activeTab === 'risk' && <RiskForecast weatherData={weatherData} locationData={locationData} scanResult={scanResult} />}
       {activeTab === 'advisory' && (
         <AdvisoryOverview scanResult={scanResult} 
-          onBack={() => setActiveTab('home')} 
+          onBack={() => setActiveTab(previousTab === 'farm' ? 'farm' : 'home')} 
           onOpenFertilizer={() => setActiveTab('fertilizer')} 
         />
       )}

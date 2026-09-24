@@ -40,10 +40,17 @@ __pycache__/
 # Machine Learning Datasets and Models
 backend/ml/data/
 backend/ml/data_sage/
+backend/ml/data_external/
+backend/ml/experiments/
 *.pth
 *.pt
 *.h5
 !backend/ml/data/dataset_metadata.json
+
+# Stray files and nested directories
+SIH-Apex/
+Data
+'
 
 # CropGuard advisory verification artifacts
 server/*coverage-report.json
@@ -57,5 +64,3 @@ server/test-55-crop-coverage.js
 server/test-advisory-pipeline.js
 server/test-farmer-user-flow.js
 server/test-shc.cjs
-
-server/*coverage-report.json

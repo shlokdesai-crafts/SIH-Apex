@@ -55,18 +55,25 @@ def init_db() -> None:
                 updated_at          TEXT NOT NULL
             )
         """)
-        # Migrate existing databases: add lat/lng columns if they don't exist yet
-        for col in ('latitude', 'longitude'):
+        # Migrate existing databases: add lat/lng, assigned_officer, resolution_notes, priority columns if missing
+        for col, col_type in (
+            ('latitude', 'REAL'),
+            ('longitude', 'REAL'),
+            ('assigned_officer', 'TEXT'),
+            ('resolution_notes', 'TEXT'),
+            ('priority', 'TEXT'),
+        ):
             try:
-                conn.execute(f"ALTER TABLE submissions ADD COLUMN {col} REAL")
+                conn.execute(f"ALTER TABLE submissions ADD COLUMN {col} {col_type}")
             except Exception:
                 pass  # Column already exists
 
-        # Migrate scan_history table: add verification and reference columns
+        # Migrate scan_history table: add verification, reference, and field_id columns
         for col, col_type in (
             ('reference_source', 'TEXT'),
             ('accuracy_score', 'REAL'),
             ('verification_json', 'TEXT'),
+            ('field_id', 'TEXT'),
         ):
             try:
                 conn.execute(f"ALTER TABLE scan_history ADD COLUMN {col} {col_type}")
@@ -95,14 +102,22 @@ def insert_submission(
     location: str = "Unknown",
     latitude: float | None = None,
     longitude: float | None = None,
+    priority: str | None = None,
 ) -> int:
     """Insert a new scan submission. Returns the new row id."""
     status = "Pending"
     if disease and disease.lower() == "healthy":
         status = "Resolved"
-    elif not disease:
-        # Could not identify disease – treat as Unidentified
+    elif not disease or disease.lower() == "unidentified":
         status = "Unidentified"
+
+    if not priority:
+        if severity and severity.lower() in ("severe", "high"):
+            priority = "High"
+        elif severity and severity.lower() in ("moderate", "medium"):
+            priority = "Medium"
+        else:
+            priority = "Low"
 
     created_at = datetime.now(timezone.utc).isoformat()
 
@@ -110,10 +125,10 @@ def insert_submission(
         cur = conn.execute(
             """
             INSERT INTO submissions
-                (farmer_name, location, latitude, longitude, crop, ai_result, disease, confidence, severity, status, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (farmer_name, location, latitude, longitude, crop, ai_result, disease, confidence, severity, status, priority, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (farmer_name, location, latitude, longitude, crop, ai_result, disease, confidence, severity, status, created_at),
+            (farmer_name, location, latitude, longitude, crop, ai_result, disease, confidence, severity, status, priority, created_at),
         )
         conn.commit()
         return cur.lastrowid  # type: ignore[return-value]
@@ -139,11 +154,17 @@ def get_stats() -> dict:
 def get_submissions(limit: int = 50, status_filter: str | None = None) -> list[dict]:
     """Fetch recent submissions, newest first."""
     with _get_conn() as conn:
-        if status_filter:
-            rows = conn.execute(
-                "SELECT * FROM submissions WHERE status = ? ORDER BY id DESC LIMIT ?",
-                (status_filter, limit),
-            ).fetchall()
+        if status_filter and status_filter.lower() != "all":
+            if status_filter.lower() == "pending":
+                rows = conn.execute(
+                    "SELECT * FROM submissions WHERE status IN ('Pending', 'Assigned') ORDER BY id DESC LIMIT ?",
+                    (limit,),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "SELECT * FROM submissions WHERE status = ? ORDER BY id DESC LIMIT ?",
+                    (status_filter, limit),
+                ).fetchall()
         else:
             rows = conn.execute(
                 "SELECT * FROM submissions ORDER BY id DESC LIMIT ?",
@@ -180,13 +201,63 @@ def get_map_markers(severity_filter: str | None = None) -> list[dict]:
     return [dict(r) for r in rows]
 
 
-def update_status(submission_id: int, new_status: str) -> bool:
+def update_status(submission_id: int, new_status: str, officer: str | None = None, notes: str | None = None) -> bool:
     """Update the status of a submission. Returns True if a row was changed."""
     with _get_conn() as conn:
-        cur = conn.execute(
-            "UPDATE submissions SET status = ? WHERE id = ?",
-            (new_status, submission_id),
-        )
+        updates = ["status = ?"]
+        params: list[Any] = [new_status]
+        if officer is not None:
+            updates.append("assigned_officer = ?")
+            params.append(officer)
+        if notes is not None:
+            updates.append("resolution_notes = ?")
+            params.append(notes)
+        params.append(submission_id)
+
+        sql = f"UPDATE submissions SET {', '.join(updates)} WHERE id = ?"
+        cur = conn.execute(sql, params)
+        conn.commit()
+        return cur.rowcount > 0
+
+
+def update_submission_case(
+    submission_id: int,
+    status: str | None = None,
+    assigned_officer: str | None = None,
+    resolution_notes: str | None = None,
+    priority: str | None = None,
+    disease: str | None = None,
+    ai_result: str | None = None,
+) -> bool:
+    """Comprehensive update for a submission case."""
+    updates = []
+    params: list[Any] = []
+    if status is not None:
+        updates.append("status = ?")
+        params.append(status)
+    if assigned_officer is not None:
+        updates.append("assigned_officer = ?")
+        params.append(assigned_officer)
+    if resolution_notes is not None:
+        updates.append("resolution_notes = ?")
+        params.append(resolution_notes)
+    if priority is not None:
+        updates.append("priority = ?")
+        params.append(priority)
+    if disease is not None:
+        updates.append("disease = ?")
+        params.append(disease)
+    if ai_result is not None:
+        updates.append("ai_result = ?")
+        params.append(ai_result)
+
+    if not updates:
+        return True
+
+    params.append(submission_id)
+    sql = f"UPDATE submissions SET {', '.join(updates)} WHERE id = ?"
+    with _get_conn() as conn:
+        cur = conn.execute(sql, params)
         conn.commit()
         return cur.rowcount > 0
 
@@ -199,6 +270,7 @@ def insert_scan_history(
     crop_confidence: float,
     disease_confidence: float,
     farmer_id: str = "default_farmer",
+    field_id: str | None = None,
     condition_type: str = "disease",
     severity: str = "Unknown",
     image_path: str | None = None,
@@ -219,16 +291,16 @@ def insert_scan_history(
         conn.execute(
             """
             INSERT OR REPLACE INTO scan_history (
-                id, farmer_id, crop_name, predicted_condition, condition_type,
+                id, farmer_id, field_id, crop_name, predicted_condition, condition_type,
                 crop_confidence, disease_confidence, severity, image_path,
                 diagnosis_summary, symptoms_json, actions_json, prevention_json,
                 model_name, model_version, data_source, reference_source,
                 accuracy_score, verification_json, created_at, updated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                scan_id, farmer_id, crop_name, predicted_condition, condition_type,
+                scan_id, farmer_id, field_id, crop_name, predicted_condition, condition_type,
                 crop_confidence, disease_confidence, severity, image_path,
                 diagnosis_summary, symptoms_json, actions_json, prevention_json,
                 model_name, model_version, data_source, reference_source,
@@ -239,10 +311,34 @@ def insert_scan_history(
     return scan_id
 
 
-def get_scan_history(farmer_id: str | None = None, limit: int = 50) -> list[dict]:
+def get_scan_history(
+    farmer_id: str | None = None,
+    field_id: str | None = None,
+    limit: int = 50,
+) -> list[dict]:
     """Fetch persistent scan history, newest first."""
     with _get_conn() as conn:
-        if farmer_id:
+        if farmer_id and field_id:
+            rows = conn.execute(
+                """
+                SELECT * FROM scan_history
+                WHERE farmer_id = ? AND field_id = ?
+                ORDER BY created_at DESC
+                LIMIT ?
+                """,
+                (farmer_id, field_id, limit),
+            ).fetchall()
+        elif field_id:
+            rows = conn.execute(
+                """
+                SELECT * FROM scan_history
+                WHERE field_id = ?
+                ORDER BY created_at DESC
+                LIMIT ?
+                """,
+                (field_id, limit),
+            ).fetchall()
+        elif farmer_id:
             rows = conn.execute(
                 """
                 SELECT * FROM scan_history

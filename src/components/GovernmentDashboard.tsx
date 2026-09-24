@@ -3,17 +3,17 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import './GovernmentDashboard.css';
 
 import GovHeader from './GovHeader';
-import GovSidebar from './GovSidebar';
 import GovHero from './GovHero';
 import GovStatsRow from './GovStatsRow';
 import RecentSubmissions from './RecentSubmissions';
 import MaharashtraMap from './MaharashtraMap';
 import UnidentifiedCasesTable from './UnidentifiedCasesTable';
 import DistrictAnalyticsTable from './DistrictAnalyticsTable';
-import GovSettings from './GovSettings';
 import CropHealth from './CropHealth/CropHealth';
-import OperationsHubPage from './OperationsHubPage';
-import TeamManagementPage from './TeamManagementPage';
+import GovAdvisoriesPage from './GovAdvisoriesPage';
+import CaseManagementPage from './CaseManagementPage';
+import GovReportsPage from './GovReportsPage';
+import GovSettings from './GovSettings';
 
 interface GovernmentDashboardProps {
   initialTab?: string;
@@ -24,34 +24,25 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState(() => {
+    if (location.pathname === '/case-management') return 'case-management';
     if (location.pathname === '/crop-health') return 'crop-health';
-    if (location.pathname === '/operations-hub') return 'operations-hub';
-    if (location.pathname === '/team-management') return 'team-management';
+    if (location.pathname === '/advisories') return 'advisories';
+    if (location.pathname === '/reports') return 'reports';
+    if (location.pathname === '/settings') return 'settings';
     return initialTab;
   });
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1200);
-
   useEffect(() => {
-    const handleResize = () => {
-      setIsSidebarOpen(window.innerWidth > 1200);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const toggleSidebar = () => {
-    setIsSidebarOpen(prev => !prev);
-  };
-
-  useEffect(() => {
-    if (location.pathname === '/crop-health') {
+    if (location.pathname === '/case-management') {
+      setActiveTab('case-management');
+    } else if (location.pathname === '/crop-health') {
       setActiveTab('crop-health');
-    } else if (location.pathname === '/operations-hub') {
-      setActiveTab('operations-hub');
-    } else if (location.pathname === '/team-management') {
-      setActiveTab('team-management');
+    } else if (location.pathname === '/advisories') {
+      setActiveTab('advisories');
+    } else if (location.pathname === '/reports') {
+      setActiveTab('reports');
+    } else if (location.pathname === '/settings') {
+      setActiveTab('settings');
     } else if (location.pathname === '/' || location.pathname === '/dashboard') {
       setActiveTab('dashboard');
     }
@@ -60,12 +51,14 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
 
-    if (tab === 'crop-health') {
+    if (tab === 'case-management' || tab === 'submissions' || tab === 'field-visits' || tab === 'unidentified') {
+      navigate('/case-management');
+    } else if (tab === 'crop-health') {
       navigate('/crop-health');
-    } else if (tab === 'operations-hub') {
-      navigate('/operations-hub');
-    } else if (tab === 'team-management') {
-      navigate('/team-management');
+    } else if (tab === 'advisories') {
+      navigate('/advisories');
+    } else if (tab === 'reports') {
+      navigate('/reports');
     } else if (tab === 'settings') {
       navigate('/settings');
     } else {
@@ -79,26 +72,28 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
         activeTab={activeTab}
         onTabChange={handleTabChange}
         onSelectTab={handleTabChange}
-        onToggleSidebar={toggleSidebar}
       />
 
       <div className="gov-dashboard-main">
-        <GovSidebar
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-          onSelectTab={handleTabChange}
-          isOpen={isSidebarOpen}
-        />
-
-        <div className={`gov-dashboard-content ${isSidebarOpen ? 'sidebar-open' : ''}`}>
-          {activeTab === 'settings' ? (
-            <GovSettings />
+        <div className="gov-dashboard-content">
+          {activeTab === 'case-management' || activeTab === 'submissions' || activeTab === 'field-visits' || activeTab === 'unidentified' ? (
+            <CaseManagementPage
+              initialFilter={
+                activeTab === 'field-visits'
+                  ? 'field-visits'
+                  : activeTab === 'unidentified'
+                  ? 'unidentified'
+                  : 'all'
+              }
+            />
           ) : activeTab === 'crop-health' ? (
             <CropHealth />
-          ) : activeTab === 'operations-hub' ? (
-            <OperationsHubPage />
-          ) : activeTab === 'team-management' ? (
-            <TeamManagementPage />
+          ) : activeTab === 'advisories' ? (
+            <GovAdvisoriesPage />
+          ) : activeTab === 'reports' ? (
+            <GovReportsPage />
+          ) : activeTab === 'settings' ? (
+            <GovSettings />
           ) : (
             <>
               <GovHero />
