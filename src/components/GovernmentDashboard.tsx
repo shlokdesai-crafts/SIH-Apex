@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import './GovernmentDashboard.css';
 
 import GovHeader from './GovHeader';
+import GovSidebar from './GovSidebar';
 import GovHero from './GovHero';
 import GovStatsRow from './GovStatsRow';
 import RecentSubmissions from './RecentSubmissions';
@@ -22,6 +23,8 @@ interface GovernmentDashboardProps {
 const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [activeTab, setActiveTab] = useState(() => {
     if (location.pathname === '/case-management') return 'case-management';
@@ -50,6 +53,7 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
+    setSidebarOpen(false);
 
     if (tab === 'case-management' || tab === 'submissions' || tab === 'field-visits' || tab === 'unidentified') {
       navigate('/case-management');
@@ -72,9 +76,17 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
         activeTab={activeTab}
         onTabChange={handleTabChange}
         onSelectTab={handleTabChange}
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
       />
 
       <div className="gov-dashboard-main">
+        <GovSidebar
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          onSelectTab={handleTabChange}
+          isOpen={sidebarOpen}
+        />
+
         <div className="gov-dashboard-content">
           {activeTab === 'case-management' || activeTab === 'submissions' || activeTab === 'field-visits' || activeTab === 'unidentified' ? (
             <CaseManagementPage
@@ -117,4 +129,5 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
 };
 
 export default GovernmentDashboard;
+
 

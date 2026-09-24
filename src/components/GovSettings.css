@@ -743,3 +743,12 @@
     gap: 10px;
   }
 }
+
+@media (max-width: 480px) {
+  .gov-pref-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+

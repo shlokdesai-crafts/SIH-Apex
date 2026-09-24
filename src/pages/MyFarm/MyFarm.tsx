@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import TranslatedText from '../../components/TranslatedText';
 import { useFarm } from '../../context/FarmContext';
+import { useTranslation } from '../../i18n/useTranslation';
 import type { FarmCrop, FarmField, PriorityAction } from '../../types/farm';
 import { getCanonicalCropKey, CROP_ICONS } from '../../services/farmService';
 import './MyFarm.css';
@@ -10,6 +11,7 @@ interface MyFarmProps {
 }
 
 export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
+  const { t } = useTranslation();
   const { 
     farmState, 
     isLoading, 
@@ -191,9 +193,9 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
           <div className="farm-hero-header">
             <div className="farm-hero-title-group">
               <h1>
-                My Farm <span role="img" aria-label="leaf">🌿</span>
+                {t('farm.title')} <span role="img" aria-label="leaf">🌿</span>
               </h1>
-              <p>Manage your farm, track your crops and get personalized insights for better yield.</p>
+              <p>{t('farm.subtitle')}</p>
             </div>
 
             {/* Farmer Quote Banner */}
@@ -235,7 +237,7 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                     <div className="farm-stat-pill">
                       <span className="stat-icon">📐</span>
                       <div>
-                        <span>Total Land Area</span>
+                        <span>{t('farm.totalArea')}</span>
                         <strong>{farmDetails.totalAreaHa} Ha</strong>
                       </div>
                     </div>
@@ -274,7 +276,7 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                     </svg>
                     <div className="gauge-center-text">
                       <strong>{hasScans ? `${overallHealthScore}%` : '--'}</strong>
-                      <span>{healthLabel}</span>
+                      <span>{t(healthLabel)}</span>
                     </div>
                   </div>
 
@@ -282,12 +284,12 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                     <span className="callout-icon">{hasScans ? '🌱' : '📋'}</span>
                     <div>
                       {!hasScans
-                        ? 'Scan your first crop to assess your farm health score and receive AI diagnoses.'
+                        ? t('Scan your first crop to assess your farm health score and receive AI diagnoses.')
                         : overallHealthScore >= 75
-                        ? 'Your farm is in good condition! Keep up the healthy practices.'
+                        ? t('Your farm is in good condition! Keep up the healthy practices.')
                         : overallHealthScore >= 55
-                        ? 'Attention needed: Some fields show moderate risk or early symptoms.'
-                        : 'Immediate action required: Severe disease symptoms detected.'}
+                        ? t('Attention needed: Some fields show moderate risk or early symptoms.')
+                        : t('Immediate action required: Severe disease symptoms detected.')}
                     </div>
                   </div>
                 </div>
@@ -297,13 +299,13 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
             {/* 2. Middle Section: 🌿 My Crops (Genuine Scanned Crops Only) */}
             <section className="farm-crops-section">
               <div className="panel-header">
-                <h3>🌿 My Crops ({scannedCrops.length})</h3>
+                <h3>🌿 {t('farm.monitoredCrops')} ({scannedCrops.length})</h3>
                 {scannedCrops.length > 0 && (
                   <button
                     className="panel-view-all-btn"
                     onClick={() => onNavigateTab ? onNavigateTab('scan') : null}
                   >
-                    + Scan Another Crop →
+                    + {t('scan.scanAnother')} →
                   </button>
                 )}
               </div>
@@ -341,7 +343,7 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                     return (
                       <div key={crop.id} className="crop-mini-card">
                         <div className="crop-card-img-wrap">
-                          <img src={crop.image} alt={crop.name} />
+                          <img src={crop.image} alt={t(crop.name)} />
                           {matchingField && (
                             <span className="crop-card-field-badge">
                               🌱 {matchingField.name}
@@ -351,32 +353,32 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                         <div className="crop-card-content">
                           <div className="crop-card-topline">
                             <h4>
-                              <span>{crop.icon}</span> {crop.name}
+                              <span>{crop.icon}</span> {t(crop.name)}
                             </h4>
                             <span className={`status-badge ${statusSlug}`}>
-                              {crop.status}
+                              {t(crop.status)}
                             </span>
                           </div>
 
                           <div className="crop-card-condition-line">
-                            <span className="condition-lbl">Latest:</span>
+                            <span className="condition-lbl">{t('Latest')}:</span>
                             <strong className="condition-val" title={crop.detectedDisease || 'Healthy'}>
-                              {crop.detectedDisease || 'Healthy Plant'}
+                              {t(crop.detectedDisease || 'Healthy Plant')}
                             </strong>
                           </div>
 
                           <div className="crop-card-metrics">
                             <div className="crop-card-metric-row">
-                              <span className="metric-lbl">Area</span>
+                              <span className="metric-lbl">{t('Area')}</span>
                               <strong className="metric-val">{areaDisplay}</strong>
                             </div>
                             <div className="crop-card-metric-row">
-                              <span className="metric-lbl">Scanned</span>
+                              <span className="metric-lbl">{t('Scanned')}</span>
                               <strong className="metric-val">{crop.lastScanDate}</strong>
                             </div>
                             {latestScan?.confidence ? (
                               <div className="crop-card-metric-row">
-                                <span className="metric-lbl">Confidence</span>
+                                <span className="metric-lbl">{t('Confidence')}</span>
                                 <strong className="metric-val" style={{ color: '#16a34a' }}>{latestScan.confidence}%</strong>
                               </div>
                             ) : null}
@@ -386,7 +388,7 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                                 className="crop-card-history-link"
                                 onClick={() => setSelectedCrop(crop)}
                               >
-                                View Details →
+                                {t('View Details →')}
                               </button>
                               <button
                                 type="button"
@@ -398,7 +400,7 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                                   if (onNavigateTab) onNavigateTab('advisory');
                                 }}
                               >
-                                <span>💡</span> Advisory
+                                <span>💡</span> {t('Advisory')}
                               </button>
                             </div>
                           </div>
@@ -415,27 +417,27 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
               {/* Card 1: 🕒 Recent Activity */}
               <div className="farm-panel-card">
                 <div className="panel-header">
-                  <h3>🕒 Recent Activity</h3>
+                  <h3>🕒 {t('Recent Activity')}</h3>
                   <button
                     className="panel-view-all-btn"
                     onClick={() => setViewAllActivityModal(true)}
                   >
-                    View All →
+                    {t('View All →')}
                   </button>
                 </div>
 
                 {activities.length === 0 ? (
-                  <div className="empty-state-text">No recent activity</div>
+                  <div className="empty-state-text">{t('No recent activity')}</div>
                 ) : (
                   <div className="activity-table-wrap">
                     <table className="activity-table">
                       <thead>
                         <tr>
-                          <th>Date</th>
-                          <th>Activity</th>
-                          <th>Crop</th>
-                          <th>Details</th>
-                          <th>Status</th>
+                          <th>{t('Date')}</th>
+                          <th>{t('Activity')}</th>
+                          <th>{t('Crop')}</th>
+                          <th>{t('Details')}</th>
+                          <th>{t('Status')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -456,15 +458,15 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                             <tr key={act.id}>
                               <td className="act-date">{act.date}</td>
                               <td className="act-name">
-                                <span>{cropIcon}</span> {act.activity}
+                                <span>{cropIcon}</span> {t(act.activity)}
                               </td>
-                              <td className="act-crop">{act.crop}</td>
+                              <td className="act-crop">{t(act.crop)}</td>
                               <td className="act-details" title={act.details}>
-                                {act.details}
+                                {t(act.details)}
                               </td>
                               <td>
                                 <span className={`status-badge ${statusClass}`}>
-                                  {act.status}
+                                  {t(act.status)}
                                 </span>
                               </td>
                             </tr>
@@ -479,17 +481,17 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
               {/* Card 2: 🌾 Your Fields */}
               <div className="farm-panel-card">
                 <div className="panel-header">
-                  <h3>🌾 Your Fields</h3>
+                  <h3>🌾 {t('Your Fields')}</h3>
                   <button
                     className="panel-view-all-btn"
                     onClick={() => setViewAllFieldsModal(true)}
                   >
-                    View All →
+                    {t('View All →')}
                   </button>
                 </div>
 
                 {fields.length === 0 ? (
-                  <div className="empty-state-text">No fields added yet</div>
+                  <div className="empty-state-text">{t('No fields added yet')}</div>
                 ) : (
                   <div className="fields-list">
                     {fields.slice(0, 4).map((field) => {
@@ -509,12 +511,12 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                             <span className="field-bullet-icon">{fieldIcon}</span>
                             <div className="field-item-names">
                               <strong>{field.name}</strong>
-                              <span>{field.crop} · {field.areaHa} Ha</span>
+                              <span>{t(field.crop)} · {field.areaHa} Ha</span>
                             </div>
                           </div>
                           <div className="field-item-right-group">
                             <span className={`status-badge ${statusSlug}`}>
-                              {field.status}
+                              {t(field.status)}
                             </span>
                             <button
                               type="button"

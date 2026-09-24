@@ -605,3 +605,18 @@
     gap: 16px;
   }
 }
+
+@media (max-width: 600px) {
+  .crop-dist-grid {
+    grid-template-columns: 1fr;
+  }
+  .reports-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .reports-metrics-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+

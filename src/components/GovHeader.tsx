@@ -15,6 +15,7 @@ const GovHeader = ({
   activeTab = 'dashboard',
   onTabChange,
   onSelectTab,
+  onToggleSidebar,
 }: GovHeaderProps = {}) => {
   const { t } = useTranslation();
   const { user, logout } = useContext(AuthContext);
@@ -147,6 +148,20 @@ const GovHeader = ({
     <header className="gov-header">
       {/* ── Left: Brand & Portal Logo ── */}
       <div className="gov-header-left">
+        {onToggleSidebar && (
+          <button
+            className="gov-sidebar-toggle-btn"
+            onClick={onToggleSidebar}
+            aria-label="Toggle Sidebar Menu"
+            title="Menu"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+        )}
         <div
           className="gov-logo-clickable"
           onClick={() => handleTabChange('dashboard')}
@@ -180,6 +195,7 @@ const GovHeader = ({
           </div>
         </div>
       </div>
+
 
       {/* ── Center: Main Portal Navigation ── */}
       <nav className="gov-header-nav">

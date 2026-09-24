@@ -55,6 +55,18 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeTab]);
+
+  // Ensure page starts at top on initial load (combat browser auto-focus scroll)
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    // Delayed scroll to override any async content / autofocus scrolling
+    const timer = setTimeout(() => window.scrollTo(0, 0), 50);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     async function init() {
       try {
         let lat, lng;
@@ -107,24 +119,16 @@ export default function Dashboard() {
       {activeTab === 'advisory' && (
         <AdvisoryOverview 
           scanResult={scanResult} 
-          onBack={() => {
-            const dest = previousTab === 'farm' ? 'farm' : (previousTab === 'scan' ? 'scan' : 'home');
-            setActiveTab(dest);
-          }} 
+          locationData={locationData}
+          onBack={() => setActiveTab(previousTab === 'farm' ? 'farm' : 'home')} 
           onOpenFertilizer={() => setActiveTab('fertilizer')} 
-          onNavigateTab={handleNavigateTab}
         />
       )}
       {activeTab === 'fertilizer' && (
         <FertilizerRecommendation 
+          locationData={locationData}
           onBack={() => setActiveTab('advisory')} 
         />
-      )}
-      {activeTab === 'more' && (
-        <div style={{ padding: '40px', textAlign: 'center' }}>
-          <h2>More - Work in Progress</h2>
-          <p>This page is not yet implemented.</p>
-        </div>
       )}
     </FarmProvider>
   );

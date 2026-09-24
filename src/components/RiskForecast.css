@@ -83,21 +83,21 @@
 /* Grid Layout */
 .rf-grid {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
+  grid-template-columns: 1fr 1.35fr 1fr;
   gap: 20px;
+  width: 100%;
 }
 
 .rf-card-span-2 {
-  grid-column: span 4;
+  grid-column: span 1; /* keep as span 1 so first row fits 3 cards */
 }
 
 .rf-weather-card-wide {
-  grid-column: span 7;
+  grid-column: span 2;
 }
 
 /* Card Common */
 .rf-card {
-  grid-column: span 4;
   background: #fff;
   border-radius: 16px;
   padding: 20px;
@@ -316,8 +316,8 @@
 /* Key Risk Factors */
 .rf-factors-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px 16px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
   flex: 1;
 }
 
@@ -532,178 +532,159 @@
   gap: 6px;
 }
 
-/* Recommended Actions (Compact Card) */
-.rf-actions-card {
-  grid-column: span 5;
+/* ============================================================
+   RESPONSIVE DESIGN & MOBILE OPTIMIZATIONS (320px - 430px)
+   ============================================================ */
+
+@media (max-width: 1024px) {
+  .risk-forecast-container {
+    padding: 18px 20px;
+  }
+  .rf-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px;
+  }
+  .rf-card-span-2,
+  .rf-weather-card-wide {
+    grid-column: span 1 !important;
+  }
+  .rf-factors-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
 }
 
-.rf-soil-warning-compact {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  background: #fff8e1;
-  border: 1px solid #ffe082;
-  padding: 12px;
-  border-radius: 8px;
-  color: #f57f17;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.4;
+@media (max-width: 768px) {
+  .risk-forecast-container {
+    padding: 14px 14px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .rf-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 16px;
+    width: 100%;
+  }
+
+  .rf-title-group h1 {
+    font-size: 22px;
+  }
+
+  .rf-title-group p {
+    font-size: 13.5px;
+  }
+
+  .rf-info-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    width: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+  }
+
+  .rf-info-item {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .rf-info-divider {
+    display: none;
+  }
+
+  .rf-weather-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .rf-issue-item {
+    grid-template-columns: 1fr !important;
+    gap: 6px;
+  }
+
+  .rf-chart-legend {
+    gap: 10px;
+    font-size: 11px;
+    flex-wrap: wrap;
+  }
+
+  .rf-weather-impact {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .impact-badge {
+    margin-left: 0;
+    align-self: flex-start;
+  }
 }
 
-.rf-compact-actions-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  flex: 1;
-  overflow-y: auto;
-  max-height: 240px;
-  padding-right: 4px;
+@media (max-width: 430px) {
+  .risk-forecast-container {
+    padding: 10px 10px 40px;
+  }
+
+  .rf-title-group h1 {
+    font-size: 20px;
+  }
+
+  .rf-title-group p {
+    font-size: 12.5px;
+  }
+
+  .rf-card {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .rf-card-title h3 {
+    font-size: 14.5px;
+  }
+
+  .rf-risk-text {
+    font-size: 24px;
+  }
+
+  .rf-factors-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  .rf-weather-stats {
+    grid-template-columns: 1fr !important;
+  }
+
+  .rf-chart-labels {
+    font-size: 9px;
+    gap: 2px;
+  }
+
+  .rf-crop-select {
+    max-width: 140px;
+    font-size: 12px;
+  }
 }
 
-.rf-compact-actions-list::-webkit-scrollbar {
-  width: 4px;
-}
-.rf-compact-actions-list::-webkit-scrollbar-track {
-  background: #f1f1f1; 
-}
-.rf-compact-actions-list::-webkit-scrollbar-thumb {
-  background: #c1c1c1; 
-  border-radius: 4px;
+@media (max-width: 360px) {
+  .risk-forecast-container {
+    padding: 8px 8px 30px;
+  }
+
+  .rf-info-value {
+    font-size: 12.5px;
+  }
+
+  .rf-card-title h3 {
+    font-size: 13.5px;
+  }
 }
 
-.rf-compact-action-item {
-  display: flex;
-  gap: 12px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #eee;
-}
 
-.rf-compact-action-item:last-child {
-  padding-bottom: 0;
-  border-bottom: none;
-}
-
-.rf-compact-action-icon {
-  font-size: 20px;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f5f5f5;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.rf-compact-action-content {
-  flex: 1;
-}
-
-.rf-compact-action-title {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 4px;
-  gap: 8px;
-}
-
-.rf-compact-action-title h4 {
-  font-size: 14px;
-  font-weight: 600;
-  color: #111;
-  margin: 0;
-  line-height: 1.3;
-}
-
-.badge-compact {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-  text-transform: uppercase;
-  flex-shrink: 0;
-}
-.badge-compact.high { background: #ffebee; color: #c62828; }
-.badge-compact.medium { background: #fff8e1; color: #f57f17; }
-.badge-compact.low { background: #e8f5e9; color: #2e7d32; }
-
-.rf-compact-action-reason {
-  font-size: 13px;
-  color: #555;
-  margin-bottom: 8px;
-  line-height: 1.4;
-}
-
-.rf-compact-action-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-}
-
-.rf-compact-action-meta .date {
-  color: #888;
-  font-weight: 500;
-}
-
-.btn-why-text {
-  background: none;
-  border: none;
-  color: #2d8a3e;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0;
-}
-
-.btn-why-text:hover {
-  text-decoration: underline;
-}
-
-.rf-compact-action-details {
-  margin-top: 10px;
-  background: #f8f9fa;
-  padding: 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  color: #444;
-  line-height: 1.5;
-}
-
-.rf-compact-action-details p {
-  margin: 0 0 4px 0;
-}
-.rf-compact-action-details p:last-child {
-  margin-bottom: 0;
-}
-
-.rf-condition-summary-box {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  background: #f0f7f1;
-  border-left: 4px solid #2d8a3e;
-  padding: 14px;
-  border-radius: 6px;
-  margin-bottom: 20px;
-}
-.rf-condition-summary-box .summary-icon {
-  font-size: 20px;
-}
-.rf-condition-summary-box p {
-  margin: 0;
-  font-size: 13.5px;
-  color: #2c4c34;
-  line-height: 1.5;
-  font-weight: 500;
-}
-.rf-recommendation-title {
-  font-size: 14px;
-  color: #666;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 12px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 8px;
-}

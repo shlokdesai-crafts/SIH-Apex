@@ -694,3 +694,36 @@
     opacity: 1;
   }
 }
+
+/* Responsive media queries */
+@media (max-width: 768px) {
+  .case-header-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .case-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .modal-section-grid {
+    grid-template-columns: 1fr;
+  }
+  .case-modal-overlay {
+    padding: 10px;
+  }
+  .case-modal-card {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .case-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .case-filter-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+

@@ -56,9 +56,11 @@ export default function PanelsRow({
   const [textInput, setTextInput] = useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({
-      behavior: 'smooth'
-    });
+    if (messages.length > 0) {
+      chatEndRef.current?.scrollIntoView({
+        behavior: 'smooth'
+      });
+    }
   }, [messages, assistantResponse]);
   const {
     t,
@@ -239,7 +241,6 @@ export default function PanelsRow({
       <div className="panel map-panel" id="map-panel">
         <div className="map-panel-header">
           <h2 className="panel-title">{t('panels.fieldMap')}</h2>
-          <a href="#" className="view-full-map" id="view-full-map-btn">{t('panels.viewFullMap')}</a>
         </div>
         <div className="map-tabs">
           <button className={`map-tab ${activeMapTab === 'fields' ? 'active' : ''}`} onClick={() => setActiveMapTab('fields')}>{t('panels.myFields')}</button>
