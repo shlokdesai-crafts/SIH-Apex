@@ -599,6 +599,7 @@ def predict_crop_disease(
 
         img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
+<<<<<<< HEAD
         # Try high-accuracy CLIP zero-shot classification
         clip_probs = None
         try:
@@ -626,6 +627,47 @@ def predict_crop_disease(
             probs = 0.5 * clip_probs.to(cnn_probs.device) + 0.5 * cnn_probs
         else:
             probs = cnn_probs
+=======
+        model_path = crop_cfg.get("model_path")
+        has_cnn_model = bool(model_path and Path(model_path).exists())
+
+        probs = None
+        # Prioritize validated, fine-tuned MobileNetV3 checkpoints when available (Potato, Grapes, Onion)
+        if has_cnn_model and (crop_name in ("Potato", "Grapes", "Onion") or crop_name not in CROP_DISEASE_PROMPTS):
+            try:
+                model, device = _get_crop_inference_model(crop_name)
+                tensor_img = _inference_transform(img).unsqueeze(0).to(device)  # type: ignore[attr-defined]
+                with torch.no_grad():
+                    outputs = model(tensor_img)
+                    probs = torch.softmax(outputs, dim=1)[0]
+            except Exception as cnn_err:
+                logger.warning(f"Trained CNN checkpoint failed for {crop_name}, attempting fallback: {cnn_err}")
+                probs = None
+
+        # Fall back to zero-shot CLIP classification if prompt ensemble exists and CNN wasn't used/available
+        if probs is None and crop_name in CROP_DISEASE_PROMPTS:
+            try:
+                from services.crop_identification import _get_crop_id_model, _extract_image_features
+                clip_model, processor, _, _ = _get_crop_id_model()
+                text_embeds = _get_clip_disease_embeds(crop_name, classes, clip_model, processor)
+
+                inputs = processor(images=img, return_tensors="pt")
+                with torch.no_grad():
+                    img_feat = _extract_image_features(clip_model, inputs)
+                    sims = (img_feat @ text_embeds.T)[0]
+                    # Temperature scaled probabilities
+                    probs = (sims * 35.0).softmax(dim=0)
+            except Exception as clip_err:
+                logger.warning(f"CLIP disease classification unavailable, using CNN fallback: {clip_err}")
+                probs = None
+
+        if probs is None and has_cnn_model:
+            model, device = _get_crop_inference_model(crop_name)
+            tensor_img = _inference_transform(img).unsqueeze(0).to(device)  # type: ignore[attr-defined]
+            with torch.no_grad():
+                outputs = model(tensor_img)
+                probs = torch.softmax(outputs, dim=1)[0]
+>>>>>>> feature/advisory-safe-refactor
 
         top_prob_t, top_idx_t = torch.max(probs, dim=0)
         top_prob_raw = float(top_prob_t.item())

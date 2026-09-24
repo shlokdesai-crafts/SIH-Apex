@@ -1,0 +1,179 @@
+{
+  "experiment_name": "cropguard_grape_leaf_mobilenetv3",
+  "crop": "Grape",
+  "dataset_source": "PlantVillage (spMohanty raw/color)",
+  "dataset_provenance": "Penn State University & EPFL, Hughes & Salath\u00e9 2015",
+  "license": "CC0 / Public Domain",
+  "timestamp": "2026-09-24 21:09:49",
+  "training_duration_minutes": 12.19,
+  "checkpoint_evaluated": "C:\\Users\\KRUTIKA\\SIH-Apex\\backend\\ml\\experiments\\grape_experiment\\grape_mobilenetv3_experiment.pth",
+  "split_counts": {
+    "train": 2846,
+    "val": 608,
+    "test": 608,
+    "total": 4062
+  },
+  "classes": [
+    "Black Rot",
+    "Esca (Black Measles)",
+    "Leaf Blight (Isariopsis)",
+    "Healthy"
+  ],
+  "class_details": [
+    {
+      "id": 0,
+      "name": "Black Rot",
+      "pathogen": "Guignardia bidwellii",
+      "folder": "Grape___Black_rot",
+      "severity": "Moderate",
+      "status": "Diseased"
+    },
+    {
+      "id": 1,
+      "name": "Esca (Black Measles)",
+      "pathogen": "Phaeomoniella chlamydospora / Phaeoacremonium minimum",
+      "folder": "Grape___Esca_(Black_Measles)",
+      "severity": "Severe",
+      "status": "Diseased"
+    },
+    {
+      "id": 2,
+      "name": "Leaf Blight (Isariopsis)",
+      "pathogen": "Pseudocercospora vitis",
+      "folder": "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
+      "severity": "Moderate",
+      "status": "Diseased"
+    },
+    {
+      "id": 3,
+      "name": "Healthy",
+      "pathogen": "None",
+      "folder": "Grape___healthy",
+      "severity": "None",
+      "status": "Healthy"
+    }
+  ],
+  "training_history": [
+    {
+      "phase": "warmup",
+      "epoch": 1,
+      "train_loss": 0.2808901906728179,
+      "train_acc": 0.9198875614898102,
+      "val_loss": 0.2863933611171026,
+      "val_acc": 0.8980263157894737,
+      "time_sec": 61.39161276817322
+    },
+    {
+      "phase": "warmup",
+      "epoch": 2,
+      "train_loss": 0.08417027074783433,
+      "train_acc": 0.9701335207308504,
+      "val_loss": 0.12900099824917943,
+      "val_acc": 0.962171052631579,
+      "time_sec": 48.4149386882782
+    },
+    {
+      "phase": "finetune",
+      "epoch": 1,
+      "train_loss": 0.05063757984175786,
+      "train_acc": 0.9817287420941673,
+      "val_loss": 0.019767562656756797,
+      "val_acc": 0.993421052631579,
+      "time_sec": 153.76850771903992
+    },
+    {
+      "phase": "finetune",
+      "epoch": 2,
+      "train_loss": 0.02157703726647326,
+      "train_acc": 0.9905130007027407,
+      "val_loss": 0.009774359965376789,
+      "val_acc": 0.9950657894736842,
+      "time_sec": 164.03395462036133
+    },
+    {
+      "phase": "finetune",
+      "epoch": 3,
+      "train_loss": 0.018666085457751294,
+      "train_acc": 0.9926212227687983,
+      "val_loss": 0.005175719035067136,
+      "val_acc": 0.9983552631578947,
+      "time_sec": 158.3155074119568
+    },
+    {
+      "phase": "finetune",
+      "epoch": 4,
+      "train_loss": 0.008855916754239862,
+      "train_acc": 0.9968376669009136,
+      "val_loss": 0.006240629585590796,
+      "val_acc": 0.9983552631578947,
+      "time_sec": 144.92985105514526
+    }
+  ],
+  "best_val_loss": 0.0052,
+  "best_val_accuracy": 0.9984,
+  "metrics": {
+    "overall_accuracy": 0.9951,
+    "macro_precision": 0.9962,
+    "macro_recall": 0.996,
+    "macro_f1": 0.9961,
+    "weighted_precision": 0.9951,
+    "weighted_recall": 0.9951,
+    "weighted_f1": 0.9951,
+    "per_class": {
+      "Black Rot": {
+        "class_id": 0,
+        "precision": 0.9943,
+        "recall": 0.9887,
+        "f1_score": 0.9915,
+        "support": 177
+      },
+      "Esca (Black Measles)": {
+        "class_id": 1,
+        "precision": 0.9904,
+        "recall": 0.9952,
+        "f1_score": 0.9928,
+        "support": 207
+      },
+      "Leaf Blight (Isariopsis)": {
+        "class_id": 2,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "support": 161
+      },
+      "Healthy": {
+        "class_id": 3,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "support": 63
+      }
+    },
+    "confusion_matrix": [
+      [
+        175,
+        2,
+        0,
+        0
+      ],
+      [
+        1,
+        206,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        161,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        63
+      ]
+    ]
+  }
+}

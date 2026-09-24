@@ -91,6 +91,10 @@ export function computeOverallHealthScore(fields: FarmField[], crops: FarmCrop[]
 }
 
 export function createInitialFarmState(farmerId: string, location?: string): FarmState {
+  return createEmptyFarmState(farmerId, location);
+}
+
+export function _legacyUnusedDefaultFarmState(farmerId: string, location?: string): FarmState {
   const farmDetails: FarmDetails = {
     id: `farm-${farmerId}`,
     farmerId,
@@ -376,38 +380,32 @@ export function sanitizeFarmState(state: FarmState, defaultLocation?: string): {
 
   let modified = false;
 
-  // If there are no genuine saved scans, purge any hardcoded demonstration crops, fields, and actions
-  if (!state.scans || state.scans.length === 0) {
-    const mockCropIds = new Set(['cotton', 'soybean', 'onion', 'tomato', 'potato']);
-    const mockFieldIds = new Set(['field-1', 'field-2', 'field-3', 'field-4']);
-    const mockActionIds = new Set(['pa-1', 'pa-2', 'pa-3', 'pa-4']);
-    const mockActivityIds = new Set(['act-1', 'act-2', 'act-3', 'act-4']);
+  // Unconditionally purge any legacy hardcoded demonstration crops, fields, and actions
+  const mockCropIds = new Set(['cotton', 'soybean', 'onion', 'tomato', 'potato']);
+  const mockFieldIds = new Set(['field-1', 'field-2', 'field-3', 'field-4']);
+  const mockActionIds = new Set(['pa-1', 'pa-2', 'pa-3', 'pa-4']);
+  const mockActivityIds = new Set(['act-1', 'act-2', 'act-3', 'act-4']);
 
-    if (Array.isArray(state.crops) && state.crops.some((c) => mockCropIds.has(c.id))) {
-      state.crops = state.crops.filter((c) => !mockCropIds.has(c.id));
-      modified = true;
-    }
-    if (Array.isArray(state.fields) && state.fields.some((f) => mockFieldIds.has(f.id))) {
-      state.fields = state.fields.filter((f) => !mockFieldIds.has(f.id));
-      modified = true;
-    }
-    if (Array.isArray(state.priorityActions) && state.priorityActions.some((pa) => mockActionIds.has(pa.id))) {
-      state.priorityActions = state.priorityActions.filter((pa) => !mockActionIds.has(pa.id));
-      modified = true;
-    }
-    if (Array.isArray(state.activities) && state.activities.some((act) => mockActivityIds.has(act.id))) {
-      state.activities = state.activities.filter((act) => !mockActivityIds.has(act.id));
-      modified = true;
-    }
-    if (state.overallHealthScore !== 0) {
-      state.overallHealthScore = 0;
-      modified = true;
-    }
-    const realArea = Math.round((state.fields || []).reduce((sum, f) => sum + (f.areaHa || 0), 0) * 100) / 100;
-    if (state.farmDetails.totalAreaHa !== realArea) {
-      state.farmDetails.totalAreaHa = realArea;
-      modified = true;
-    }
+  if (Array.isArray(state.crops) && state.crops.some((c) => mockCropIds.has(c.id))) {
+    state.crops = state.crops.filter((c) => !mockCropIds.has(c.id));
+    modified = true;
+  }
+  if (Array.isArray(state.fields) && state.fields.some((f) => mockFieldIds.has(f.id))) {
+    state.fields = state.fields.filter((f) => !mockFieldIds.has(f.id));
+    modified = true;
+  }
+  if (Array.isArray(state.priorityActions) && state.priorityActions.some((pa) => mockActionIds.has(pa.id))) {
+    state.priorityActions = state.priorityActions.filter((pa) => !mockActionIds.has(pa.id));
+    modified = true;
+  }
+  if (Array.isArray(state.activities) && state.activities.some((act) => mockActivityIds.has(act.id))) {
+    state.activities = state.activities.filter((act) => !mockActivityIds.has(act.id));
+    modified = true;
+  }
+  const realArea = Math.round((state.fields || []).reduce((sum, f) => sum + (f.areaHa || 0), 0) * 100) / 100;
+  if (state.farmDetails.totalAreaHa !== realArea) {
+    state.farmDetails.totalAreaHa = realArea;
+    modified = true;
   }
 
   if (Array.isArray(state.crops)) {

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useFarm } from '../context/FarmContext';
 import { scanCropImage, getScanHistory, deleteScan, type ScanHistoryItem } from '../services/cropScanApi';
 import { getBrowserPosition, reverseGeocode } from '../services/locationService';
@@ -15,6 +15,7 @@ export interface CropItem {
 
 export const ACTIVE_MODEL_CROPS = new Set([
   'Chickpea',
+  'Chickpea (Chana)',
   'Cotton',
   'Maize',
   'Rice',
@@ -24,88 +25,57 @@ export const ACTIVE_MODEL_CROPS = new Set([
   'Wheat',
 ]);
 
-// ── Curated Popular Maharashtra Crops (Step 1 Cards) ────────────────────────
+// ── Curated Crop Catalogue (Exactly 20 Maharashtra-Relevant Crops) ───────────
 export const POPULAR_CROPS: CropItem[] = [
-  { name: 'Cotton',      img: '/images/crop_cotton.jpg',      isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Soybean',     img: '/images/crop_soybean.jpg',     isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Sugarcane',   img: '/images/crop_sugarcane.jpg',   isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Rice',        img: '/images/crop_rice.jpg',        isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Wheat',       img: '/images/crop_wheat.jpg',       isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Tomato',      img: '/images/crop_tomato.jpg',      isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Chickpea',    img: '/images/crop_chickpea.jpg',    isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Onion',       img: '/images/onion_crop.jpg',       isModelSupported: false, sourceDataset: 'baseline' },
-  { name: 'Potato',      img: '/images/potato_crop.jpg',      isModelSupported: false, sourceDataset: 'baseline' },
-  { name: 'Maize',       img: '/images/crop_maize.jpg',       isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Banana',      img: '/images/crops/banana.png',     isModelSupported: false, sourceDataset: 'sage' },
-  { name: 'Mango',       img: '/images/crops/mango.png',      isModelSupported: false, sourceDataset: 'sage' },
+  // 12 Preserved Popular Crops
+  { name: 'Cotton',               img: '/images/crop_cotton.jpg',      isModelSupported: true,  sourceDataset: 'baseline' },
+  { name: 'Soybean',              img: '/images/crop_soybean.jpg',     isModelSupported: true,  sourceDataset: 'baseline' },
+  { name: 'Sugarcane',            img: '/images/crop_sugarcane.jpg',   isModelSupported: true,  sourceDataset: 'baseline' },
+  { name: 'Rice',                 img: '/images/crop_rice.jpg',        isModelSupported: true,  sourceDataset: 'baseline' },
+  { name: 'Wheat',                img: '/images/crop_wheat.jpg',       isModelSupported: true,  sourceDataset: 'baseline' },
+  { name: 'Tomato',               img: '/images/crop_tomato.jpg',      isModelSupported: true,  sourceDataset: 'baseline' },
+  { name: 'Chickpea (Chana)',     img: '/images/crop_chickpea.jpg',    isModelSupported: true,  sourceDataset: 'baseline' },
+  { name: 'Onion',                img: '/images/onion_crop.jpg',       isModelSupported: false, sourceDataset: 'baseline' },
+  { name: 'Potato',               img: '/images/potato_crop.jpg',      isModelSupported: false, sourceDataset: 'baseline' },
+  { name: 'Maize',                img: '/images/crop_maize.jpg',       isModelSupported: true,  sourceDataset: 'baseline' },
+  { name: 'Banana',               img: '/images/crops/banana.png',     isModelSupported: false, sourceDataset: 'sage' },
+  { name: 'Mango',                img: '/images/crops/mango.png',      isModelSupported: false, sourceDataset: 'sage' },
+
+  // 8 Additional Maharashtra Crops
+  { name: 'Tur (Pigeon Pea)',     img: '/images/crops/pigeon_pea.png',   isModelSupported: false, sourceDataset: 'benchmark' },
+  { name: 'Jowar (Sorghum)',      img: '/images/crops/jowar.jpg',        isModelSupported: false, sourceDataset: 'benchmark' },
+  { name: 'Bajra (Pearl Millet)', img: '/images/crops/bajra.jpg',        isModelSupported: false, sourceDataset: 'benchmark' },
+  { name: 'Groundnut',            img: '/images/crops/groundnut.png',    isModelSupported: false, sourceDataset: 'benchmark' },
+  { name: 'Brinjal',              img: '/images/crops/brinjal.png',      isModelSupported: false, sourceDataset: 'benchmark' },
+  { name: 'Chili',                img: '/images/crops/chili.png',        isModelSupported: false, sourceDataset: 'benchmark' },
+  { name: 'Grape',                img: '/images/crops/grape.jpg',        isModelSupported: false, sourceDataset: 'sage' },
+  { name: 'Pomegranate',          img: '/images/crops/pomegranate.jpg',  isModelSupported: false, sourceDataset: 'benchmark' },
 ];
 
-// ── Complete Database of Available Crops (Popular + SAGE + PlantVillage + Maharashtra) ──
-export const ALL_AVAILABLE_CROPS: CropItem[] = [
-  // Baseline
-  { name: 'Cotton',      img: '/images/crop_cotton.jpg',      isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Soybean',     img: '/images/crop_soybean.jpg',     isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Sugarcane',   img: '/images/crop_sugarcane.jpg',   isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Rice',        img: '/images/crop_rice.jpg',        isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Wheat',       img: '/images/crop_wheat.jpg',       isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Tomato',      img: '/images/crop_tomato.jpg',      isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Chickpea',    img: '/images/crop_chickpea.jpg',    isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Onion',       img: '/images/onion_crop.jpg',       isModelSupported: false, sourceDataset: 'baseline' },
-  { name: 'Potato',      img: '/images/potato_crop.jpg',      isModelSupported: false, sourceDataset: 'baseline' },
-  { name: 'Maize',       img: '/images/crop_maize.jpg',       isModelSupported: true,  sourceDataset: 'baseline' },
-
-  // Maharashtra Benchmarks
-  { name: 'Pigeon Pea',  img: '/images/crops/pigeon_pea.png', isModelSupported: false, sourceDataset: 'benchmark' },
-  { name: 'Groundnut',   img: '/images/crops/groundnut.png',  isModelSupported: false, sourceDataset: 'benchmark' },
-  { name: 'Brinjal',     img: '/images/crops/brinjal.png',    isModelSupported: false, sourceDataset: 'benchmark' },
-  { name: 'Chili',       img: '/images/crops/chili.png',      isModelSupported: false, sourceDataset: 'benchmark' },
-  { name: 'Cabbage',     img: '/images/crops/cabbage.png',    isModelSupported: false, sourceDataset: 'benchmark' },
-  { name: 'Cauliflower', img: '/images/crops/cauliflower.png',isModelSupported: false, sourceDataset: 'benchmark' },
-  { name: 'Okra',        img: '/images/crops/okra.png',       isModelSupported: false, sourceDataset: 'benchmark' },
-  { name: 'Mustard',     img: '/images/crops/mustard.png',    isModelSupported: false, sourceDataset: 'benchmark' },
-  { name: 'Sunflower',   img: '/images/crops/sunflower.png',  isModelSupported: false, sourceDataset: 'benchmark' },
-
-  // SAGE Verified
-  { name: 'Banana',      img: '/images/crops/banana.png',     isModelSupported: false, sourceDataset: 'sage' },
-  { name: 'Mango',       img: '/images/crops/mango.png',      isModelSupported: false, sourceDataset: 'sage' },
-  { name: 'Cashew',      img: '/images/crops/cashew.jpg',     isModelSupported: false, sourceDataset: 'sage' },
-  { name: 'Coffee',      img: '/images/crops/coffee.jpg',     isModelSupported: false, sourceDataset: 'sage' },
-  { name: 'Cucumber',    img: '/images/crops/cucumber.jpg',   isModelSupported: false, sourceDataset: 'sage' },
-  { name: 'Garlic',      img: '/images/crops/garlic.jpg',     isModelSupported: false, sourceDataset: 'sage' },
-  { name: 'Ginger',      img: '/images/crops/ginger.jpg',     isModelSupported: false, sourceDataset: 'sage' },
-  { name: 'Grape',       img: '/images/crops/grape.jpg',      isModelSupported: false, sourceDataset: 'sage' },
-  { name: 'Melon',       img: '/images/crops/melon.jpg',      isModelSupported: false, sourceDataset: 'sage' },
-  { name: 'Papaya',      img: '/images/crops/papaya.jpg',     isModelSupported: false, sourceDataset: 'sage' },
-  { name: 'Bell Pepper', img: '/images/crops/chili.png',      isModelSupported: false, sourceDataset: 'sage' },
-  { name: 'Tea',         img: '/images/crops/tea.jpg',        isModelSupported: false, sourceDataset: 'sage' },
-
-  // PlantVillage
-  { name: 'Apple',       img: '/images/crops/apple.jpg',      isModelSupported: false, sourceDataset: 'plantvillage' },
-  { name: 'Orange',      img: '/images/crops/orange.jpg',     isModelSupported: false, sourceDataset: 'plantvillage' },
-];
+export const ALL_AVAILABLE_CROPS: CropItem[] = POPULAR_CROPS;
 
 // ── 20 Crops Database (Official Maharashtra Benchmark Repository) ─────────────
 const DATABASE_20_CROPS = [
-  { id: 'cotton',      name: 'Cotton',      marathi: 'कापूस',   icon: '/images/crops/cotton.png',      sampleImg: '/images/crop_cotton.jpg',    samples: '2,450' },
-  { id: 'soybean',     name: 'Soybean',     marathi: 'सोयाबीन',  icon: '/images/crops/soybean.png',     sampleImg: '/images/crop_soybean.jpg',   samples: '3,200' },
-  { id: 'sugarcane',   name: 'Sugarcane',   marathi: 'ऊस',      icon: '/images/crops/sugarcane.png',   sampleImg: '/images/crop_sugarcane.jpg', samples: '1,890' },
-  { id: 'onion',       name: 'Onion',       marathi: 'कांदा',    icon: '/images/crops/onion.png',       sampleImg: '/images/onion_crop.jpg',     samples: '2,100' },
-  { id: 'pigeon_pea',  name: 'Pigeon Pea',  marathi: 'तूर',      icon: '/images/crops/pigeon_pea.png',  sampleImg: '/images/crops/pigeon_pea.png', samples: '1,450' },
-  { id: 'chickpea',    name: 'Chickpea',    marathi: 'हरभरा',   icon: '/images/crops/chickpea.png',    sampleImg: '/images/crop_chickpea.jpg',  samples: '2,300' },
-  { id: 'maize',       name: 'Maize',       marathi: 'मका',     icon: '/images/crops/maize.png',       sampleImg: '/images/crop_maize.jpg',     samples: '3,850' },
-  { id: 'rice',        name: 'Rice',        marathi: 'तांदूळ',   icon: '/images/crops/rice.png',        sampleImg: '/images/crop_rice.jpg',      samples: '4,500' },
-  { id: 'tomato',      name: 'Tomato',      marathi: 'टोमॅटो',   icon: '/images/crops/tomato.png',      sampleImg: '/images/crop_tomato.jpg',    samples: '5,400' },
-  { id: 'potato',      name: 'Potato',      marathi: 'बटाटा',   icon: '/images/crops/potato.png',      sampleImg: '/images/potato_crop.jpg',    samples: '3,100' },
-  { id: 'brinjal',     name: 'Brinjal',     marathi: 'वांगी',    icon: '/images/crops/brinjal.png',     sampleImg: '/images/crops/brinjal.png',  samples: '1,950' },
-  { id: 'chili',       name: 'Chili',       marathi: 'मिरची',    icon: '/images/crops/chili.png',       sampleImg: '/images/crops/chili.png',    samples: '2,800' },
-  { id: 'cabbage',     name: 'Cabbage',     marathi: 'कोबी',     icon: '/images/crops/cabbage.png',     sampleImg: '/images/crops/cabbage.png',  samples: '1,650' },
-  { id: 'cauliflower', name: 'Cauliflower', marathi: 'फुलकोबी', icon: '/images/crops/cauliflower.png', sampleImg: '/images/crops/cauliflower.png', samples: '1,720' },
-  { id: 'okra',        name: 'Okra',        marathi: 'भेंडी',     icon: '/images/crops/okra.png',        sampleImg: '/images/crops/okra.png',     samples: '1,540' },
-  { id: 'mango',       name: 'Mango',       marathi: 'आंबा',     icon: '/images/crops/mango.png',       sampleImg: '/images/crops/mango.png',    samples: '2,200' },
-  { id: 'banana',      name: 'Banana',      marathi: 'केळी',     icon: '/images/crops/banana.png',      sampleImg: '/images/crops/banana.png',   samples: '2,150' },
-  { id: 'groundnut',   name: 'Groundnut',   marathi: 'शेंगदाणा', icon: '/images/crops/groundnut.png',   sampleImg: '/images/crops/groundnut.png', samples: '2,600' },
-  { id: 'mustard',     name: 'Mustard',     marathi: 'मोहरी',    icon: '/images/crops/mustard.png',     sampleImg: '/images/crops/mustard.png',  samples: '1,400' },
-  { id: 'sunflower',   name: 'Sunflower',   marathi: 'सूर्यफूल', icon: '/images/crops/sunflower.png',   sampleImg: '/images/crops/sunflower.png', samples: '1,850' },
+  { id: 'cotton',      name: 'Cotton',               marathi: 'कापूस',   icon: '/images/crops/cotton.png',      sampleImg: '/images/crop_cotton.jpg',    samples: '2,450' },
+  { id: 'soybean',     name: 'Soybean',              marathi: 'सोयाबीन',  icon: '/images/crops/soybean.png',     sampleImg: '/images/crop_soybean.jpg',   samples: '3,200' },
+  { id: 'sugarcane',   name: 'Sugarcane',            marathi: 'ऊस',      icon: '/images/crops/sugarcane.png',   sampleImg: '/images/crop_sugarcane.jpg', samples: '1,890' },
+  { id: 'rice',        name: 'Rice',                 marathi: 'तांदूळ',   icon: '/images/crops/rice.png',        sampleImg: '/images/crop_rice.jpg',      samples: '4,500' },
+  { id: 'wheat',       name: 'Wheat',                marathi: 'गहू',      icon: '/images/crop_wheat.jpg',        sampleImg: '/images/crop_wheat.jpg',     samples: '2,900' },
+  { id: 'tomato',      name: 'Tomato',               marathi: 'टोमॅटो',   icon: '/images/crops/tomato.png',      sampleImg: '/images/crop_tomato.jpg',    samples: '5,400' },
+  { id: 'chickpea',    name: 'Chickpea (Chana)',     marathi: 'हरभरा',   icon: '/images/crops/chickpea.png',    sampleImg: '/images/crop_chickpea.jpg',  samples: '2,300' },
+  { id: 'onion',       name: 'Onion',                marathi: 'कांदा',    icon: '/images/crops/onion.png',       sampleImg: '/images/onion_crop.jpg',     samples: '2,100' },
+  { id: 'potato',      name: 'Potato',               marathi: 'बटाटा',   icon: '/images/crops/potato.png',      sampleImg: '/images/potato_crop.jpg',    samples: '3,100' },
+  { id: 'maize',       name: 'Maize',                marathi: 'मका',     icon: '/images/crops/maize.png',       sampleImg: '/images/crop_maize.jpg',     samples: '3,850' },
+  { id: 'banana',      name: 'Banana',               marathi: 'केळी',     icon: '/images/crops/banana.png',      sampleImg: '/images/crops/banana.png',   samples: '2,150' },
+  { id: 'mango',       name: 'Mango',                marathi: 'आंबा',     icon: '/images/crops/mango.png',       sampleImg: '/images/crops/mango.png',    samples: '2,200' },
+  { id: 'tur',         name: 'Tur (Pigeon Pea)',     marathi: 'तूर',      icon: '/images/crops/pigeon_pea.png',  sampleImg: '/images/crops/pigeon_pea.png', samples: '1,450' },
+  { id: 'jowar',       name: 'Jowar (Sorghum)',      marathi: 'ज्वारी',    icon: '/images/crops/jowar.jpg',       sampleImg: '/images/crops/jowar.jpg',    samples: '1,920' },
+  { id: 'bajra',       name: 'Bajra (Pearl Millet)', marathi: 'बाजरी',    icon: '/images/crops/bajra.jpg',       sampleImg: '/images/crops/bajra.jpg',    samples: '1,780' },
+  { id: 'groundnut',   name: 'Groundnut',            marathi: 'भुईमूग',   icon: '/images/crops/groundnut.png',   sampleImg: '/images/crops/groundnut.png', samples: '2,600' },
+  { id: 'brinjal',     name: 'Brinjal',              marathi: 'वांगी',    icon: '/images/crops/brinjal.png',     sampleImg: '/images/crops/brinjal.png',  samples: '1,950' },
+  { id: 'chili',       name: 'Chili',                marathi: 'मिरची',    icon: '/images/crops/chili.png',       sampleImg: '/images/crops/chili.png',    samples: '2,800' },
+  { id: 'grape',       name: 'Grape',                marathi: 'द्राक्षे',   icon: '/images/crops/grape.jpg',       sampleImg: '/images/crops/grape.jpg',    samples: '2,100' },
+  { id: 'pomegranate', name: 'Pomegranate',          marathi: 'डाळिंब',   icon: '/images/crops/pomegranate.jpg', sampleImg: '/images/crops/pomegranate.jpg', samples: '1,860' },
 ];
 
 // ── Crop-Specific Validated Agronomic Growth Stages ──────────────────────────
@@ -118,25 +88,23 @@ export const CROP_GROWTH_STAGES: Record<string, string[]> = {
   Tomato: ['Nursery / Transplanting', 'Vegetative Growth', 'Flowering & Fruit Set', 'Fruit Development & Ripening', 'Harvesting'],
   Maize: ['Seedling Stage', 'Knee-High Stage', 'Tasseling & Silking', 'Grain Filling / Cob Formation', 'Maturity'],
   Chickpea: ['Seedling & Branching', 'Pre-Flowering', 'Flowering Stage', 'Pod Formation & Filling', 'Maturity'],
+  'Chickpea (Chana)': ['Seedling & Branching', 'Pre-Flowering', 'Flowering Stage', 'Pod Formation & Filling', 'Maturity'],
   Potato: ['Sprouting & Emergence', 'Vegetative Growth', 'Tuber Initiation & Bulking', 'Tuber Maturation & Skin Hardening'],
   Onion: ['Seedling / Transplanting', 'Vegetative Growth', 'Bulb Initiation & Enlargement', 'Bulb Maturation / Curing'],
   Banana: ['Vegetative Stage', 'Shooting / Inflorescence', 'Bunch Development', 'Harvesting'],
   Mango: ['Vegetative Growth', 'Flower Bud Differentiation', 'Flowering & Fruit Set', 'Fruit Development & Maturity'],
   Chili: ['Transplanting / Seedling', 'Vegetative Growth', 'Flowering Stage', 'Fruit Development & Picking'],
   Brinjal: ['Transplanting / Seedling', 'Vegetative Stage', 'Flowering & Fruit Set', 'Fruit Development & Picking'],
-  Cabbage: ['Transplanting / Seedling', 'Vegetative Stage', 'Head Formation', 'Head Firming & Harvest'],
-  Cauliflower: ['Transplanting / Seedling', 'Vegetative Stage', 'Curd Initiation', 'Curd Maturation & Harvest'],
-  Okra: ['Seedling Stage', 'Vegetative Growth', 'Flowering & Pod Formation', 'Maturity / Harvesting'],
   Groundnut: ['Seedling / Emergence', 'Vegetative & Pegging', 'Pod Formation', 'Pod Maturation'],
+  Tur: ['Seedling Stage', 'Branching / Vegetative', 'Flowering Stage', 'Pod Development & Maturity'],
   'Pigeon Pea': ['Seedling Stage', 'Branching / Vegetative', 'Flowering Stage', 'Pod Development & Maturity'],
-  Mustard: ['Seedling Stage', 'Vegetative / Rosette', 'Flowering Stage', 'Siliqua (Pod) Formation & Maturity'],
-  Sunflower: ['Seedling Stage', 'Vegetative / Budding', 'Flowering & Anthesis', 'Seed Filling & Maturity'],
-  Orange: ['Flushing & Bud Break', 'Flowering & Fruit Set', 'Fruit Growth & Color Break', 'Fruit Maturity & Harvest'],
-  Apple: ['Dormant & Bud Break', 'Bloom & Petal Fall', 'Fruit Set & Development', 'Maturity & Harvest'],
+  'Tur (Pigeon Pea)': ['Seedling Stage', 'Branching / Vegetative', 'Flowering Stage', 'Pod Development & Maturity'],
+  Jowar: ['Seedling Stage', 'Vegetative Growth', 'Booting & Heading', 'Grain Filling', 'Physiological Maturity'],
+  'Jowar (Sorghum)': ['Seedling Stage', 'Vegetative Growth', 'Booting & Heading', 'Grain Filling', 'Physiological Maturity'],
+  Bajra: ['Seedling Stage', 'Tillering & Vegetative', 'Booting & Flowering', 'Grain Development', 'Harvest Maturity'],
+  'Bajra (Pearl Millet)': ['Seedling Stage', 'Tillering & Vegetative', 'Booting & Flowering', 'Grain Development', 'Harvest Maturity'],
   Grape: ['Budbreak & Shoot Growth', 'Flowering & Fruit Set', 'Berry Development (Veraison)', 'Harvest'],
-  Papaya: ['Seedling Stage', 'Vegetative Growth', 'Flowering & Fruit Setting', 'Fruit Maturation & Harvesting'],
-  Garlic: ['Sprouting / Emergence', 'Vegetative Growth', 'Clove / Bulb Differentiation', 'Maturity & Curing'],
-  Ginger: ['Sprouting / Planting', 'Tillering & Vegetative', 'Rhizome Development & Bulking', 'Maturity & Harvest'],
+  Pomegranate: ['Vegetative Growth', 'Bahar Flowering', 'Fruit Development', 'Maturity & Harvesting'],
 };
 
 export const DEFAULT_GROWTH_STAGES = [
@@ -183,7 +151,7 @@ interface ScanCropProps {
 }
 
 export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProps = {}) {
-  const { farmState, recordScan, scanTarget, clearScanTarget } = useFarm();
+  const { farmState, recordScan, scanTarget, clearScanTarget, startAdvisoryForCrop } = useFarm();
 
   // Workflow Step: idle -> preview -> scanning -> result
   const [step, setStep] = useState<Step>('idle');
@@ -200,7 +168,6 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
 
   // ── STEP 1: Crop Selection State ──────────────────────────────────────────
   const [selectedCrop, setSelectedCrop] = useState<string | null>(null);
-  const [cropSearchQuery, setCropSearchQuery] = useState<string>('');
 
   // ── STEP 2: Basic Farm Details State ─────────────────────────────────────
   const [selectedFieldId, setSelectedFieldId] = useState<string>('');
@@ -363,7 +330,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
     const severityColor = isHealthy ? '#2e7d32' : (severityText === 'Severe' ? '#c62828' : (severityText === 'Moderate' ? '#f57c00' : '#1976d2'));
 
     const crop = record.cropName || record.crop;
-    const cond = record.disease || record.condition || 'Healthy Plant';
+    const cond = record.disease || record.condition || 'Condition not recorded';
     const accuracy = record.accuracyPercentage || record.verification?.accuracyPercentage || 98.4;
     const refSource = record.referenceSource || record.verification?.referenceSource || 'ICAR - Indian Council of Agricultural Research & State Agricultural Universities';
 
@@ -569,12 +536,55 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
     setSelectedFieldId('');
     setUploadedFile(null);
     setBackendError(null);
-    setCropSearchQuery('');
     setGrowthStage('');
     setCultivatedArea('1.0');
     setAreaUnit('Acres');
     setIsSubmitting(false);
     clearScanTarget();
+  };
+
+  // Check if active crop is supported by trained disease detection model
+  const isSelectedCropModelSupported = useMemo(() => {
+    if (!selectedCrop) return true;
+    const match = POPULAR_CROPS.find(c => c.name.toLowerCase() === selectedCrop.toLowerCase());
+    return match ? match.isModelSupported : false;
+  }, [selectedCrop]);
+
+  const handleOpenAdvisory = () => {
+    if (diagnosis) {
+      const cropName = (diagnosis as any).cropName || selectedCrop;
+      if (!cropName) return;
+      const matchingField = farmState?.fields?.find(f =>
+        f.id === selectedFieldId ||
+        f.crop.toLowerCase() === cropName.toLowerCase()
+      );
+      const parsedArea = parseFloat(cultivatedArea) || 1.0;
+      let areaHa = 0.5;
+      if (areaUnit === 'Hectares') {
+        areaHa = parsedArea;
+      } else if (areaUnit === 'Guntha') {
+        areaHa = Math.round(parsedArea * 0.0101 * 100) / 100;
+      } else {
+        areaHa = Math.round((parsedArea / 2.471) * 100) / 100;
+      }
+
+      startAdvisoryForCrop(
+        cropName,
+        matchingField,
+        {
+          cultivatedArea: parsedArea,
+          areaUnit,
+          areaHa,
+          growthStage: growthStage || undefined,
+          detectedDisease: (diagnosis as any).disease,
+          scanId: (diagnosis as any).scanId,
+          from: 'scan',
+        }
+      );
+      if (onNavigateTab) {
+        onNavigateTab('advisory');
+      }
+    }
   };
 
   // ── AI Scan (FastAPI POST /api/scan) ────────────────────────────────────────
@@ -583,6 +593,11 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
 
     if (!selectedCrop) {
       setBackendError("Please select a crop in Step 1 before continuing.");
+      return;
+    }
+
+    if (!isSelectedCropModelSupported) {
+      setBackendError(`Disease detection model unavailable for '${selectedCrop}'. Automated visual disease detection has not yet been trained for this crop. You can still register and manage ${selectedCrop} in My Farm.`);
       return;
     }
 
@@ -653,14 +668,22 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
             ? Number((json.crop_analysis.crop_identification.confidence * 100).toFixed(1))
             : 100);
 
-      const rawCondition = json.diagnosis?.condition || json.disease_detection?.disease || 'Healthy Plant';
+      if (!json.diagnosis?.condition && !json.disease_detection?.disease) {
+        setBackendError("Automated disease diagnosis unavailable from inference service for this crop or image. Please verify crop selection and ensure a trained model is deployed.");
+        setStep('preview');
+        setScanProgress(0);
+        setIsSubmitting(false);
+        return;
+      }
+
+      const rawCondition: string = json.diagnosis?.condition || json.disease_detection?.disease || '';
       const isHealthy = rawCondition.toLowerCase().includes('healthy') || json.diagnosis?.healthStatus === 'Healthy';
-      const diseaseName = isHealthy ? 'Healthy Plant' : rawCondition;
+      const diseaseName: string = isHealthy ? 'Healthy Plant' : rawCondition;
       const diseaseConfidence = json.diagnosis?.confidence != null
         ? Number((json.diagnosis.confidence * 100).toFixed(1))
         : (json.disease_detection?.confidence != null
             ? Number((json.disease_detection.confidence * 100).toFixed(1))
-            : (isHealthy ? 96.5 : null));
+            : null);
 
       const rawSeverity = json.diagnosis?.severity || json.severity || json.disease_detection?.severity || (isHealthy ? 'None' : 'Moderate');
       const severityText = isHealthy ? 'None' : (rawSeverity === 'Verified' ? 'Unable to assess' : rawSeverity);
@@ -702,6 +725,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
         icon: isHealthy ? '✅' : (isDiseased ? '🍂' : '⚠️'),
         verification: verificationObj,
         topPredictions: json.topPredictions || [],
+        scanId: json.scanId || Date.now().toString(),
       } as any);
 
       const newRecord = {
@@ -827,16 +851,10 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
     }
   };
 
-  // ── Derived State for Search & Growth Stages ────────────────────────────────
+  // ── Derived State for Growth Stages ─────────────────────────────────────────
   const activeGrowthStages = selectedCrop && CROP_GROWTH_STAGES[selectedCrop]
     ? CROP_GROWTH_STAGES[selectedCrop]
     : DEFAULT_GROWTH_STAGES;
-
-  const filteredCrops = cropSearchQuery.trim()
-    ? ALL_AVAILABLE_CROPS.filter(c =>
-        c.name.toLowerCase().includes(cropSearchQuery.trim().toLowerCase())
-      )
-    : POPULAR_CROPS;
 
   const selectedField = farmState?.fields?.find(f => f.id === selectedFieldId);
 
@@ -1021,6 +1039,23 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                     <button type="button" className="sc-action-btn sc-action-primary" onClick={reset}>
                       🔄 Scan Another Crop
                     </button>
+                    {onNavigateTab && (
+                      <button
+                        type="button"
+                        className="sc-action-btn sc-action-advisory"
+                        style={{
+                          backgroundColor: '#15803d',
+                          color: '#fff',
+                          fontWeight: 600,
+                          border: 'none',
+                          boxShadow: '0 2px 8px rgba(21, 128, 61, 0.25)',
+                        }}
+                        onClick={handleOpenAdvisory}
+                        id="btn-open-nutrient-advisory"
+                      >
+                        💡 Open Soil &amp; Nutrient Advisory →
+                      </button>
+                    )}
                     <button
                       type="button"
                       className="sc-action-btn sc-action-secondary"
@@ -1064,92 +1099,67 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                     </div>
                   </div>
 
-                  {/* Searchable Crop Selector & Search Bar */}
-                  <div className="sc-crop-search-wrap">
-                    <div className="sc-crop-search-box">
-                      <span className="sc-crop-search-icon">🔍</span>
-                      <input
-                        type="text"
-                        className="sc-crop-search-input"
-                        placeholder="Search crop (e.g. Cotton, Soybean, Tomato, Chili, Onion...)"
-                        value={cropSearchQuery}
-                        onChange={(e) => setCropSearchQuery(e.target.value)}
-                        aria-label="Search crops"
-                      />
-                      {cropSearchQuery && (
-                        <button
-                          type="button"
-                          className="sc-crop-search-clear"
-                          onClick={() => setCropSearchQuery('')}
-                          title="Clear search"
-                        >
-                          ✕
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Complete dropdown for all available crops */}
-                    <div className="sc-crop-select-dropdown-wrap">
-                      <select
-                        className="sc-crop-select-dropdown"
-                        value={selectedCrop || ''}
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            handleSelectCropByName(e.target.value);
-                          } else {
-                            setSelectedCrop(null);
-                          }
-                        }}
-                        aria-label="Select from all available crops"
-                      >
-                        <option value="">-- Or choose from all 27+ crops list --</option>
-                        {ALL_AVAILABLE_CROPS.map((c) => (
-                          <option key={c.name} value={c.name}>
-                            {c.name} {c.isModelSupported ? '★ (AI Model Trained)' : '✓ (Dataset Verified)'}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
                   {/* Currently Selected Crop Banner */}
                   {selectedCrop ? (
-                    <div className="sc-selected-crop-banner">
-                      <div className="sc-selected-crop-left">
-                        <span className="sc-selected-crop-check">✓</span>
-                        <div className="sc-selected-crop-info">
-                          <span className="sc-selected-crop-label">Currently Selected Crop:</span>
-                          <strong className="sc-selected-crop-name">🌾 {selectedCrop}</strong>
+                    <>
+                      <div className="sc-selected-crop-banner">
+                        <div className="sc-selected-crop-left">
+                          <span className="sc-selected-crop-check">✓</span>
+                          <div className="sc-selected-crop-info">
+                            <span className="sc-selected-crop-label">Currently Selected Crop:</span>
+                            <strong className="sc-selected-crop-name">🌾 {selectedCrop}</strong>
+                          </div>
                         </div>
+                        <button
+                          type="button"
+                          className="sc-change-crop-btn"
+                          onClick={() => setSelectedCrop(null)}
+                          title="Change crop selection"
+                        >
+                          Change Crop
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        className="sc-change-crop-btn"
-                        onClick={() => setSelectedCrop(null)}
-                        title="Change crop selection"
-                      >
-                        Change Crop
-                      </button>
-                    </div>
+
+                      {!isSelectedCropModelSupported && (
+                        <div className="sc-model-notice-banner" style={{
+                          marginTop: '8px',
+                          padding: '10px 14px',
+                          borderRadius: '8px',
+                          backgroundColor: '#fffbeb',
+                          border: '1px solid #fde68a',
+                          color: '#92400e',
+                          fontSize: '0.85rem',
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: '8px',
+                          lineHeight: 1.45,
+                        }}>
+                          <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>⚠️</span>
+                          <div>
+                            <strong>Disease detection model unavailable for {selectedCrop}.</strong>
+                            <div style={{ marginTop: '2px', color: '#b45309' }}>
+                              Automated visual disease detection is currently trained for: Cotton, Soybean, Sugarcane, Rice, Wheat, Tomato, Chickpea, and Maize.
+                              You can still add and manage {selectedCrop} in <strong>My Farm</strong> and view agronomic guidance, but automated visual scanning is unavailable.
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <div className="sc-select-crop-prompt">
-                      <span>💡 Please select a crop from the cards below or use the search field.</span>
+                      <span>💡 Please select a crop from the cards below.</span>
                     </div>
                   )}
 
-                  {/* Popular Crops Grid / Filtered Results */}
+                  {/* Popular Crops Grid */}
                   <div className="sc-popular-crops-section">
                     <div className="sc-popular-crops-title-row">
-                      <span className="sc-popular-crops-title">
-                        {cropSearchQuery.trim() ? `Search Results (${filteredCrops.length})` : 'Popular Crops'}
-                      </span>
-                      {!cropSearchQuery.trim() && (
-                        <span className="sc-popular-hint">Click a card to select</span>
-                      )}
+                      <span className="sc-popular-crops-title">Popular Crops</span>
+                      <span className="sc-popular-hint">Click a card to select</span>
                     </div>
 
                     <div className="sc-popular-crops-grid">
-                      {filteredCrops.map((crop) => {
+                      {POPULAR_CROPS.map((crop) => {
                         const isSelected = selectedCrop?.toLowerCase() === crop.name.toLowerCase();
                         return (
                           <button
@@ -1158,9 +1168,34 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                             className={`sc-crop-card-btn ${isSelected ? 'sc-crop-card-btn--active' : ''}`}
                             onClick={() => handleSelectCropByName(crop.name)}
                             title={`Select ${crop.name} for disease scanning`}
+                            aria-pressed={isSelected}
                           >
                             <div className="sc-crop-card-img-wrap">
-                              <img src={crop.img} alt={crop.name} className="sc-crop-card-thumb" />
+                              {crop.img ? (
+                                <img
+                                  src={crop.img}
+                                  alt={`${crop.name} crop photograph`}
+                                  className="sc-crop-card-thumb"
+                                  loading="lazy"
+                                  onError={(e) => {
+                                    (e.target as HTMLElement).style.display = 'none';
+                                    const fallback = (e.target as HTMLElement).parentElement?.querySelector('.sc-crop-card-placeholder') as HTMLElement;
+                                    if (fallback) fallback.style.display = 'flex';
+                                  }}
+                                />
+                              ) : null}
+                              <div
+                                className="sc-crop-card-placeholder"
+                                style={{ display: crop.img ? 'none' : 'flex' }}
+                              >
+                                {crop.name.includes('Jowar') || crop.name.includes('Bajra')
+                                  ? '🌾'
+                                  : crop.name === 'Pomegranate'
+                                  ? '🪴'
+                                  : crop.name.includes('Tur')
+                                  ? '🌿'
+                                  : '🌱'}
+                              </div>
                               {isSelected && <span className="sc-crop-card-badge">✓ Selected</span>}
                             </div>
                             <span className="sc-crop-card-title">{crop.name}</span>
@@ -1168,12 +1203,6 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                         );
                       })}
                     </div>
-
-                    {filteredCrops.length === 0 && (
-                      <div className="sc-crops-empty-search">
-                        <span>No crops matching "{cropSearchQuery}". Try choosing from the dropdown above.</span>
-                      </div>
-                    )}
                   </div>
                 </div>
 
@@ -1379,7 +1408,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                           <span className="sc-crop-required-icon">⚠️</span>
                           <div className="sc-crop-required-text">
                             <strong>Please select a crop in Step 1 before continuing.</strong>
-                            <span>Select your crop from the Popular Crops cards or search box above.</span>
+                            <span>Select your crop from the Popular Crops cards above.</span>
                           </div>
                         </div>
                       )}
@@ -1441,6 +1470,31 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                         </div>
                       )}
 
+                      {!isSelectedCropModelSupported && selectedCrop && (
+                        <div className="sc-model-unavailable-box" style={{
+                          padding: '12px 14px',
+                          borderRadius: '8px',
+                          backgroundColor: '#fffbeb',
+                          border: '1px solid #fde68a',
+                          color: '#92400e',
+                          fontSize: '0.86rem',
+                          marginBottom: '12px',
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: '8px',
+                          lineHeight: 1.45,
+                        }}>
+                          <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>⚠️</span>
+                          <div>
+                            <strong>Disease detection model unavailable for {selectedCrop}</strong>
+                            <div style={{ marginTop: '2px', color: '#b45309' }}>
+                              Automated visual disease detection is currently trained for: Cotton, Soybean, Sugarcane, Rice, Wheat, Tomato, Chickpea, and Maize.
+                              Visual diagnosis is not supported for {selectedCrop}, but you can record it in <strong>My Farm</strong>.
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Prominent Analyze Crop Button */}
                       <button
                         type="button"
@@ -1452,11 +1506,14 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                           isSubmitting ||
                           !cultivatedArea ||
                           isNaN(parseFloat(cultivatedArea)) ||
-                          parseFloat(cultivatedArea) <= 0
+                          parseFloat(cultivatedArea) <= 0 ||
+                          !isSelectedCropModelSupported
                         }
                         title={
                           !selectedCrop
                             ? "Please select a crop in Step 1 first."
+                            : !isSelectedCropModelSupported
+                            ? `Disease detection model unavailable for ${selectedCrop}.`
                             : !uploadedFile
                             ? "Please upload or capture a crop photo in Step 3 first."
                             : (!cultivatedArea || isNaN(parseFloat(cultivatedArea)) || parseFloat(cultivatedArea) <= 0)
@@ -1464,7 +1521,11 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                             : "Analyze Crop with AI"
                         }
                       >
-                        {isSubmitting ? '⏳ Analyzing Crop…' : '🔬 Analyze Crop'}
+                        {isSubmitting
+                          ? '⏳ Analyzing Crop…'
+                          : !isSelectedCropModelSupported && selectedCrop
+                          ? `⚠️ Model Unavailable for ${selectedCrop}`
+                          : '🔬 Analyze Crop'}
                       </button>
                     </div>
                   )}

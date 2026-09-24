@@ -98,6 +98,73 @@ async def scan_crop(
     now_iso = datetime.now(timezone.utc).isoformat()
     scan_id = f"scan_{int(datetime.now(timezone.utc).timestamp())}_{uuid.uuid4().hex[:6]}"
 
+<<<<<<< HEAD
+=======
+    # Clean field_id if provided
+    clean_field_id: Optional[str] = field_id.strip() if (field_id and field_id.strip()) else None
+
+    # Resolve user identity: prioritize explicit user_id, then Authorization token
+    resolved_uid = user_id
+    if (not resolved_uid or resolved_uid == "anonymous") and authorization:
+        token = authorization.replace("Bearer ", "").strip()
+        payload = verify_auth_token(token)
+        if payload and payload.get("uid"):
+            resolved_uid = payload["uid"]
+
+    # ── Mandatory Crop Selection Validation ───────────────────────────────────
+    if not crop or not crop.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Crop selection is mandatory. Please select a valid crop before scanning.",
+        )
+
+    canonical_crop = normalize_crop_name(crop.strip())
+    if not canonical_crop or canonical_crop not in CANONICAL_CROPS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported crop '{crop}'. Please select a valid supported crop.",
+        )
+
+    display_crop = get_display_crop_name(canonical_crop)
+
+    # ── Check Disease Detection Model Availability ─────────────────────────────
+    crop_cfg = CROP_CONFIGS.get(canonical_crop)
+    has_trained_model = bool(
+        crop_cfg
+        and crop_cfg.get("classes")
+        and crop_cfg.get("model_path")
+        and Path(crop_cfg["model_path"]).exists()
+    )
+    if not has_trained_model:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Disease detection model unavailable for crop '{display_crop}'. Automated visual disease detection has not yet been trained for this crop.",
+        )
+    if clean_field_id and resolved_uid and resolved_uid != "anonymous":
+        try:
+            user_farm = get_farm_by_user(resolved_uid)
+            if user_farm and user_farm.get("fields"):
+                matched_field = next(
+                    (f for f in user_farm["fields"] if f.get("id") == clean_field_id),
+                    None
+                )
+                if matched_field:
+                    field_crop_canon = normalize_crop_name(matched_field.get("crop"))
+                    if field_crop_canon and field_crop_canon != canonical_crop:
+                        raise HTTPException(
+                            status_code=400,
+                            detail=(
+                                f"Field '{matched_field.get('name', clean_field_id)}' is registered for "
+                                f"'{matched_field.get('crop')}', but selected scan crop is '{display_crop}'. "
+                                f"Please select the matching field or crop."
+                            ),
+                        )
+        except HTTPException:
+            raise
+        except Exception as exc:
+            logger.warning(f"Field validation lookup encountered error: {exc}")
+
+>>>>>>> feature/advisory-safe-refactor
     # ── Step 1: upload validation ─────────────────────────────────────────────
     val_errors, val_warnings, contents = await validate_upload(file)
 
