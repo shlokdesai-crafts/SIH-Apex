@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import Header from '../components/Header';
 import Hero from '../components/Hero';
 import StatsRow from '../components/StatsRow';
@@ -8,8 +8,9 @@ import AdvisoryOverview from '../components/AdvisoryOverview';
 import FertilizerRecommendation from '../components/FertilizerRecommendation';
 import RiskForecast from '../components/RiskForecast';
 import MyFarm from './MyFarm/MyFarm';
+import { AuthContext } from '../auth/AuthContext';
 import { FarmProvider } from '../context/FarmContext';
-import { detectLocation, getBrowserPosition, type LocationResult } from '../services/locationService';
+import { detectLocation, getBrowserPosition, forwardGeocode, type LocationResult } from '../services/locationService';
 import { fetchWeather, type WeatherData } from '../services/weatherService';
 
 export interface ScanResultData {
@@ -20,6 +21,7 @@ export interface ScanResultData {
 }
 
 export default function Dashboard() {
+  const { user } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState('home');
   const [scanResult, setScanResult] = useState<ScanResultData | null>(() => {
     try {
@@ -47,12 +49,19 @@ export default function Dashboard() {
       try {
         let lat, lng;
         try {
-          const loc = await detectLocation();
-          setLocationData(loc);
-          lat = loc.lat;
-          lng = loc.lng;
+          if (user?.location) {
+            const loc = await forwardGeocode(user.location);
+            setLocationData(loc);
+            lat = loc.lat;
+            lng = loc.lng;
+          } else {
+            const loc = await detectLocation();
+            setLocationData(loc);
+            lat = loc.lat;
+            lng = loc.lng;
+          }
         } catch (e) {
-          console.warn('Reverse geocoding failed, falling back to GPS only', e);
+          console.warn('Location detection/geocoding failed, falling back to GPS only', e);
           const pos = await getBrowserPosition();
           lat = pos.coords.latitude;
           lng = pos.coords.longitude;
@@ -65,7 +74,7 @@ export default function Dashboard() {
       }
     }
     init();
-  }, []);
+  }, [user]);
 
   return (
     <FarmProvider>

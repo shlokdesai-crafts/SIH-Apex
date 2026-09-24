@@ -22,6 +22,7 @@ from dotenv import load_dotenv
 from pymongo import MongoClient, ASCENDING, DESCENDING, IndexModel
 from pymongo.errors import PyMongoError, DuplicateKeyError
 from bson import ObjectId
+import certifi
 
 # Load environment
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / ".env")
