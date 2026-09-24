@@ -1535,6 +1535,85 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
               </div>
             )}
           </div>
+
+          {/* ════════════════ RIGHT COLUMN ════════════════ */}
+          <div className="sc-right">
+
+            {/* Banner */}
+            <div className="sc-banner">
+              <div className="sc-banner-icon">🌱</div>
+              <div>
+                <div className="sc-banner-title">Healthy Plants &nbsp; Stronger Farmers</div>
+                <div className="sc-banner-sub">"AI for a Better Tomorrow"</div>
+              </div>
+              <div className="sc-banner-sun">☀️</div>
+            </div>
+
+            {/* Tips */}
+            <div className="sc-tips-card">
+              <div className="sc-tips-head">
+                <span className="sc-tips-bulb">💡</span>
+                <span className="sc-tips-title"><TranslatedText text="Tips for a Better Result" /></span>
+              </div>
+              {[
+                { icon: '🌿', text: 'Take a clear and well-lit photo' },
+                { icon: '🔍', text: 'Focus on the affected part (leaf, stem, fruit)' },
+                { icon: '☀️', text: 'Avoid blurry or dark images' },
+                { icon: '🪴', text: 'You can also upload a full plant or field image' },
+              ].map((tip, i) => (
+                <div key={i} className="sc-tip-row">
+                  <span className="sc-tip-icon">{tip.icon}</span>
+                  <span className="sc-tip-text">{tip.text}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Example Images */}
+            <div className="sc-examples-card">
+              <div className="sc-examples-title">Example Images</div>
+              <div className="sc-examples-grid">
+                {[
+                  { img: '/images/crop_healthy_leaf.jpg',  label: 'Healthy Leaf',    color: '#2e7d32' },
+                  { img: '/images/crop_leaf_spots.jpg',    label: 'Leaf with Spots', color: '#f57c00' },
+                  { img: '/images/crop_infected_leaf.jpg', label: 'Infected Leaf',   color: '#c62828' },
+                  { img: '/images/crop_pest_leaf.jpg',     label: 'Pest on Leaf',    color: '#1565c0' },
+                ].map((ex, i) => (
+                  <button
+                    key={i}
+                    className="sc-example-item"
+                    onClick={() => handleExampleClick(ex)}
+                    title={`Use as ${ex.label} example photo`}
+                  >
+                    <img src={ex.img} alt={ex.label} className="sc-example-img" />
+                    <span className="sc-example-label" style={{ color: ex.color }}>{ex.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Help */}
+            <div className="sc-help-card">
+              <div className="sc-help-head">
+                <span className="sc-help-icon">🎧</span>
+                <div>
+                  <div className="sc-help-title">Need Help?</div>
+                  <div className="sc-help-desc">Watch this short video to learn how to scan your crop.</div>
+                </div>
+              </div>
+              <button className="sc-video-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                Watch Video (1 min)
+              </button>
+              <div className="sc-assistant-row">
+                <span className="sc-assistant-icon">💬</span>
+                <div>
+                  <div className="sc-assistant-title">Talk to AI Assistant</div>
+                  <div className="sc-assistant-desc">Ask anything about your crop in your language</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
     </div>
