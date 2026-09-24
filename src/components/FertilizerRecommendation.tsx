@@ -1202,7 +1202,7 @@ export default function FertilizerRecommendation({ onBack }: FertilizerRecommend
           id="tab-nutrient-status"
         >
           <span className="pill-emoji">🌱</span>
-          <span>Nutrient Status</span>
+          <span><TranslatedText text="Nutrient Status" /></span>
         </button>
 
         <button
@@ -1211,7 +1211,7 @@ export default function FertilizerRecommendation({ onBack }: FertilizerRecommend
           id="tab-recommended-fert"
         >
           <span className="pill-emoji">🛍️</span>
-          <span>Recommended Fertilizer</span>
+          <span><TranslatedText text="Recommended Fertilizer" /></span>
         </button>
 
         <button
@@ -1220,7 +1220,7 @@ export default function FertilizerRecommendation({ onBack }: FertilizerRecommend
           id="tab-app-guide"
         >
           <span className="pill-emoji">📄</span>
-          <span>Application Guide</span>
+          <span><TranslatedText text="Application Guide" /></span>
         </button>
 
         <button
@@ -1229,7 +1229,7 @@ export default function FertilizerRecommendation({ onBack }: FertilizerRecommend
           id="tab-calculator"
         >
           <span className="pill-emoji">🧮</span>
-          <span>Fertilizer Calculator</span>
+          <span><TranslatedText text="Fertilizer Calculator" /></span>
         </button>
 
         <button
@@ -1238,7 +1238,7 @@ export default function FertilizerRecommendation({ onBack }: FertilizerRecommend
           id="tab-organic-alt"
         >
           <span className="pill-emoji">🛡️</span>
-          <span>Organic Alternatives</span>
+          <span><TranslatedText text="Organic Alternatives" /></span>
         </button>
       </nav>
 
@@ -1482,7 +1482,7 @@ export default function FertilizerRecommendation({ onBack }: FertilizerRecommend
             <div className="fert-card-title-group">
               <div className="fert-card-icon prod-icon">🛍️</div>
               <div>
-                <h2 className="fert-card-title" id="heading-products">Recommended Fertilizer Products</h2>
+                <h2 className="fert-card-title" id="heading-products"><TranslatedText text="Recommended Fertilizer" /> Products</h2>
                 {apiCalculation?.costSummary && (
                   <span 
                     style={{
@@ -1619,7 +1619,7 @@ export default function FertilizerRecommendation({ onBack }: FertilizerRecommend
           <div className="fert-card-header">
             <div className="fert-card-title-group">
               <div className="fert-card-icon calc-icon">🧮</div>
-              <h2 className="fert-card-title" id="heading-calculator">Fertilizer Calculator</h2>
+              <h2 className="fert-card-title" id="heading-calculator"><TranslatedText text="Fertilizer Calculator" /></h2>
             </div>
             <span className="calc-precision-chip">Dynamic Acreage Math</span>
           </div>

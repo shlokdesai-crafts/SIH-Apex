@@ -39,7 +39,7 @@ const getFallbackWeather = (): WeatherData => {
     windSpeed: 12,
     weatherCode: 1,
     conditionText: 'Mainly Clear (Estimated)',
-    daily: [0, 1, 2].map(offset => {
+    daily: [0, 1, 2, 3, 4, 5, 6].map(offset => {
       const d = new Date(today);
       d.setDate(today.getDate() + offset);
       return {

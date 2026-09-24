@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import TranslatedText from '../../components/TranslatedText';
 import { useFarm } from '../../context/FarmContext';
 import type { FarmCrop, FarmField, PriorityAction } from '../../types/farm';
 import { getCanonicalCropKey, CROP_ICONS } from '../../services/farmService';
@@ -255,7 +256,7 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
               <div className="farm-health-gauge-section">
                 <div className="farm-health-header">
                   <span className="farm-health-header-icon">🌿</span>
-                  <span>Farm Health Score</span>
+                  <span><TranslatedText text="Farm Health Score" /></span>
                 </div>
 
                 <div className="farm-gauge-row">
@@ -619,7 +620,7 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                   <div className="qa-left">
                     <div className="qa-icon-circle cam">📷</div>
                     <div className="qa-text">
-                      <strong>Scan Field Crop</strong>
+                      <strong><TranslatedText text="Scan Field Crop" /></strong>
                       <span>AI disease diagnosis</span>
                     </div>
                   </div>
@@ -633,7 +634,7 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                   <div className="qa-left">
                     <div className="qa-icon-circle leaf">🌿</div>
                     <div className="qa-text">
-                      <strong>Add Crop Record</strong>
+                      <strong><TranslatedText text="Add Crop Record" /></strong>
                       <span>Update your crop details</span>
                     </div>
                   </div>
@@ -674,7 +675,7 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                   <div className="qa-left">
                     <div className="qa-icon-circle report">📄</div>
                     <div className="qa-text">
-                      <strong>View Farm Report</strong>
+                      <strong><TranslatedText text="View Farm Report" /></strong>
                       <span>Download complete report</span>
                     </div>
                   </div>
@@ -688,7 +689,7 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                   <div className="qa-left">
                     <div className="qa-icon-circle calendar">📅</div>
                     <div className="qa-text">
-                      <strong>Schedule Field Visit</strong>
+                      <strong><TranslatedText text="Schedule Field Visit" /></strong>
                       <span>Book a visit with expert</span>
                     </div>
                   </div>

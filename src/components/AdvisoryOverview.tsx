@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import TranslatedText from './TranslatedText';
 import './AdvisoryOverview.css';
 import type { ScanResultData } from '../pages/Dashboard';
 import { 
@@ -1026,7 +1027,7 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
             <div className="fert-card-title-group">
               <div className="fert-card-icon prod-icon">🛍️</div>
               <div>
-                <h2 className="fert-card-title" id="heading-products">Recommended Fertilizer Products</h2>
+                <h2 className="fert-card-title" id="heading-products"><TranslatedText text="Recommended Fertilizer" /> Products</h2>
                 <div className="fert-selected-count-chip">
                   <span className="count-dot"></span>
                   <span>{selectedFertilizers.length} of {activeRecommendedProducts.length} Selected for Plan</span>
@@ -1081,7 +1082,7 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
                 title="Calculate custom fertilizer quantities based on your field size"
               >
                 <span className="calc-btn-icon">🧮</span>
-                <span>Fertilizer Calculator</span>
+                <span><TranslatedText text="Fertilizer Calculator" /></span>
               </button>
               <button 
                 className="fert-card-link"
@@ -1427,7 +1428,7 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
               <div className="modal-title-wrap">
                 <span className="modal-icon">🧠</span>
                 <div>
-                  <h3 className="fert-modal-title">Why This Advice?</h3>
+                  <h3 className="fert-modal-title"><TranslatedText text="Why This Advice?" /></h3>
                   <p className="fert-modal-desc">AI-driven agronomy reasoning based on real-time soil &amp; crop metrics</p>
                 </div>
               </div>
@@ -1993,7 +1994,7 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer 
                     <span className="empty-plan-icon">💡</span>
                     <div className="empty-plan-text">
                       <strong>No fertilizers currently selected for your plan.</strong><br />
-                      In the <em>Recommended Fertilizer Products</em> section or catalog, click <strong>Select / Add to Plan</strong> on any fertilizer (e.g. Urea, DAP, MOP) to automatically generate its scheduled application dates, doses, and precautions here.
+                      In the <em><TranslatedText text="Recommended Fertilizer" /> Products</em> section or catalog, click <strong>Select / Add to Plan</strong> on any fertilizer (e.g. Urea, DAP, MOP) to automatically generate its scheduled application dates, doses, and precautions here.
                     </div>
                   </div>
                 )}

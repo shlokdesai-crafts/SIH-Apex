@@ -136,7 +136,8 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
             "Healthy",
             "Common Rust",
             "Gray Leaf Spot",
-            "Northern Leaf Blight"
+            "Northern Leaf Blight",
+            "Maize Streak Virus"
         ],
         "model_path": SAVED_MODELS_DIR / "maize_mobilenetv3.pth",
         "data_dir": BASE_DIR / "data" / "maize",
@@ -155,12 +156,14 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
             "Common Rust": "Moderate",
             "Gray Leaf Spot": "Severe",
             "Northern Leaf Blight": "Severe",
+            "Maize Streak Virus": "Severe"
         },
         "status_map": {
             "Healthy": "Healthy",
             "Common Rust": "Diseased",
             "Gray Leaf Spot": "Diseased",
             "Northern Leaf Blight": "Diseased",
+            "Maize Streak Virus": "Diseased"
         },
     },
     "Cotton": {

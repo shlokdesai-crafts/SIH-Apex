@@ -80,6 +80,8 @@ app.add_middleware(
 # ── Static Uploads Mounting ───────────────────────────────────────────────────
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
+from routes.translation import router as translation_router
+
 # ── Routers ───────────────────────────────────────────────────────────────────
 app.include_router(auth_router, prefix="/api", tags=["Authentication"])
 app.include_router(farm_router, prefix="/api", tags=["Farm"])
@@ -89,6 +91,7 @@ app.include_router(notif_router, prefix="/api", tags=["Notifications"])
 app.include_router(feedback_router, prefix="/api", tags=["Feedback"])
 app.include_router(advisory_risk_router, prefix="/api", tags=["Risk & Advisory"])
 app.include_router(gov_router, prefix="/api", tags=["Government Dashboard"])
+app.include_router(translation_router, prefix="/api", tags=["Translation"])
 
 
 

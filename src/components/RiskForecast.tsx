@@ -5,11 +5,15 @@ import type { WeatherData } from '../services/weatherService';
 import type { LocationResult } from '../services/locationService';
 import { useFarm } from '../context/FarmContext';
 import type { ScanResultData } from '../pages/Dashboard';
+import { generateCropActions, generateCropConditionSummary, type SoilType } from '../services/actionRecommendationService';
+import TranslatedText from './TranslatedText';
+
 interface RiskForecastProps {
   weatherData?: WeatherData | null;
   locationData?: LocationResult | null;
   scanResult?: ScanResultData | null;
 }
+
 export default function RiskForecast({
   weatherData,
   locationData,
@@ -22,6 +26,8 @@ export default function RiskForecast({
     farmState
   } = useFarm();
   const [selectedCrop, setSelectedCrop] = useState(scanResult?.crop || 'Cotton');
+  const [soilType, setSoilType] = useState<SoilType>('Select Soil Type');
+  const [activeActionId, setActiveActionId] = useState<string | null>(null);
 
   // Dynamic farm-connected crop data
   const baseCrops: Record<string, any> = {
@@ -128,9 +134,27 @@ export default function RiskForecast({
     } else {
       weatherRiskLevel = 'Low';
       weatherRiskClass = 'low';
-      weatherRiskText = 'Favorable weather conditions expected';
     }
   }
+
+  const recommendedActions = generateCropActions({
+    crop: selectedCrop,
+    soilType: soilType,
+    growthStage: currentData.stage,
+    weatherData,
+    overallRisk: scanResult ? (scanResult.severity as any) : currentData.overallRisk,
+    detectedDisease: (scanResult?.disease && scanResult.disease !== 'Healthy' && scanResult.disease !== 'healthy plant') ? scanResult.disease : undefined
+  });
+
+  const conditionSummary = generateCropConditionSummary({
+    crop: selectedCrop,
+    soilType: soilType,
+    growthStage: currentData.stage,
+    weatherData,
+    overallRisk: scanResult ? (scanResult.severity as any) : currentData.overallRisk,
+    detectedDisease: (scanResult?.disease && scanResult.disease !== 'Healthy' && scanResult.disease !== 'healthy plant') ? scanResult.disease : undefined
+  });
+
   return <div className="risk-forecast-container">
       {/* Top Header Section */}
       <div className="rf-header">
@@ -169,6 +193,35 @@ export default function RiskForecast({
             <div className="rf-info-text">
               <span className="rf-info-label">{t("Growth Stage")}</span>
               <span className="rf-info-value">{currentData.stage}</span>
+            </div>
+          </div>
+          <div className="rf-info-divider"></div>
+
+          <div className="rf-info-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2d8a3e" strokeWidth="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+              <path d="M2 17l10 5 10-5"></path>
+              <path d="M2 12l10 5 10-5"></path>
+            </svg>
+            <div className="rf-info-text">
+              <span className="rf-info-label">{t("Soil Type")}</span>
+              <select className="rf-crop-select" value={soilType} onChange={e => setSoilType(e.target.value as SoilType)}>
+                <option value="Select Soil Type">Select Soil Type</option>
+                <option value="Black Soil">Black Soil</option>
+                <option value="Red Soil">Red Soil</option>
+                <option value="Alluvial Soil">Alluvial Soil</option>
+                <option value="Laterite Soil">Laterite Soil</option>
+                <option value="Loamy Soil">Loamy Soil</option>
+                <option value="Sandy Soil">Sandy Soil</option>
+                <option value="Sandy Loam">Sandy Loam</option>
+                <option value="Clay Soil">Clay Soil</option>
+                <option value="Clay Loam">Clay Loam</option>
+                <option value="Silty Soil">Silty Soil</option>
+                <option value="Silty Loam">Silty Loam</option>
+                <option value="Gravelly Soil">Gravelly Soil</option>
+                <option value="Saline Soil">Saline Soil</option>
+                <option value="Other / Unknown">Other / Unknown</option>
+              </select>
             </div>
           </div>
           <div className="rf-info-divider"></div>
@@ -336,52 +389,68 @@ export default function RiskForecast({
           </div>
         </div>
 
-        {/* Card 4: Key Risk Factors */}
-        <div className="rf-card">
+        {/* Card 6: 7-Day Crop Condition */}
+        <div className="rf-card rf-actions-card">
           <div className="rf-card-header">
             <div className="rf-card-title">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2d8a3e" strokeWidth="2">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
               </svg>
-              <h3>{t("Key Risk Factors")}</h3>
+              <h3>{t("7-Day Crop Condition")}</h3>
             </div>
           </div>
-          <div className="rf-factors-grid">
-            <div className="rf-factor">
-              <div className="rf-factor-icon weather">🌧️</div>
-              <h4>{t("Weather")}</h4>
-              <span className={`badge ${weatherRiskClass}`}>{weatherRiskLevel}</span>
-              <p>{weatherRiskText}</p>
+          
+          {soilType === 'Select Soil Type' ? (
+            <div className="rf-soil-warning-compact">
+              <span className="warning-icon">⚠️</span>
+              <span>{t("Select your soil type to receive the 7-day crop condition forecast.")}</span>
             </div>
-            <div className="rf-factor">
-              <div className="rf-factor-icon stage">🌱</div>
-              <h4>{t("Crop Stage")}</h4>
-              <span className="badge mod">{t("Moderate")}</span>
-              <p>{t("Flowering stage is more susceptible")}</p>
+          ) : (
+            <div className="rf-compact-actions-list">
+              <div className="rf-condition-summary-box">
+                <span className="summary-icon">💡</span>
+                <TranslatedText text={conditionSummary} tagName="p" />
+              </div>
+              
+              <h4 className="rf-recommendation-title">{t("Recommended Actions")}</h4>
+              {recommendedActions.map((action, idx) => (
+                <div key={idx} className={`rf-compact-action-item ${action.priority.toLowerCase()}`}>
+                  <div className="rf-compact-action-icon">{action.icon}</div>
+                  <div className="rf-compact-action-content">
+                    <div className="rf-compact-action-title">
+                      <h4>{action.title}</h4>
+                      <span className={`badge-compact ${action.priority.toLowerCase()}`}>{action.priority}</span>
+                    </div>
+                    <p className="rf-compact-action-reason">{action.reason}</p>
+                    <div className="rf-compact-action-meta">
+                      <span className="date">{action.recommendedDate}</span>
+                      <button 
+                        className="btn-why-text"
+                        onClick={() => setActiveActionId(activeActionId === action.id ? null : action.id)}
+                      >
+                        {activeActionId === action.id ? t("Hide details") : t("Why?")}
+                      </button>
+                    </div>
+                    {activeActionId === action.id && (
+                      <div className="rf-compact-action-details">
+                        <p><strong>Conditions:</strong> {action.details.weatherCondition} • {action.details.soil}</p>
+                        <p>{action.details.detailedReason}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="rf-factor">
-              <div className="rf-factor-icon cases">👥</div>
-              <h4>{t("Nearby Cases")}</h4>
-              <span className="badge high">{t("High")}</span>
-              <p>{t("Increasing reports from nearby farms")}</p>
-            </div>
-            <div className="rf-factor">
-              <div className="rf-factor-icon history">📊</div>
-              <h4>{t("Historical Data")}</h4>
-              <span className="badge mod">{t("Moderate")}</span>
-              <p>{t("Bollworm common in this period")}</p>
-            </div>
-          </div>
+          )}
         </div>
-
-        {/* Card 5: Weather Forecast */}
+      {/* Card 5: Weather Forecast */}
         <div className="rf-card rf-weather-card-wide">
           <div className="rf-card-header">
             <div className="rf-card-title">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2d8a3e" strokeWidth="2">
                 <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
               </svg>
-              <h3>{t("Weather Forecast")}<span>{t("(Next 7 Days)")}</span></h3>
+              <h3>{t("Weather Forecast")} <span>{t("(Next 7 Days)")}</span></h3>
             </div>
             <a href="#" className="rf-link">{t("View Forecast →")}</a>
           </div>
@@ -434,7 +503,8 @@ export default function RiskForecast({
               let icon = '☁️';
               if (day.weatherCode === 0 || day.weatherCode === 1) icon = '☀️';else if (day.weatherCode === 2 || day.weatherCode === 3) icon = '⛅';else if (day.weatherCode >= 45 && day.weatherCode <= 48) icon = '🌫️';else if (day.weatherCode >= 51 && day.weatherCode <= 65) icon = '🌧️';else if (day.weatherCode >= 71 && day.weatherCode <= 75) icon = '❄️';else if (day.weatherCode >= 95 && day.weatherCode <= 99) icon = '⛈️';
               return <div key={day.time} style={{
-                minWidth: '65px',
+                flex: '0 0 auto',
+                minWidth: '70px',
                 padding: '12px 8px',
                 background: i === 0 ? '#e8f5e9' : '#f8f9fa',
                 borderRadius: '8px',
@@ -474,6 +544,44 @@ export default function RiskForecast({
           </div>
         </div>
 
-      </div>
+        {/* Card 4: Key Risk Factors */}
+        <div className="rf-card">
+          <div className="rf-card-header">
+            <div className="rf-card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2d8a3e" strokeWidth="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              </svg>
+              <h3>{t("Key Risk Factors")}</h3>
+            </div>
+          </div>
+          <div className="rf-factors-grid">
+            <div className="rf-factor">
+              <div className="rf-factor-icon weather">🌧️</div>
+              <h4>{t("Weather")}</h4>
+              <span className={`badge ${weatherRiskClass}`}>{weatherRiskLevel}</span>
+              <p>{weatherRiskText}</p>
+            </div>
+            <div className="rf-factor">
+              <div className="rf-factor-icon stage">🌱</div>
+              <h4>{t("Crop Stage")}</h4>
+              <span className="badge mod">{t("Moderate")}</span>
+              <p>{t("Flowering stage is more susceptible")}</p>
+            </div>
+            <div className="rf-factor">
+              <div className="rf-factor-icon cases">👥</div>
+              <h4>{t("Nearby Cases")}</h4>
+              <span className="badge high">{t("High")}</span>
+              <p>{t("Increasing reports from nearby farms")}</p>
+            </div>
+            <div className="rf-factor">
+              <div className="rf-factor-icon history">📊</div>
+              <h4>{t("Historical Data")}</h4>
+              <span className="badge mod">{t("Moderate")}</span>
+              <p>{t("Bollworm common in this period")}</p>
+            </div>
+          </div>
+        </div>
+
+        </div>
     </div>;
 }

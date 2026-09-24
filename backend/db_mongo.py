@@ -461,6 +461,7 @@ def save_crop_scan_record(
     preview_url: Optional[str] = None,
     image_quality: Optional[Dict[str, Any]] = None,
     diagnosis_details: Optional[Dict[str, Any]] = None,
+    field_id: Optional[str] = None,
     farmer_name: Optional[str] = "Anonymous",
     priority: Optional[str] = None,
 ) -> str:

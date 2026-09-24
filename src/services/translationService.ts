@@ -1,32 +1,15 @@
 /**
- * Hugging Face Translation Service
+ * Translation Service
  * 
  * Translates text between English, Hindi, and Marathi using
- * the Hugging Face Inference API with local caching to minimize API calls.
+ * the backend FastAPI endpoint which securely communicates with Hugging Face.
  */
-
-const HF_TOKEN = import.meta.env.VITE_HF_TOKEN as string;
-const HF_API_URL = 'https://api-inference.huggingface.co/models';
-
-// Model mapping for each language pair
-const MODEL_MAP: Record<string, string> = {
-  'en-hi': 'facebook/nllb-200-distilled-600M',
-  'en-mr': 'facebook/nllb-200-distilled-600M',
-  'hi-en': 'facebook/nllb-200-distilled-600M',
-  'mr-en': 'facebook/nllb-200-distilled-600M',
-  'hi-mr': 'facebook/nllb-200-distilled-600M',
-  'mr-hi': 'facebook/nllb-200-distilled-600M',
-};
-
-// NLLB language codes (different from ISO codes)
-const NLLB_LANG_CODES: Record<string, string> = {
-  en: 'eng_Latn',
-  hi: 'hin_Deva',
-  mr: 'mar_Deva',
-};
 
 // In-memory cache: "lang:text" -> translated text
 const translationCache = new Map<string, string>();
+
+// Base API URL (assumes backend is on localhost:8000 in dev, or same domain in prod)
+const API_BASE_URL = 'http://localhost:8000/api';
 
 // Load cache from localStorage on init
 function loadCacheFromStorage(): void {
@@ -61,7 +44,7 @@ loadCacheFromStorage();
 
 /**
  * Translate a single text string to the target language.
- * Uses cache first, then falls back to Hugging Face API.
+ * Uses cache first, then falls back to backend API.
  */
 export async function translateText(
   text: string,
@@ -71,38 +54,33 @@ export async function translateText(
   // No translation needed if source == target
   if (sourceLang === targetLang) return text;
 
-  // Skip empty strings
-  if (!text || text.trim() === '') return text;
+  // Skip empty strings or non-strings
+  if (!text || typeof text !== 'string' || text.trim() === '') return text;
 
   // Check cache
-  const cacheKey = `${targetLang}:${text}`;
+  const cacheKey = `${sourceLang}|${targetLang}|${text}`;
   const cached = translationCache.get(cacheKey);
   if (cached) return cached;
 
-  // Check if token is configured
-  if (!HF_TOKEN || HF_TOKEN === 'your_huggingface_token_here') {
-    console.warn('[TranslationService] No Hugging Face token configured. Using static translations only.');
-    return text;
-  }
-
   try {
-    const pairKey = `${sourceLang}-${targetLang}`;
-    const model = MODEL_MAP[pairKey];
+    const response = await fetch(`${API_BASE_URL}/translate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text,
+        source_language: sourceLang,
+        target_language: targetLang,
+      }),
+    });
 
-    if (!model) {
-      console.warn(`[TranslationService] No model found for ${pairKey}`);
-      return text;
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
     }
 
-    let translated: string;
-
-    if (model.includes('nllb')) {
-      // NLLB model requires special parameters
-      translated = await callNLLB(text, sourceLang, targetLang, model);
-    } else {
-      // Helsinki-NLP / Opus models
-      translated = await callOpus(text, model);
-    }
+    const data = await response.json();
+    const translated = data.translated_text || text;
 
     // Cache the result
     translationCache.set(cacheKey, translated);
@@ -117,20 +95,86 @@ export async function translateText(
 
 /**
  * Translate a batch of texts to the target language.
- * Translates each individually (parallelized) for better caching.
  */
 export async function translateBatch(
   texts: string[],
   targetLang: 'en' | 'hi' | 'mr',
   sourceLang: 'en' | 'hi' | 'mr' = 'en'
 ): Promise<string[]> {
-  const promises = texts.map((text) => translateText(text, targetLang, sourceLang));
-  return Promise.all(promises);
+  if (sourceLang === targetLang || !texts || texts.length === 0) return texts;
+
+  // Find which texts are not in cache
+  const uncachedTexts: string[] = [];
+  const results: string[] = new Array(texts.length);
+  
+  texts.forEach((text, index) => {
+    if (!text || typeof text !== 'string' || text.trim() === '') {
+      results[index] = text;
+      return;
+    }
+    
+    const cacheKey = `${sourceLang}|${targetLang}|${text}`;
+    const cached = translationCache.get(cacheKey);
+    
+    if (cached) {
+      results[index] = cached;
+    } else {
+      uncachedTexts.push(text);
+    }
+  });
+
+  if (uncachedTexts.length === 0) {
+    return results;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/translate/batch`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        texts: uncachedTexts,
+        source_language: sourceLang,
+        target_language: targetLang,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const translations = data.translations || uncachedTexts;
+
+    // Cache the new translations and place in results
+    let translatedIndex = 0;
+    texts.forEach((text, index) => {
+      if (results[index] === undefined) {
+        const translated = translations[translatedIndex] || text;
+        const cacheKey = `${sourceLang}|${targetLang}|${text}`;
+        translationCache.set(cacheKey, translated);
+        results[index] = translated;
+        translatedIndex++;
+      }
+    });
+
+    saveCacheToStorage();
+    return results;
+  } catch (error) {
+    console.error('[TranslationService] Batch translation failed:', error);
+    // Fill remaining with original text
+    texts.forEach((text, index) => {
+      if (results[index] === undefined) {
+        results[index] = text;
+      }
+    });
+    return results;
+  }
 }
 
 /**
  * Translate an object's string values (shallow).
- * Useful for translating API response objects.
  */
 export async function translateObject<T extends Record<string, unknown>>(
   obj: T,
@@ -140,124 +184,23 @@ export async function translateObject<T extends Record<string, unknown>>(
 ): Promise<T> {
   const result = { ...obj };
   const keys = keysToTranslate || Object.keys(obj);
-
-  for (const key of keys) {
-    const value = obj[key];
-    if (typeof value === 'string') {
-      (result as Record<string, unknown>)[key] = await translateText(value, targetLang, sourceLang);
+  
+  const valuesToTranslate = keys.map(k => obj[k]).filter(v => typeof v === 'string') as string[];
+  
+  if (valuesToTranslate.length > 0) {
+    const translatedValues = await translateBatch(valuesToTranslate, targetLang, sourceLang);
+    let vIndex = 0;
+    for (const key of keys) {
+      if (typeof obj[key] === 'string') {
+        (result as Record<string, unknown>)[key] = translatedValues[vIndex++];
+      }
     }
   }
 
   return result;
 }
 
-// ─── Internal API Callers ────────────────────────────────────────────
-
-async function fetchWithRetry(url: string, options: RequestInit, retries = 4): Promise<Response> {
-  console.log(`[fetchWithRetry] Starting request to ${url}`);
-  for (let i = 0; i < retries; i++) {
-    try {
-      const response = await fetch(url, options);
-      if (response.status === 503) {
-        try {
-          const errJson = await response.clone().json();
-          const waitTime = errJson.estimated_time ? Math.ceil(errJson.estimated_time * 1000) : 5000;
-          console.log(`[fetchWithRetry] Model loading. Waiting ${waitTime}ms... (Attempt ${i + 1}/${retries})`);
-          await new Promise(r => setTimeout(r, Math.min(waitTime, 20000))); // wait up to 20s per retry
-          continue;
-        } catch (e) {
-          console.log(`[fetchWithRetry] Model loading (no JSON). Waiting 5s...`);
-          await new Promise(r => setTimeout(r, 5000));
-          continue;
-        }
-      }
-      return response;
-    } catch (networkError) {
-      console.warn(`[fetchWithRetry] Network error on attempt ${i + 1}:`, networkError);
-      if (i < retries - 1) {
-        await new Promise(r => setTimeout(r, 3000)); // wait 3s before retrying network error
-        continue;
-      }
-      throw networkError;
-    }
-  }
-  return fetch(url, options);
-}
-
-async function callOpus(text: string, model: string): Promise<string> {
-  const response = await fetchWithRetry(`${HF_API_URL}/${model}`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${HF_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ inputs: text }),
-  });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    console.error(`Opus API error ${response.status}: ${errText}`);
-    throw new Error(`Opus API error ${response.status}: ${errText}`);
-  }
-
-  const data = await response.json();
-  if (Array.isArray(data) && data.length > 0 && data[0].translation_text) {
-    return data[0].translation_text;
-  }
-  throw new Error('Unexpected Opus API response format');
-}
-
-async function callNLLB(
-  text: string,
-  sourceLang: string,
-  targetLang: string,
-  model: string
-): Promise<string> {
-  const srcCode = NLLB_LANG_CODES[sourceLang];
-  const tgtCode = NLLB_LANG_CODES[targetLang];
-
-  const response = await fetchWithRetry(`${HF_API_URL}/${model}`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${HF_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      inputs: text,
-      parameters: {
-        src_lang: srcCode,
-        tgt_lang: tgtCode,
-      },
-    }),
-  });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    console.error(`NLLB API error ${response.status}: ${errText}`);
-    throw new Error(`NLLB API error ${response.status}: ${errText}`);
-  }
-
-  const data = await response.json();
-  if (Array.isArray(data) && data.length > 0 && data[0].translation_text) {
-    return data[0].translation_text;
-  }
-  throw new Error('Unexpected NLLB API response format');
-}
-
-/**
- * Clear the translation cache (both in-memory and localStorage).
- */
 export function clearTranslationCache(): void {
   translationCache.clear();
   localStorage.removeItem('cropguard_translation_cache');
-}
-
-/**
- * Get cache statistics for debugging.
- */
-export function getCacheStats(): { size: number; keys: string[] } {
-  return {
-    size: translationCache.size,
-    keys: Array.from(translationCache.keys()),
-  };
 }

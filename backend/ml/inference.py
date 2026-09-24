@@ -169,17 +169,16 @@ def _abstain_reason(
 CROP_DISEASE_PROMPTS: Dict[str, Dict[str, List[str]]] = {
     "Maize": {
         "Healthy": [
-            "a photo of fresh healthy ripe corn cob",
-            "a photo of fresh yellow sweetcorn cobs with green husk",
             "a photo of clean healthy green maize foliage without any spots",
             "a photo of a healthy green corn plant",
             "fresh healthy corn without disease",
-            "healthy ripe maize ear with golden kernels",
         ],
         "Common Rust": [
             "a photo of maize leaf with reddish brown rust pustules and powdery spores",
             "corn leaf covered with cinnamon brown rust spots",
             "maize foliage with scattered brown rust pustules on leaves",
+            "a photo of a diseased or rotting corn cob",
+            "a photo of corn smut or fungal disease on corn cob",
         ],
         "Gray Leaf Spot": [
             "a photo of maize leaf with rectangular tan gray necrotic lesions",
@@ -601,29 +600,32 @@ def predict_crop_disease(
         img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
         # Try high-accuracy CLIP zero-shot classification
-        probs = None
-        sims = None
+        clip_probs = None
         try:
             from services.crop_identification import _get_crop_id_model, _extract_image_features
             clip_model, processor, _, _ = _get_crop_id_model()
             text_embeds = _get_clip_disease_embeds(crop_name, classes, clip_model, processor)
 
-            inputs = processor(images=img, return_tensors="pt")
+            inputs = processor(images=img, return_tensors="pt")  # type: ignore
             with torch.no_grad():
                 img_feat = _extract_image_features(clip_model, inputs)
                 sims = (img_feat @ text_embeds.T)[0]
-                # Temperature scaled probabilities
-                probs = (sims * 35.0).softmax(dim=0)
+                clip_probs = (sims * 35.0).softmax(dim=0)
         except Exception as clip_err:
-            logger.warning(f"CLIP disease classification unavailable, using CNN fallback: {clip_err}")
-            probs = None
+            logger.warning(f"CLIP disease classification unavailable: {clip_err}")
+            clip_probs = None
 
-        if probs is None:
-            model, device = _get_crop_inference_model(crop_name)
-            tensor_img = _inference_transform(img).unsqueeze(0).to(device)  # type: ignore[attr-defined]
-            with torch.no_grad():
-                outputs = model(tensor_img)
-                probs = torch.softmax(outputs, dim=1)[0]
+        # Use fine-tuned CNN model for disease detection (MobileNetV3)
+        model, device = _get_crop_inference_model(crop_name)
+        tensor_img = _inference_transform(img).unsqueeze(0).to(device)  # type: ignore[attr-defined]
+        with torch.no_grad():
+            outputs = model(tensor_img)
+            cnn_probs = torch.softmax(outputs, dim=1)[0]
+            
+        if clip_probs is not None:
+            probs = 0.5 * clip_probs.to(cnn_probs.device) + 0.5 * cnn_probs
+        else:
+            probs = cnn_probs
 
         top_prob_t, top_idx_t = torch.max(probs, dim=0)
         top_prob_raw = float(top_prob_t.item())

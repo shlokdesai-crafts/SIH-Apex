@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useFarm } from '../context/FarmContext';
 import { scanCropImage, getScanHistory, deleteScan, type ScanHistoryItem } from '../services/cropScanApi';
 import { getBrowserPosition, reverseGeocode } from '../services/locationService';
+import TranslatedText from './TranslatedText';
 import './ScanCrop.css';
 
 // ── Crop data interfaces & lists ─────────────────────────────────────────────
@@ -1012,7 +1013,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                   <div className="sc-farm-sync-banner">
                     <span className="sc-farm-sync-check">✓</span>
                     <div className="sc-farm-sync-text">
-                      Analysis recorded in <strong>My Farm</strong> overview. Field health, priority actions, and activity log have been updated.
+                      Analysis recorded in <strong><TranslatedText text="My Farm" /></strong> overview. Field health, priority actions, and activity log have been updated.
                     </div>
                   </div>
 
@@ -1580,7 +1581,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
             <div className="sc-tips-card">
               <div className="sc-tips-head">
                 <span className="sc-tips-bulb">💡</span>
-                <span className="sc-tips-title">Tips for a Better Result</span>
+                <span className="sc-tips-title"><TranslatedText text="Tips for a Better Result" /></span>
               </div>
               {[
                 { icon: '🌿', text: 'Take a clear and well-lit photo' },

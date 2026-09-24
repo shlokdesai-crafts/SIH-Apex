@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, type ReactNode } from 'react';
+import TranslatedText from '../TranslatedText';
 import './CropHealth.css';
 import {
   getCropHealthBreakdown,
@@ -1131,7 +1132,7 @@ export default function CropHealth() {
               <div className="ch-qa-left">
                 <div className="ch-qa-icon-circle bug">🐞</div>
                 <div className="ch-qa-text">
-                  <strong>Schedule Field Visit</strong>
+                  <strong><TranslatedText text="Schedule Field Visit" /></strong>
                   <span>Assign Krishi Vigyan Kendra agronomist</span>
                 </div>
               </div>

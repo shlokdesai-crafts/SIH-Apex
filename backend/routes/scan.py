@@ -305,6 +305,16 @@ async def scan_crop(
         preview_url=saved_web_url,
         image_quality=image_quality.model_dump() if image_quality else None,
         diagnosis_details=disease_detection.model_dump() if disease_detection else None,
+
+    )
+
+    # Save to legacy submissions table for government dashboard analytics
+    insert_submission(
+        crop=display_crop,
+        ai_result=condition_name,
+        disease=condition_name,
+        confidence=disease_conf,
+        severity=severity,
         farmer_name=farmer_name or "Anonymous",
     )
 
