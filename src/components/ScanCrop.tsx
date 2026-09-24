@@ -362,7 +362,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
     const severityColor = isHealthy ? '#2e7d32' : (severityText === 'Severe' ? '#c62828' : (severityText === 'Moderate' ? '#f57c00' : '#1976d2'));
 
     const crop = record.cropName || record.crop;
-    const cond = record.disease || record.condition || 'Healthy Plant';
+    const cond = record.disease || record.condition || 'Condition not recorded';
     const accuracy = record.accuracyPercentage || record.verification?.accuracyPercentage || 98.4;
     const refSource = record.referenceSource || record.verification?.referenceSource || 'ICAR - Indian Council of Agricultural Research & State Agricultural Universities';
 
@@ -701,14 +701,22 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
             ? Number((json.crop_analysis.crop_identification.confidence * 100).toFixed(1))
             : 100);
 
-      const rawCondition = json.diagnosis?.condition || json.disease_detection?.disease || 'Healthy Plant';
+      if (!json.diagnosis?.condition && !json.disease_detection?.disease) {
+        setBackendError("Automated disease diagnosis unavailable from inference service for this crop or image. Please verify crop selection and ensure a trained model is deployed.");
+        setStep('preview');
+        setScanProgress(0);
+        setIsSubmitting(false);
+        return;
+      }
+
+      const rawCondition: string = json.diagnosis?.condition || json.disease_detection?.disease || '';
       const isHealthy = rawCondition.toLowerCase().includes('healthy') || json.diagnosis?.healthStatus === 'Healthy';
-      const diseaseName = isHealthy ? 'Healthy Plant' : rawCondition;
+      const diseaseName: string = isHealthy ? 'Healthy Plant' : rawCondition;
       const diseaseConfidence = json.diagnosis?.confidence != null
         ? Number((json.diagnosis.confidence * 100).toFixed(1))
         : (json.disease_detection?.confidence != null
             ? Number((json.disease_detection.confidence * 100).toFixed(1))
-            : (isHealthy ? 96.5 : null));
+            : null);
 
       const rawSeverity = json.diagnosis?.severity || json.severity || json.disease_detection?.severity || (isHealthy ? 'None' : 'Moderate');
       const severityText = isHealthy ? 'None' : (rawSeverity === 'Verified' ? 'Unable to assess' : rawSeverity);

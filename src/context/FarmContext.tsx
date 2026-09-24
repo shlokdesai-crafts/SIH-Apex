@@ -173,6 +173,8 @@ function extractGenuineCrops(farmState: FarmState | null): UserEligibleCrop[] {
   if (Array.isArray(farmState.fields)) {
     for (const field of farmState.fields) {
       if (!field.crop) continue;
+      // Skip legacy demonstration mock fields if they were left in storage
+      if (['field-1', 'field-2', 'field-3', 'field-4'].includes(field.id) && !field.sowingDate && !field.cultivatedArea) continue;
       const canonKey = normalizeCropKey(field.crop);
       const key = `${canonKey}_${field.id}`;
       addedKeys.add(key);
@@ -237,6 +239,8 @@ function extractGenuineCrops(farmState: FarmState | null): UserEligibleCrop[] {
   // 2. Process crops from farmState.crops that were NOT linked to any field
   if (Array.isArray(farmState.crops)) {
     for (const crop of farmState.crops) {
+      // Filter out legacy demonstration mock crops that have no genuine cultivation data
+      if (['cotton', 'soybean', 'onion', 'tomato', 'potato'].includes(crop.id) && !crop.sowingDate && !crop.cultivatedArea) continue;
       const canonKey = normalizeCropKey(crop.name || crop.id);
       const alreadyHasField = result.some(r => r.canonicalKey === canonKey);
       if (alreadyHasField) continue;

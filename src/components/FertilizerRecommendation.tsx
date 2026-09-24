@@ -27,8 +27,8 @@ interface NutrientRequirement {
   nutrient: string;
   symbol: string;
   recommended: number;
-  current: number;
-  additional: number;
+  current?: number | null | string;
+  additional?: number | null | string;
   unit: string;
 }
 
@@ -1453,11 +1453,25 @@ export default function FertilizerRecommendation({ onBack }: FertilizerRecommend
                       </div>
                     </td>
                     <td className="td-num font-mono">{row.recommended}</td>
-                    <td className="td-num font-mono text-muted">{row.current}</td>
+                    <td className="td-num font-mono text-muted">
+                      {row.current != null ? (
+                        row.current
+                      ) : (
+                        <span className="val-not-available" style={{ color: '#94a3b8', fontStyle: 'italic' }}>
+                          Not available
+                        </span>
+                      )}
+                    </td>
                     <td className="td-num td-highlight font-mono">
-                      <span className="additional-val-badge">
-                        +{row.additional} {row.unit.split('/')[0]}
-                      </span>
+                      {row.additional != null ? (
+                        <span className="additional-val-badge">
+                          +{row.additional} {row.unit.split('/')[0]}
+                        </span>
+                      ) : (
+                        <span className="additional-val-badge badge-requires-test" style={{ background: '#f1f5f9', color: '#64748b', border: '1px solid #cbd5e1' }}>
+                          Requires Soil Test
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -21,10 +21,11 @@ export interface NutrientRequirement {
   nutrient: string;
   symbol: string;
   recommended: number;
-  current: number;
-  additional: number;
+  current?: number | null | string;
+  additional?: number | null | string;
   unit: string;
   chemicalForm?: string;
+  sourceAttribution?: string;
 }
 
 export interface FertilizerProduct {
@@ -1763,17 +1764,17 @@ export const ADVISORY_DATA: Record<string, CropAdvisoryData> = {
       micronutrients: { label: 'Sulphur Demanding', elements: 'S, Zn' },
     },
     requirements: [
-      { nutrient: 'Nitrogen (N)', symbol: 'N', recommended: 44.5, current: 25, additional: 19.5, unit: 'kg/acre', chemicalForm: 'Elemental Nitrogen (N)' },
-      { nutrient: 'Phosphorus (P)', symbol: 'P', recommended: 10.6, current: 18, additional: 0, unit: 'kg/acre', chemicalForm: 'Available Elemental P (Soil Test form)' },
-      { nutrient: 'Phosphate Equivalent (P₂O₅)', symbol: 'P₂O₅', recommended: 24.3, current: 41.2, additional: 0, unit: 'kg/acre', chemicalForm: 'Phosphate Oxide (P₂O₅ = P × 2.291)' },
-      { nutrient: 'Potassium (K)', symbol: 'K', recommended: 33.6, current: 20, additional: 13.6, unit: 'kg/acre', chemicalForm: 'Available Elemental K (Soil Test form)' },
-      { nutrient: 'Potash Equivalent (K₂O)', symbol: 'K₂O', recommended: 40.5, current: 24.1, additional: 16.4, unit: 'kg/acre', chemicalForm: 'Potash Oxide (K₂O = K × 1.205)' },
-      { nutrient: 'Zinc (Zn)', symbol: 'Zn', recommended: 1, current: 0.3, additional: 0.7, unit: 'kg/acre', chemicalForm: 'Elemental Micronutrient (Zn)' },
+      { nutrient: 'Nitrogen (N)', symbol: 'N', recommended: 44.5, current: null, additional: null, unit: 'kg/acre', chemicalForm: 'Elemental Nitrogen (N)', sourceAttribution: 'ICAR-DOGR / MPKV Rahuri baseline package of practices (100:50:50 kg NPK/ha)' },
+      { nutrient: 'Phosphorus (P)', symbol: 'P', recommended: 10.6, current: null, additional: null, unit: 'kg/acre', chemicalForm: 'Available Elemental P (Soil Test form)', sourceAttribution: 'ICAR-DOGR baseline' },
+      { nutrient: 'Phosphate Equivalent (P₂O₅)', symbol: 'P₂O₅', recommended: 24.3, current: null, additional: null, unit: 'kg/acre', chemicalForm: 'Phosphate Oxide (P₂O₅ = P × 2.291)', sourceAttribution: 'ICAR-DOGR baseline' },
+      { nutrient: 'Potassium (K)', symbol: 'K', recommended: 33.6, current: null, additional: null, unit: 'kg/acre', chemicalForm: 'Available Elemental K (Soil Test form)', sourceAttribution: 'ICAR-DOGR baseline' },
+      { nutrient: 'Potash Equivalent (K₂O)', symbol: 'K₂O', recommended: 40.5, current: null, additional: null, unit: 'kg/acre', chemicalForm: 'Potash Oxide (K₂O = K × 1.205)', sourceAttribution: 'ICAR-DOGR baseline' },
+      { nutrient: 'Zinc (Zn)', symbol: 'Zn', recommended: 1, current: null, additional: null, unit: 'kg/acre', chemicalForm: 'Elemental Micronutrient (Zn)', sourceAttribution: 'ICAR-DOGR baseline' },
     ],
     keyInsights: [
       'Sulphur is crucial for allyl propyl disulphide synthesis, giving onion pungency and long shelf life.',
       'Potassium enhances bulb compactness, outer skin dryness, and suppresses storage shrinkage.',
-      'Withhold Nitrogen 3 weeks before harvest to promote neck drying and curb rotting.',
+      'Stop all Nitrogen top-dressing 30 days before harvest to promote neck drying and curb rotting (ICAR-DOGR recommendation).',
     ],
     calloutMessage: 'Apply Sulphur and Potassium now for dense, tight-necked bulbs with superior shelf life.',
     products: [

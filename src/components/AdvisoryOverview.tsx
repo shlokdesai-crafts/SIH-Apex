@@ -106,7 +106,7 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer,
       const match = eligibleCrops.find((c) => c.canonicalKey === key);
       if (match) return match.key;
     }
-    return eligibleCrops[0]?.key || 'tomato';
+    return eligibleCrops[0]?.key || '';
   });
 
   const activeUserCrop: UserEligibleCrop | undefined = useMemo(() => {
@@ -124,7 +124,7 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer,
       const key = normalizeCropKey(advisoryTarget.crop);
       if (key) return key;
     }
-    return scanResult?.crop ? normalizeCropKey(scanResult.crop) : 'tomato';
+    return scanResult?.crop ? normalizeCropKey(scanResult.crop) : (eligibleCrops[0]?.canonicalKey || '');
   });
   const lastScannedCropRef = useRef<string | undefined>(scanResult?.crop);
 
@@ -777,12 +777,9 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer,
         <div className="advisory-empty-state-wrapper">
           <div className="advisory-empty-state-card" id="advisory-empty-state">
             <div className="empty-state-icon-circle">🌾</div>
-            <h2 className="empty-state-title">No Monitored Crops in Your Farm Yet</h2>
+            <h2 className="empty-state-title">No crops available yet</h2>
             <p className="empty-state-desc">
-              CropGuard Soil &amp; Nutrient Intelligence generates personalized fertilizer schedules, nutrient deficit warnings, and split application calendars calibrated specifically to your genuine crops and farm plots.
-            </p>
-            <p className="empty-state-subdesc">
-              To view precision advisory, register your crop plot in My Farm or capture a leaf photo to diagnose crop health.
+              Add a crop to My Farm or complete a crop scan to get started.
             </p>
 
             <div className="empty-state-action-buttons">
@@ -869,7 +866,7 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer,
                     <span className="crop-source-tag">{activeUserCrop.sourceLabel}</span>
                   ) : null}
                 </div>
-                <span className="crop-field-chip">{activeUserCrop?.fieldName || advisoryTarget?.fieldName || farmerContext?.farm?.farmName || crop.field}</span>
+                <span className="crop-field-chip">{activeUserCrop?.fieldName || advisoryTarget?.fieldName || farmerContext?.farm?.farmName || 'Registered Plot'}</span>
               </div>
 
               <div className="fert-crop-card-body">
@@ -893,22 +890,22 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer,
                         ? `${advisoryTarget.cultivatedArea} ${advisoryTarget.areaUnit || 'Acres'}`
                         : advisoryTarget?.areaHa
                         ? `${advisoryTarget.areaHa} Ha`
-                        : `${farmerContext?.cropCycle?.allocatedAcres ?? crop.acres} Acres`)}
+                        : (farmerContext?.cropCycle?.allocatedAcres ? `${farmerContext.cropCycle.allocatedAcres} Acres` : 'Area not recorded'))}
                     </span>
                   </div>
                   <div className="fert-crop-stage">
                     <span className="stage-flower-icon">🌸</span>
-                    <span>{activeUserCrop?.growthStage || advisoryTarget?.growthStage || farmerContext?.cropCycle?.currentStage || crop.stage || 'Active Growth'}</span>
+                    <span>{activeUserCrop?.growthStage || advisoryTarget?.growthStage || farmerContext?.cropCycle?.currentStage || 'Active Growth'}</span>
                   </div>
                   <div className="fert-crop-subdetails">
                     <span>
-                      {activeUserCrop?.fieldName || advisoryTarget?.fieldName || farmerContext?.farm?.farmName || crop.field}
+                      {activeUserCrop?.fieldName || advisoryTarget?.fieldName || farmerContext?.farm?.farmName || 'Registered Plot'}
                       {' • '}
                       {activeUserCrop?.areaDisplay || (advisoryTarget?.cultivatedArea
                         ? `${advisoryTarget.cultivatedArea} ${advisoryTarget.areaUnit || 'Acres'}`
                         : advisoryTarget?.areaHa
                         ? `${advisoryTarget.areaHa} Ha`
-                        : `${farmerContext?.cropCycle?.allocatedAcres ?? crop.acres} Acres`)}
+                        : (farmerContext?.cropCycle?.allocatedAcres ? `${farmerContext.cropCycle.allocatedAcres} Acres` : 'Area not recorded'))}
                       {activeUserCrop?.variety ? ` • Var: ${activeUserCrop.variety}` : advisoryTarget?.variety ? ` • Var: ${advisoryTarget.variety}` : ''}
                       {activeUserCrop?.soilType ? ` • Soil: ${activeUserCrop.soilType}` : advisoryTarget?.soilType ? ` • Soil: ${advisoryTarget.soilType}` : ''}
                       {activeUserCrop?.sowingDate ? ` • Sown: ${activeUserCrop.sowingDate}` : ''}
@@ -1271,17 +1268,34 @@ export default function AdvisoryOverview({ scanResult, onBack, onOpenFertilizer,
                         </div>
                       </td>
                       <td className="td-num font-mono">{row.recommended}</td>
-                      <td className="td-num font-mono text-muted">{row.current}</td>
+                      <td className="td-num font-mono text-muted">
+                        {soilProvenance.hasSoilTest && row.current != null ? (
+                          row.current
+                        ) : (
+                          <span className="val-not-available" style={{ color: '#94a3b8', fontStyle: 'italic' }}>
+                            Not available
+                          </span>
+                        )}
+                      </td>
                       <td className="td-num td-highlight font-mono">
-                        <span className="additional-val-badge">
-                          +{row.additional} {row.unit.split('/')[0]}
-                        </span>
+                        {soilProvenance.hasSoilTest && row.additional != null ? (
+                          <span className="additional-val-badge">
+                            +{row.additional} {row.unit.split('/')[0]}
+                          </span>
+                        ) : (
+                          <span className="additional-val-badge badge-requires-test" style={{ background: '#f1f5f9', color: '#64748b', border: '1px solid #cbd5e1' }}>
+                            Requires Soil Test
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
+            <div className="fert-req-footnote" style={{ padding: '10px 14px', fontSize: '11px', color: '#64748b', background: '#f8fafc', borderTop: '1px solid #e2e8f0', lineHeight: 1.5 }}>
+              <span>ℹ️ <strong>Attribution:</strong> Recommended rates represent baseline agronomic benchmarks (ICAR / State Agricultural University package of practices for {crop.name}). Current soil measurements and deficiency calculations require an accredited soil test report.</span>
+            </div>
           </div>
         </section>
 
