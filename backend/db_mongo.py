@@ -22,6 +22,7 @@ from dotenv import load_dotenv
 from pymongo import MongoClient, ASCENDING, DESCENDING, IndexModel
 from pymongo.errors import PyMongoError, DuplicateKeyError
 from bson import ObjectId
+import certifi
 import uuid
 import sqlite3
 
@@ -589,12 +590,9 @@ def save_crop_scan_record(
     preview_url: Optional[str] = None,
     image_quality: Optional[Dict[str, Any]] = None,
     diagnosis_details: Optional[Dict[str, Any]] = None,
-feature/sage-dataset-expansion
     field_id: Optional[str] = None,
-
     farmer_name: Optional[str] = "Anonymous",
     priority: Optional[str] = None,
- main
 ) -> str:
     """
     Persists scan metadata in crop_scans and detailed report in diagnosis_reports.

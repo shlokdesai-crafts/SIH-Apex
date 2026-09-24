@@ -91,6 +91,43 @@ export async function reverseGeocode(lat: number, lng: number): Promise<Location
 }
 
 /**
+ * Forward geocode a query string using Nominatim API (Free).
+ */
+export async function forwardGeocode(query: string): Promise<LocationResult> {
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=1`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'Accept': 'application/json'
+    }
+  });
+  if (!response.ok) {
+    throw { code: 'API_ERROR', message: `Forward Geocoding API error: ${response.status}` } as LocationError;
+  }
+  
+  const data = await response.json();
+  if (!data || data.length === 0) {
+    throw { code: 'POSITION_UNAVAILABLE', message: 'Location not found.' } as LocationError;
+  }
+  
+  const result = data[0];
+  const lat = parseFloat(result.lat);
+  const lng = parseFloat(result.lon);
+  const address = result.address || {};
+  
+  const district = address.county || address.city || address.town || address.village || '';
+  const state = address.state || '';
+  
+  return {
+    lat,
+    lng,
+    district,
+    state,
+    fullAddress: result.display_name || query,
+  };
+}
+
+/**
  * Detect the user's location: GPS → reverse geocode → human-readable address.
  */
 export async function detectLocation(): Promise<LocationResult> {
