@@ -232,6 +232,10 @@ CROP_ALIASES.update({
     "grape": "Grapes",
     "eggplant": "Brinjal",
     "aubergine": "Brinjal",
+    "chickpea (chana)": "Chickpea",
+    "tur (pigeon pea)": "Pigeon Pea",
+    "jowar (sorghum)": "Sorghum",
+    "bajra (pearl millet)": "Pearl Millet",
 })
 
 # Maharashtra Agro-climatic Harvest & Regional Details
@@ -454,6 +458,10 @@ CONDITION_TYPES: Dict[str, str] = {
     "Purple Blotch": "disease",
     "Stemphylium Blight": "disease",
     "Basal Rot": "disease",
+    "Fusarium Basal Rot": "disease",
+    "Black Rot": "disease",
+    "Esca (Black Measles)": "disease",
+    "Leaf Blight (Isariopsis)": "disease",
     "Tikka Leaf Spot": "disease",
     "Collar Rot": "disease",
     "Anthracnose": "disease",

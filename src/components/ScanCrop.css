@@ -2122,6 +2122,19 @@
   border: 1px solid rgba(0,0,0,0.08);
 }
 
+.sc-crop-card-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  user-select: none;
+}
+
 .sc-crop-card-badge {
   position: absolute;
   bottom: -4px;

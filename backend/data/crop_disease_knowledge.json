@@ -960,6 +960,27 @@
       "source": "ICAR - DOGR Pune & MPKV Rahuri",
       "sourceType": "ICAR",
       "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Downy Mildew": {
+      "explanation": "Downy Mildew (Peronospora destructor) is a severe fungal disease of onion foliage causing pale oval lesions with grayish-violet downy growth, leading to leaf collapse.",
+      "symptoms": [
+        "Pale elongated yellowish spots on older leaves",
+        "Purplish-gray downy fungal fuzz on spots during cool dewy mornings",
+        "Leaf tips withering, twisting downward, and collapsing prematurely"
+      ],
+      "culturalActions": [
+        "Ensure wide ridge spacing to accelerate foliar morning drying",
+        "Destroy cull piles and volunteer onion plants around fields",
+        "Avoid working in fields while leaves are wet with morning dew"
+      ],
+      "prevention": [
+        "Practice a 3-year crop rotation avoiding allium crops",
+        "Use certified disease-free onion sets/seedlings",
+        "Orient rows parallel to prevailing winds to reduce canopy humidity"
+      ],
+      "source": "ICAR - Directorate of Onion and Garlic Research (DOGR), Rajgurunagar, Pune",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
     }
   },
   "Pigeon Pea": {
@@ -1218,6 +1239,69 @@
         "Rotate with registered fungicides having different modes of action to manage resistance"
       ],
       "source": "ICAR - NRCG Pune & MPKV Rahuri",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Black Rot": {
+      "explanation": "Black Rot (Guignardia bidwellii) is a destructive fungal disease causing small circular reddish-brown spots on grape foliage and shriveled black mummified berries.",
+      "symptoms": [
+        "Small circular reddish-brown leaf spots with dark margins",
+        "Tiny black fruiting bodies (pycnidia) arranged in rings inside spots",
+        "Berry shriveling into hard black wrinkled mummies"
+      ],
+      "culturalActions": [
+        "Prune and destroy infected canes, mummies, and leaf litter during dormant season",
+        "Maintain canopy trellising for optimal air circulation and rapid sun drying",
+        "Avoid excessive canopy shading in vineyard rows"
+      ],
+      "prevention": [
+        "Follow regular winter dormant sanitation sprays",
+        "Ensure timely canopy management before monsoon rains",
+        "Plant less susceptible rootstocks and cultivars"
+      ],
+      "source": "ICAR - National Research Centre for Grapes (NRCG), Pune",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Esca (Black Measles)": {
+      "explanation": "Esca or Black Measles (complex of Phaeomoniella chlamydospora and Phaeoacremonium minimum) is a vascular trunk disease causing distinctive 'tiger-stripe' leaf chlorosis and berry spotting.",
+      "symptoms": [
+        "'Tiger-stripe' chlorotic and necrotic patterns between leaf veins",
+        "Dark purple to brown spots (measles) on berry skins",
+        "Apoplexy or sudden summer wilting of entire vines"
+      ],
+      "culturalActions": [
+        "Disinfect pruning shears with 10% sodium hypochlorite between vine cuts",
+        "Seal large pruning wounds with protective biological or wound paste",
+        "Remove and burn severely infected dead vine wood"
+      ],
+      "prevention": [
+        "Use certified disease-free rootstock and scion wood",
+        "Avoid pruning during damp, foggy, or rainy days when fungal spores disperse",
+        "Maintain balanced vine nutrition and avoid water stress"
+      ],
+      "source": "ICAR - National Research Centre for Grapes (NRCG), Pune",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Leaf Blight (Isariopsis)": {
+      "explanation": "Isariopsis Leaf Blight (Pseudocercospora vitis) is a foliar fungal disease causing angular to irregular brown necrotic spots on grape leaves, leading to premature defoliation.",
+      "symptoms": [
+        "Irregular angular dark brown lesions on the upper leaf blade",
+        "Olive-brown velvety fungal sporulation on lesion undersides in humid weather",
+        "Premature drying and drop of older foliage"
+      ],
+      "culturalActions": [
+        "Strip lower senescent leaves to enhance under-canopy ventilation",
+        "Collect and compost fallen blighted leaves to reduce overwintering inocula",
+        "Avoid overhead sprinkler irrigation"
+      ],
+      "prevention": [
+        "Maintain proper shoot spacing on trellis bower systems",
+        "Apply balanced N-P-K fertilizer to prevent lush weak foliage",
+        "Inspect vineyard rows bi-weekly during post-monsoon humid flushes"
+      ],
+      "source": "ICAR - National Research Centre for Grapes (NRCG), Pune",
       "sourceType": "ICAR",
       "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
     }

@@ -1,0 +1,124 @@
+{
+  "experiment_name": "cropguard_onion_leaf_mobilenetv3",
+  "evaluation_timestamp": "2026-09-22 03:49:29",
+  "dataset": "appdevop666/onion-leaf-disease",
+  "crop": "Onion",
+  "checkpoint_evaluated": "C:\\Users\\KRUTIKA\\SIH-Apex\\backend\\ml\\experiments\\cropguard_26_crop\\onion_experiment\\onion_mobilenetv3_experiment.pth",
+  "best_epoch": 6,
+  "validation_accuracy_best": 0.9137,
+  "split_counts": {
+    "train": 2260,
+    "val": 475,
+    "test": 482
+  },
+  "classes": [
+    "Busuk Daun",
+    "Moler",
+    "Sehat",
+    "Trotol"
+  ],
+  "taxonomy": {
+    "Busuk Daun": {
+      "english_name": "Downy Mildew / Leaf Rot",
+      "pathogen": "Peronospora destructor / Stemphylium vesicarium",
+      "class_index": 0
+    },
+    "Moler": {
+      "english_name": "Fusarium Basal Rot / Twisting Disease",
+      "pathogen": "Fusarium oxysporum f. sp. cepae",
+      "class_index": 1
+    },
+    "Sehat": {
+      "english_name": "Healthy",
+      "pathogen": "None (Healthy physiological leaf)",
+      "class_index": 2
+    },
+    "Trotol": {
+      "english_name": "Purple Blotch",
+      "pathogen": "Alternaria porri",
+      "class_index": 3
+    }
+  },
+  "metrics": {
+    "accuracy": 0.8963,
+    "macro_precision": 0.9085,
+    "macro_recall": 0.8995,
+    "macro_f1": 0.903,
+    "weighted_f1": 0.8965,
+    "confusion_matrix": [
+      [
+        123,
+        4,
+        1,
+        12
+      ],
+      [
+        2,
+        123,
+        1,
+        0
+      ],
+      [
+        3,
+        3,
+        65,
+        1
+      ],
+      [
+        23,
+        0,
+        0,
+        121
+      ]
+    ],
+    "per_class": {
+      "Busuk Daun": {
+        "class_index": 0,
+        "precision": 0.8146,
+        "recall": 0.8786,
+        "f1_score": 0.8454,
+        "support": 140
+      },
+      "Moler": {
+        "class_index": 1,
+        "precision": 0.9462,
+        "recall": 0.9762,
+        "f1_score": 0.9609,
+        "support": 126
+      },
+      "Sehat": {
+        "class_index": 2,
+        "precision": 0.9701,
+        "recall": 0.9028,
+        "f1_score": 0.9353,
+        "support": 72
+      },
+      "Trotol": {
+        "class_index": 3,
+        "precision": 0.903,
+        "recall": 0.8403,
+        "f1_score": 0.8705,
+        "support": 144
+      }
+    }
+  },
+  "failed_or_skipped_samples": {
+    "count": 0,
+    "reasons": []
+  },
+  "leakage_checks": {
+    "train_val_stem_overlap": 0,
+    "train_test_stem_overlap": 0,
+    "val_test_stem_overlap": 0,
+    "train_val_hash_overlap": 0,
+    "train_test_hash_overlap": 0,
+    "val_test_hash_overlap": 0
+  },
+  "limitations": [
+    "Dataset originates from Indonesian shallot/onion field surveys (Roboflow export) and captures primarily foliar symptoms.",
+    "Roboflow augmented variants exist; although stem-grouping guaranteed 0% variant leakage across splits, image variety per stem is bounded by the original camera shots.",
+    "Class 'Sehat' (Healthy) has 457 images (72 in test), while diseased classes have ~950 images (~140 each in test), representing a ~2:1 disease-to-healthy imbalance.",
+    "Performance on field conditions in other geographic regions, soil types, or non-foliar bulb decay requires external validation.",
+    "This model is isolated in the experimental directory and is NOT integrated into the production scan endpoint."
+  ]
+}

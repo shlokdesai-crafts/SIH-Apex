@@ -404,10 +404,61 @@ class TestCropRouting(unittest.TestCase):
         response = self.client.post(
             "/api/scan",
             files={"file": ("crop_rice.jpg", img_bytes, "image/jpeg")},
-            data={"crop": "Onion"}
+            data={"crop": "Banana"}
         )
         self.assertEqual(response.status_code, 400)
         self.assertIn("Disease detection model unavailable", response.json().get("detail", ""))
+
+    def test_scan_api_potato_integrated(self):
+        """Test POST /api/scan integration for newly integrated Potato crop."""
+        rice_file = self.images_dir / "crop_rice.jpg"
+        with open(rice_file, "rb") as f:
+            img_bytes = f.read()
+
+        response = self.client.post(
+            "/api/scan",
+            files={"file": ("crop_rice.jpg", img_bytes, "image/jpeg")},
+            data={"crop": "Potato"}
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn(data["status"], ["valid", "uncertain"])
+        self.assertIsNotNone(data.get("disease_detection"))
+        self.assertEqual(data["disease_detection"]["crop"], "Potato")
+
+    def test_scan_api_grapes_integrated(self):
+        """Test POST /api/scan integration for newly integrated Grapes crop."""
+        rice_file = self.images_dir / "crop_rice.jpg"
+        with open(rice_file, "rb") as f:
+            img_bytes = f.read()
+
+        response = self.client.post(
+            "/api/scan",
+            files={"file": ("crop_rice.jpg", img_bytes, "image/jpeg")},
+            data={"crop": "Grapes"}
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn(data["status"], ["valid", "uncertain"])
+        self.assertIsNotNone(data.get("disease_detection"))
+        self.assertEqual(data["disease_detection"]["crop"], "Grapes (Draksha)")
+
+    def test_scan_api_onion_integrated(self):
+        """Test POST /api/scan integration for newly integrated Onion crop."""
+        rice_file = self.images_dir / "crop_rice.jpg"
+        with open(rice_file, "rb") as f:
+            img_bytes = f.read()
+
+        response = self.client.post(
+            "/api/scan",
+            files={"file": ("crop_rice.jpg", img_bytes, "image/jpeg")},
+            data={"crop": "Onion"}
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn(data["status"], ["valid", "uncertain"])
+        self.assertIsNotNone(data.get("disease_detection"))
+        self.assertEqual(data["disease_detection"]["crop"], "Onion")
 
 
 if __name__ == "__main__":

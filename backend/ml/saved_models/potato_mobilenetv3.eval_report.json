@@ -1,0 +1,52 @@
+{
+  "experiment": "potato_disease_classification_pilot",
+  "model_architecture": "mobilenet_v3_large",
+  "num_classes": 3,
+  "class_names": [
+    "Early Blight",
+    "Late Blight",
+    "Healthy"
+  ],
+  "test_metrics": {
+    "overall_accuracy": 0.9969,
+    "macro_f1": 0.9918,
+    "total_test_samples": 323,
+    "class_metrics": {
+      "Early Blight": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "support": 150
+      },
+      "Late Blight": {
+        "precision": 1.0,
+        "recall": 0.9933,
+        "f1_score": 0.9967,
+        "support": 150
+      },
+      "Healthy": {
+        "precision": 0.9583,
+        "recall": 1.0,
+        "f1_score": 0.9787,
+        "support": 23
+      }
+    },
+    "confusion_matrix": [
+      [
+        150,
+        0,
+        0
+      ],
+      [
+        0,
+        149,
+        1
+      ],
+      [
+        0,
+        0,
+        23
+      ]
+    ]
+  }
+}
