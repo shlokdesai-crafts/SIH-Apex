@@ -1,8 +1,5 @@
-import { useState, useEffect, useMemo, useContext } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import './AdvisoryOverview.css';
-import { AuthContext } from '../auth/AuthContext';
-import type { LocationResult } from '../services/locationService';
-import TranslatedText from './TranslatedText';
 import { getOrganicPreparationDetails } from '../utils/organicGuides';
 import { 
   calculateAdvisory, 
@@ -14,7 +11,6 @@ import type { DbFertilizerItem } from './AdvisoryOverview';
 import { getDynamicCropAdvisory } from '../data/advisoryCropData';
 
 interface FertilizerRecommendationProps {
-  locationData?: LocationResult | null;
   onBack?: () => void;
 }
 
@@ -676,8 +672,7 @@ const CROPS_DATA: Record<string, CropFertilizerData> = {
   },
 };
 
-export default function FertilizerRecommendation({ locationData, onBack }: FertilizerRecommendationProps) {
-  const { user } = useContext(AuthContext);
+export default function FertilizerRecommendation({ onBack }: FertilizerRecommendationProps) {
   const [selectedCropId, setSelectedCropId] = useState<string>('tomato');
   const [activeSubTab, setActiveSubTab] = useState<string>('nutrient-status');
   const [fieldSize, setFieldSize] = useState<number>(3.5);
@@ -752,22 +747,6 @@ export default function FertilizerRecommendation({ locationData, onBack }: Ferti
   const crop = useMemo(() => {
     return CROPS_DATA[selectedCropId] || (getDynamicCropAdvisory(selectedCropId, selectedCropId, farmerContext, apiCalculation) as any);
   }, [selectedCropId, farmerContext, apiCalculation]);
-
-  const displayLocation = useMemo(() => {
-    if (locationData?.district && locationData?.state) {
-      return `${locationData.district}, ${locationData.state}`;
-    }
-    if (user?.location) {
-      return user.location;
-    }
-    if (farmerContext?.farm?.location) {
-      return farmerContext.farm.location;
-    }
-    if (farmerContext?.farmer?.district) {
-      return `${farmerContext.farmer.district}, ${farmerContext.farmer.state || 'Maharashtra'}`;
-    }
-    return crop?.location ? `${crop.location}, Maharashtra` : 'Akola, Maharashtra';
-  }, [locationData, user?.location, farmerContext, crop?.location]);
 
   // Sync field size when crop changes
   const handleSelectCrop = (cropId: string) => {
@@ -1163,7 +1142,7 @@ export default function FertilizerRecommendation({ locationData, onBack }: Ferti
               Live Soil Intelligence
             </span>
           )}
-          <span className="badge-location-pill">📍 {displayLocation}</span>
+          <span className="badge-location-pill">📍 {crop.location}, Maharashtra</span>
         </div>
       </div>
 

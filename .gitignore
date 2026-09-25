@@ -64,3 +64,8 @@ server/test-55-crop-coverage.js
 server/test-advisory-pipeline.js
 server/test-farmer-user-flow.js
 server/test-shc.cjs
+
+# Local runtime data - never commit
+backend/uploads/scan_history/
+backend/submissions.db
+.git-cleanup-backup/
