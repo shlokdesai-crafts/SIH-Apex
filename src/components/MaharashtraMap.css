@@ -127,10 +127,14 @@
 }
 
 @media (max-width: 600px) {
+  .maha-map {
+    min-height: auto !important;
+    height: auto !important;
+  }
   .gov-map-container,
   .gov-map-container .leaflet-container {
-    height: 300px !important;
-    min-height: 280px !important;
+    height: 280px !important;
+    min-height: 250px !important;
   }
   .gov-map-legend {
     bottom: 8px;

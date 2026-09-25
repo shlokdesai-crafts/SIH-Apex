@@ -596,6 +596,12 @@
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
+  .gov-reports-page {
+    padding: 16px;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
   .reports-charts-grid {
     grid-template-columns: 1fr;
   }
@@ -603,10 +609,76 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
+    padding: 20px;
+  }
+  .banner-action-group {
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .gov-btn-action {
+    width: 100%;
+    justify-content: center;
   }
 }
 
 @media (max-width: 600px) {
+  .gov-reports-page {
+    padding: 10px 8px;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+  .gov-reports-banner {
+    padding: 14px 12px;
+    border-radius: 12px;
+  }
+  .banner-title-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .banner-icon-badge {
+    width: 46px;
+    height: 46px;
+    font-size: 24px;
+  }
+  .gov-reports-banner h2 {
+    font-size: 17px;
+  }
+  .gov-reports-banner p {
+    font-size: 12px;
+  }
+  .reports-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px 10px;
+    gap: 10px;
+  }
+  .filter-search-box {
+    min-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .filter-select-group {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 8px;
+  }
+  .filter-select-group select,
+  .btn-reset-filters {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .reports-kpi-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px;
+  }
+  .kpi-card {
+    padding: 14px 12px;
+  }
   .crop-dist-grid {
     grid-template-columns: 1fr;
   }
@@ -615,8 +687,12 @@
     align-items: flex-start;
     gap: 10px;
   }
-  .reports-metrics-row {
-    grid-template-columns: repeat(2, 1fr);
+  .reports-table-container {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
   }
 }
 

@@ -129,3 +129,79 @@
   background-color: #bee3f8;
   color: #2a4365;
 }
+
+@media (max-width: 768px) {
+  .recent-submissions {
+    padding: 12px 10px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .gov-tabs {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .gov-tab {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+
+  .gov-table-container {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .gov-table,
+  .gov-table tbody,
+  .gov-table tr,
+  .gov-table td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .gov-table thead {
+    display: none;
+  }
+
+  .gov-table tr {
+    margin-bottom: 12px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 14px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  }
+
+  .gov-table td {
+    padding: 6px 0;
+    border-bottom: 1px dashed #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12.5px;
+    text-align: right;
+  }
+
+  .gov-table td:last-child {
+    border-bottom: none;
+    padding-top: 10px;
+    justify-content: flex-end;
+  }
+
+  .gov-table td[data-label]::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #64748b;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    text-align: left;
+    margin-right: 8px;
+  }
+}

@@ -555,9 +555,9 @@
 
 @media (max-width: 768px) {
   .risk-forecast-container {
-    padding: 14px 14px;
+    padding: 12px 10px 40px;
     width: 100%;
-    max-width: 100%;
+    max-width: 100vw;
     box-sizing: border-box;
     overflow-x: hidden;
   }
@@ -565,17 +565,18 @@
   .rf-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 14px;
-    margin-bottom: 16px;
+    gap: 12px;
+    margin-bottom: 14px;
     width: 100%;
+    box-sizing: border-box;
   }
 
   .rf-title-group h1 {
-    font-size: 22px;
+    font-size: 20px;
   }
 
   .rf-title-group p {
-    font-size: 13.5px;
+    font-size: 13px;
   }
 
   .rf-info-bar {
@@ -583,13 +584,14 @@
     align-items: stretch;
     gap: 10px;
     width: 100%;
-    padding: 12px;
+    padding: 10px 12px;
     box-sizing: border-box;
   }
 
   .rf-info-item {
     justify-content: space-between;
     width: 100%;
+    box-sizing: border-box;
   }
 
   .rf-info-divider {
@@ -599,19 +601,57 @@
   .rf-weather-stats {
     display: grid;
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: 12px;
+    gap: 10px;
     width: 100%;
+    box-sizing: border-box;
   }
 
   .rf-issue-item {
-    grid-template-columns: 1fr !important;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
     gap: 6px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .rf-issue-name {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .rf-issue-bar {
+    width: 100%;
+  }
+
+  .rf-chart-container {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto;
+  }
+
+  .rf-line-chart {
+    width: 100%;
+    min-width: 280px;
+    height: auto;
+    min-height: 130px;
+  }
+
+  .rf-chart-labels {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    box-sizing: border-box;
+    gap: 2px;
+    font-size: 9.5px;
   }
 
   .rf-chart-legend {
     gap: 10px;
     font-size: 11px;
     flex-wrap: wrap;
+    justify-content: flex-start;
   }
 
   .rf-weather-impact {
@@ -625,37 +665,54 @@
     margin-left: 0;
     align-self: flex-start;
   }
+
+  .rf-compact-action-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .rf-compact-action-title {
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 
 @media (max-width: 430px) {
   .risk-forecast-container {
-    padding: 10px 10px 40px;
+    padding: 8px 8px 36px;
   }
 
   .rf-title-group h1 {
-    font-size: 20px;
+    font-size: 18px;
   }
 
   .rf-title-group p {
-    font-size: 12.5px;
+    font-size: 12px;
   }
 
   .rf-card {
-    padding: 12px;
-    border-radius: 12px;
+    padding: 10px;
+    border-radius: 10px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .rf-card-title h3 {
-    font-size: 14.5px;
+    font-size: 13.5px;
   }
 
   .rf-risk-text {
-    font-size: 24px;
+    font-size: 22px;
   }
 
   .rf-factors-grid {
     grid-template-columns: 1fr !important;
-    gap: 12px;
+    gap: 10px;
   }
 
   .rf-weather-stats {
@@ -663,27 +720,52 @@
   }
 
   .rf-chart-labels {
-    font-size: 9px;
-    gap: 2px;
+    font-size: 8.5px;
+    gap: 1px;
+  }
+
+  .rf-label {
+    font-size: 8.5px;
+  }
+
+  .rf-label span {
+    font-size: 8.5px;
   }
 
   .rf-crop-select {
-    max-width: 140px;
-    font-size: 12px;
+    max-width: 130px;
+    font-size: 11.5px;
+  }
+
+  .rf-compact-action-content {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .rf-compact-action-meta {
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
+    justify-content: space-between;
   }
 }
 
 @media (max-width: 360px) {
   .risk-forecast-container {
-    padding: 8px 8px 30px;
+    padding: 6px 6px 30px;
   }
 
   .rf-info-value {
-    font-size: 12.5px;
+    font-size: 11.5px;
   }
 
   .rf-card-title h3 {
-    font-size: 13.5px;
+    font-size: 13px;
+  }
+
+  .rf-crop-select {
+    max-width: 115px;
+    font-size: 11px;
   }
 }
 

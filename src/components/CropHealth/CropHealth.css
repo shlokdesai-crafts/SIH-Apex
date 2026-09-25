@@ -1568,6 +1568,9 @@
 @media (max-width: 900px) {
   .ch-page-wrapper {
     padding: 16px;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
   }
   .ch-hero-section {
     flex-direction: column;
@@ -1595,20 +1598,65 @@
   .ch-crop-select-dropdown {
     width: 100%;
   }
+  .ch-row-bottom {
+    grid-template-columns: 1fr !important;
+    gap: 16px;
+  }
+  .ch-gov-sources-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 14px;
+  }
 }
 
 @media (max-width: 600px) {
   .ch-page-wrapper {
-    padding: 12px 10px;
+    padding: 10px 8px;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow-x: hidden;
   }
   .ch-hero-title-wrap h1 {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
   }
   .ch-hero-quote-card {
     max-width: 100%;
     width: 100%;
   }
   .ch-card, .ch-overview-card {
-    padding: 16px 14px;
+    padding: 12px 10px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .ch-alerts-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+  }
+  .ch-gov-sources-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .ch-gov-sources-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+  .ch-gov-source-card {
+    padding: 12px 14px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .ch-gov-sources-footer-note {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  .ch-weather-stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
   }
 }

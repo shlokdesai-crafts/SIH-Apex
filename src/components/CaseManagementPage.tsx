@@ -645,13 +645,13 @@ const CaseManagementPage = ({ initialFilter = 'all' }: CaseManagementPageProps) 
               ) : (
                 filteredCases.map((c) => (
                   <tr key={c.id} className="case-row" onClick={() => setSelectedCase(c)}>
-                    <td className="case-id-cell">{formatCaseId(c.id)}</td>
-                    <td className="case-farmer-name">{c.farmer_name}</td>
-                    <td>{c.location}</td>
-                    <td className="case-crop-cell">
+                    <td className="case-id-cell" data-label="ID">{formatCaseId(c.id)}</td>
+                    <td className="case-farmer-name" data-label={t("Farmer Name")}>{c.farmer_name}</td>
+                    <td data-label={t("Location")}>{c.location}</td>
+                    <td className="case-crop-cell" data-label={t("Crop")}>
                       <span className="crop-tag">🍃 {c.crop}</span>
                     </td>
-                    <td>
+                    <td data-label={t("AI Diagnosis")}>
                       <div className="ai-diagnosis-cell">
                         <span className="disease-title">{c.disease || c.ai_result}</span>
                         {c.confidence !== null && c.confidence !== undefined && (
@@ -661,17 +661,17 @@ const CaseManagementPage = ({ initialFilter = 'all' }: CaseManagementPageProps) 
                         )}
                       </div>
                     </td>
-                    <td>{getPriorityBadge(c.priority, c.severity)}</td>
-                    <td className="case-date-cell">{formatDate(c.created_at)}</td>
-                    <td>{getStatusBadge(c.status)}</td>
-                    <td>
+                    <td data-label={t("Priority")}>{getPriorityBadge(c.priority, c.severity)}</td>
+                    <td className="case-date-cell" data-label={t("Date Filed")}>{formatDate(c.created_at)}</td>
+                    <td data-label={t("Status")}>{getStatusBadge(c.status)}</td>
+                    <td data-label={t("Assigned Officer")}>
                       {c.assigned_officer ? (
                         <span className="officer-assigned-tag">👤 {c.assigned_officer}</span>
                       ) : (
                         <span className="officer-unassigned-tag">{t("Unassigned")}</span>
                       )}
                     </td>
-                    <td style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
+                    <td data-label={t("Actions")} style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
                       <div className="action-buttons-group">
                         {c.status === 'Unidentified' ? (
                           <button

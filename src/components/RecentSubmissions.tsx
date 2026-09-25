@@ -265,31 +265,31 @@ const RecentSubmissions = () => {
             <tbody>
               {submissions.map((sub) => (
                 <tr key={sub.id}>
-                  <td className="case-id-code">#{sub.id.substring(sub.id.length - 6).toUpperCase()}</td>
-                  <td className="gov-fw-500">{sub.farmer_name}</td>
-                  <td>📍 {sub.location}</td>
-                  <td>🌾 {sub.crop}</td>
-                  <td>
+                  <td className="case-id-code" data-label="ID">#{sub.id.substring(sub.id.length - 6).toUpperCase()}</td>
+                  <td className="gov-fw-500" data-label={t("Farmer Name")}>{sub.farmer_name}</td>
+                  <td data-label={t("Location")}>📍 {sub.location}</td>
+                  <td data-label={t("Crop")}>🌾 {sub.crop}</td>
+                  <td data-label={t("AI Result")}>
                     <strong>{sub.disease || sub.ai_result}</strong>
                     {sub.confidence !== null && sub.confidence !== undefined
                       ? ` (${(sub.confidence * 100).toFixed(0)}%)`
                       : ''}
                   </td>
-                  <td>{sub.severity ?? 'Medium'}</td>
-                  <td>
+                  <td data-label={t("Severity")}>{sub.severity ?? 'Medium'}</td>
+                  <td data-label={t("Assigned Officer")}>
                     {sub.assigned_officer ? (
                       <span className="officer-pill">👤 {sub.assigned_officer}</span>
                     ) : (
                       <span className="unassigned-text">{t("Unassigned")}</span>
                     )}
                   </td>
-                  <td style={{ fontSize: '0.78rem', color: '#64748b' }}>{formatDate(sub.created_at)}</td>
-                  <td>
+                  <td data-label={t("Date")} style={{ fontSize: '0.78rem', color: '#64748b' }}>{formatDate(sub.created_at)}</td>
+                  <td data-label={t("Status")}>
                     <span className={`gov-status-badge ${statusClass(sub.status)}`}>
                       {sub.status}
                     </span>
                   </td>
-                  <td>
+                  <td data-label={t("Action")}>
                     <button
                       className={`gov-action-btn ${actionStyle(sub.status)}`}
                       onClick={() => handleActionClick(sub)}
