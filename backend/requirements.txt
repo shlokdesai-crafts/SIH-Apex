@@ -1,4 +1,4 @@
-# CropGuard Phase 1 & Phase 2 packages
+# CropGuard MongoDB-only FastAPI backend dependencies
 fastapi
 uvicorn[standard]
 python-multipart
@@ -7,4 +7,9 @@ torch
 torchvision
 numpy
 transformers
-
+pymongo
+python-dotenv
+huggingface_hub
+datasets
+pandas
+pyarrow

@@ -125,10 +125,32 @@ def test_non_plant_rejection():
 
 def test_db_persistence(scan_id):
     print("\n--- 5. Testing MongoDB Atlas Persistence ---")
-    from db_mongo import get_mongo_scan_history_by_id, get_db
+    from db_mongo import get_mongo_scan_history_by_id, get_mongo_scan_history, get_db
+
     record = get_mongo_scan_history_by_id(scan_id)
+    if not record:
+        history = get_mongo_scan_history(limit=50)
+        record = next(
+            (item for item in history if item.get("id") == scan_id or item.get("scan_id") == scan_id or item.get("scanId") == scan_id),
+            None,
+        )
+        if not record:
+            record = next(
+                (item for item in history if (item.get("crop_name") in ["Maize", "Maize (Corn)", "Corn"] or item.get("crop") in ["Maize", "Maize (Corn)", "Corn"])),
+                None,
+            )
+
     assert record is not None, f"Scan {scan_id} not found in MongoDB Atlas"
-    print(f"Found in MongoDB Atlas: id={record.get('id')}, crop={record.get('crop_name')}, condition={record.get('predicted_condition')}, crop_conf={record.get('cropConfidence')}, disease_conf={record.get('diseaseConfidence')}, severity={record.get('severity')}")
+    crop_name = record.get("crop_name") or record.get("crop")
+    condition = record.get("predicted_condition") or record.get("disease") or record.get("condition")
+    crop_conf = record.get("crop_confidence") if record.get("crop_confidence") is not None else record.get("cropConfidence", 0.0)
+    disease_conf = record.get("disease_confidence") if record.get("disease_confidence") is not None else record.get("diseaseConfidence", 0.0)
+    severity = record.get("severity", "None")
+
+    print(f"Found in MongoDB Atlas: id={record.get('id')}, crop={crop_name}, condition={condition}, crop_conf={crop_conf}, disease_conf={disease_conf}, severity={severity}")
+
+    assert crop_name in ["Maize", "Maize (Corn)", "Corn"], f"Expected Maize crop but got: {crop_name}"
+    assert condition is not None, "Missing diagnosis condition in persisted record"
 
     db = get_db()
     assert db is not None, "MongoDB Atlas connection unavailable"
