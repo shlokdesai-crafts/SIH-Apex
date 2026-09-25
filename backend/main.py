@@ -60,7 +60,7 @@ app = FastAPI(
         "Phase 2: Plant/crop relevance validation.\n"
         "Phase 3A: Real crop species identification.\n"
         "Phase 3B: Crop disease detection, severity assessment, and expert advisory.\n"
-        "Phase 4: Persistent SQLite scan history & farm telemetry sync."
+        "Phase 4: Persistent MongoDB Atlas scan history & farm telemetry sync."
     ),
     version="2.4.0",
     docs_url="/docs",
@@ -69,18 +69,27 @@ app = FastAPI(
 )
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
-# Allow Vite dev server (ports 5173-5175) and any localhost origin during dev.
+# Allow Vite dev server (ports 5173-5175) and any localhost origin during dev,
+# plus deployed Vercel frontend origin via FRONTEND_URL environment variable.
+origins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:5175",
+    "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
+    "http://127.0.0.1:5175",
+]
+
+frontend_url = os.getenv("FRONTEND_URL")
+if frontend_url:
+    clean_url = frontend_url.strip().rstrip("/")
+    if clean_url and clean_url not in origins:
+        origins.append(clean_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://localhost:5175",
-        "http://localhost:3000",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:5174",
-        "http://127.0.0.1:5175",
-    ],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
