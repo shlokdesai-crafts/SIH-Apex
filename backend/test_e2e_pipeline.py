@@ -1,13 +1,11 @@
 import os
 import sys
 import json
-import sqlite3
 import urllib.request
 import urllib.parse
 import urllib.error
 
 BASE_URL = "http://127.0.0.1:8000"
-DB_PATH = os.path.join(os.path.dirname(__file__), "submissions.db")
 
 def encode_multipart_formdata(fields, files):
     boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW"
@@ -41,7 +39,7 @@ def test_scan_maize():
     with open(image_path, "rb") as f:
         img_bytes = f.read()
 
-    fields = {"farmer_name": "Ramesh Kumar", "location": "Nashik, Maharashtra"}
+    fields = {"farmer_name": "Ramesh Kumar", "location": "Nashik, Maharashtra", "crop": "Maize"}
     files = [("file", "crop_maize.jpg", img_bytes)]
     content_type, body = encode_multipart_formdata(fields, files)
 
@@ -74,7 +72,7 @@ def test_scan_tomato():
     with open(image_path, "rb") as f:
         img_bytes = f.read()
 
-    fields = {"farmer_name": "Suresh Patel", "location": "Karnal, Haryana"}
+    fields = {"farmer_name": "Suresh Patel", "location": "Karnal, Haryana", "crop": "Tomato"}
     files = [("file", "tomato_crop.jpg", img_bytes)]
     content_type, body = encode_multipart_formdata(fields, files)
 
@@ -106,8 +104,9 @@ def test_non_plant_rejection():
     with open(image_path, "rb") as f:
         img_bytes = f.read()
 
+    fields = {"crop": "Tomato"}
     files = [("file", "farmer_person.png", img_bytes)]
-    content_type, body = encode_multipart_formdata({}, files)
+    content_type, body = encode_multipart_formdata(fields, files)
 
     req = urllib.request.Request(f"{BASE_URL}/api/scan", data=body, method="POST")
     req.add_header("Content-Type", content_type)
@@ -125,24 +124,18 @@ def test_non_plant_rejection():
     print(">>> PASS: Plant relevance gate successfully rejected non-plant image")
 
 def test_db_persistence(scan_id):
-    print("\n--- 5. Testing SQLite DB Persistence ---")
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
+    print("\n--- 5. Testing MongoDB Atlas Persistence ---")
+    from db_mongo import get_mongo_scan_history_by_id, get_db
+    record = get_mongo_scan_history_by_id(scan_id)
+    assert record is not None, f"Scan {scan_id} not found in MongoDB Atlas"
+    print(f"Found in MongoDB Atlas: id={record.get('id')}, crop={record.get('crop_name')}, condition={record.get('predicted_condition')}, crop_conf={record.get('cropConfidence')}, disease_conf={record.get('diseaseConfidence')}, severity={record.get('severity')}")
 
-    cursor.execute(
-        "SELECT id, crop_name, predicted_condition, crop_confidence, disease_confidence, severity FROM scan_history WHERE id = ?", 
-        (scan_id,)
-    )
-    row = cursor.fetchone()
-    assert row is not None, f"Scan {scan_id} not found in scan_history table"
-    print(f"Found in scan_history: id={row[0]}, crop={row[1]}, condition={row[2]}, crop_conf={row[3]}, disease_conf={row[4]}, severity={row[5]}")
-
-    cursor.execute("SELECT COUNT(*) FROM submissions")
-    sub_count = cursor.fetchone()[0]
-    assert sub_count > 0, "Submissions table is empty"
-    print(f"Verified submissions table contains {sub_count} records")
-    conn.close()
-    print(">>> PASS: Dual SQLite persistence verified")
+    db = get_db()
+    assert db is not None, "MongoDB Atlas connection unavailable"
+    sub_count = db.crop_scans.count_documents({})
+    assert sub_count > 0, "MongoDB Atlas crop_scans collection is empty"
+    print(f"Verified MongoDB Atlas crop_scans collection contains {sub_count} records")
+    print(">>> PASS: MongoDB Atlas persistence verified")
 
 def test_history_endpoints(scan_id):
     print("\n--- 6. Testing GET /api/scans/history ---")
@@ -171,11 +164,9 @@ def test_history_endpoints(scan_id):
         del_data = json.loads(del_res.read().decode('utf-8'))
     print(f"Delete response: {del_data}")
 
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT id FROM scan_history WHERE id = ?", (scan_id,))
-    assert cursor.fetchone() is None, "Scan was not deleted from scan_history table"
-    conn.close()
+    from db_mongo import get_mongo_scan_history_by_id
+    deleted_record = get_mongo_scan_history_by_id(scan_id)
+    assert deleted_record is None, "Scan was not deleted from MongoDB Atlas crop_scans collection"
     print(">>> PASS: History endpoints & deletion verified")
 
 if __name__ == "__main__":

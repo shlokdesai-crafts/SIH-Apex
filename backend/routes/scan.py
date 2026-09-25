@@ -10,7 +10,7 @@ Pipeline steps:
 4. Crop species identification via CLIP Vision Transformer & Prototypes
 5. Multi-crop disease detection with Top-3 predictions & entropy/margin abstain check
 6. Safe file storage in backend/uploads/scan_history/
-7. Persistent scan history logging in SQLite (submissions.db)
+7. Persistent scan history logging in MongoDB Atlas
 8. Structured, typed response contract with backward compatibility
 """
 
@@ -418,3 +418,4 @@ async def scan_crop(
 async def get_models_status():
     from ml.registry import get_model_status
     return get_model_status()
+
