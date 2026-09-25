@@ -614,7 +614,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
         latitude: lat,
         longitude: lng,
         farmerId: farmState?.farmerId || user?.id || 'default_farmer',
-        farmerName: user?.fullName || (farmState?.farmerName && farmState.farmerName !== 'My Farm' ? farmState.farmerName : undefined),
+        farmerName: user?.fullName || ((farmState as any)?.farmerName && (farmState as any).farmerName !== 'My Farm' ? (farmState as any).farmerName : undefined),
         crop: selectedCrop,
         fieldId: selectedFieldId || undefined,
         location: farmLocation.trim() || undefined,

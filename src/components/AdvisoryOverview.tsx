@@ -154,8 +154,8 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
     if (user?.location) {
       return user.location;
     }
-    if (farmerContext?.farm?.location) {
-      return farmerContext.farm.location;
+    if ((farmerContext?.farm as any)?.location) {
+      return (farmerContext?.farm as any).location;
     }
     if (farmerContext?.farmer?.district) {
       return `${farmerContext.farmer.district}, ${farmerContext.farmer.state || 'Maharashtra'}`;
@@ -607,7 +607,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
           ) : (
             <span className="badge-live-pulse" title={calcError || undefined}>
               <span className="pulse-indicator"></span>
-              {t('{t('Soil & Nutrient Intelligence')}')}
+              {t('Soil & Nutrient Intelligence')}
             </span>
           )}
           <span className="badge-location-pill">📍 {displayLocation}</span>
@@ -652,7 +652,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                 <span className="fert-leaf-icon">🌱</span>
                 <span>{t('PRECISION AGRONOMY')}</span>
               </span>
-              <span className="fert-season-badge">{t('{t('Soil Health & Crop Intelligence')}')}</span>
+              <span className="fert-season-badge">{t('Soil Health & Crop Intelligence')}</span>
             </div>
 
             <h1 className="fert-banner-title">{t('Crop Advisory & Nutrient Intelligence')}</h1>
@@ -2571,7 +2571,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                             onClick={() => handleToggleFertilizer(prodId, p.name)}
                             id={`catalog-btn-select-${prodId}`}
                           >
-                            {isSelected ? '✓ Selected in Plan' : '+ {t('Select / Add to Plan')}'}
+                            {isSelected ? `✓ ${t('Selected for Plan')}` : `+ ${t('Select / Add to Plan')}`}
                           </button>
                         </div>
                       </div>

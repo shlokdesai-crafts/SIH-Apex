@@ -1,3 +1,4 @@
+import TranslatedText from './TranslatedText';
 import { useState, useEffect, useMemo } from 'react';
 import './AdvisoryOverview.css';
 import { getOrganicPreparationDetails } from '../utils/organicGuides';
@@ -12,6 +13,7 @@ import { getDynamicCropAdvisory } from '../data/advisoryCropData';
 
 interface FertilizerRecommendationProps {
   onBack?: () => void;
+  locationData?: any;
 }
 
 interface SoilNutrient {
