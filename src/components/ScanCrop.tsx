@@ -6,6 +6,7 @@ import { scanCropImage, getScanHistory, deleteScan, type ScanHistoryItem } from 
 import { getBrowserPosition, reverseGeocode } from '../services/locationService';
 import { uploadCropImage } from '../services/cloudinaryService';
 import TranslatedText from './TranslatedText';
+import { useTranslation } from '../i18n/useTranslation';
 import './ScanCrop.css';
 
 // ── Crop data interfaces & lists ─────────────────────────────────────────────
@@ -136,6 +137,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
 
   const { farmState, recordScan, scanTarget, clearScanTarget, startAdvisoryForCrop } = useFarm();
   const { user } = useContext(AuthContext);
+  const { t } = useTranslation();
 
   // Workflow Step: idle -> preview -> scanning -> result
   const [step, setStep] = useState<Step>('idle');

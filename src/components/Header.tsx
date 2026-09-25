@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../i18n/useTranslation';
 import { AuthContext } from '../auth/AuthContext';
 import type { Language } from '../i18n/translations';
-import { GOV_ALERTS } from '../services/govDataService';
+// import { GOV_ALERTS } from '../services/govDataService';
 
 interface HeaderProps {
   activeTab?: string;
@@ -12,15 +12,15 @@ interface HeaderProps {
   onNavigate?: (navId: string) => void;
 }
 
-interface HeaderNotification {
-  id: number | string;
-  title: string;
-  desc: string;
-  time: string;
-  icon: string;
-  type: string;
-  isRead: boolean;
-}
+// interface HeaderNotification {
+//   id: number | string;
+//   title: string;
+//   desc: string;
+//   time: string;
+//   icon: string;
+//   type: string;
+//   isRead: boolean;
+// }
 
 export default function Header({
   activeTab,
@@ -32,19 +32,19 @@ export default function Header({
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [notifMenuOpen, setNotifMenuOpen] = useState(false);
+  // const [notifMenuOpen, setNotifMenuOpen] = useState(false);
 
-  const [notifications, setNotifications] = useState<HeaderNotification[]>(() =>
-    GOV_ALERTS.map((alert, idx) => ({
-      id: alert.id,
-      title: alert.title,
-      desc: alert.desc,
-      time: alert.time,
-      icon: alert.icon,
-      type: alert.type,
-      isRead: idx >= 3,
-    }))
-  );
+  // const [notifications, setNotifications] = useState<HeaderNotification[]>(() =>
+  //   GOV_ALERTS.map((alert, idx) => ({
+  //     id: alert.id,
+  //     title: alert.title,
+  //     desc: alert.desc,
+  //     time: alert.time,
+  //     icon: alert.icon,
+  //     type: alert.type,
+  //     isRead: idx >= 3,
+  //   }))
+  // );
 
   const {
     t,
@@ -59,7 +59,7 @@ export default function Header({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const mobileNavRef = useRef<HTMLDivElement>(null);
-  const notifMenuRef = useRef<HTMLDivElement>(null);
+  // const notifMenuRef = useRef<HTMLDivElement>(null);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, navId: string) => {
     e.preventDefault();
@@ -84,9 +84,9 @@ export default function Header({
       if (mobileNavRef.current && !mobileNavRef.current.contains(e.target as Node)) {
         setMobileNavOpen(false);
       }
-      if (notifMenuRef.current && !notifMenuRef.current.contains(e.target as Node)) {
-        setNotifMenuOpen(false);
-      }
+      // if (notifMenuRef.current && !notifMenuRef.current.contains(e.target as Node)) {
+      //   setNotifMenuOpen(false);
+      // }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -104,21 +104,7 @@ export default function Header({
     });
   };
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
-
-  const handleMarkAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-  };
-
-  const handleClearNotifications = () => {
-    setNotifications([]);
-  };
-
-  const handleNotificationClick = (id: number | string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-    );
-  };
+  // Removed unused notification variables and handlers
 
   const languageDisplayMap: Record<Language, string> = {
     en: 'English',

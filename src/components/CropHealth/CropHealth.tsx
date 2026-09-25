@@ -8,7 +8,7 @@ import {
   type DistrictMetric,
 } from '../../services/govDataService';
 
-type CropFilter = 'all' | 'cotton' | 'soybean' | 'onion' | 'tomato' | 'potato';
+type CropFilter = string;
 
 interface CropTabConfig {
   id: CropFilter;

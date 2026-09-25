@@ -42,7 +42,7 @@ export interface RecommendationParams {
 }
 
 export function generateCropActions(params: RecommendationParams): ActionRecommendation[] {
-  const { crop, soilType, growthStage, weatherData, overallRisk, detectedDisease } = params;
+  const { crop, soilType, weatherData, overallRisk, detectedDisease } = params;
   
   const actions: ActionRecommendation[] = [];
 

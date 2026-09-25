@@ -21,12 +21,12 @@ const GovReportsPage = () => {
   const { t } = useTranslation();
 
   const [cases, setCases] = useState<MongoCaseRecord[]>([]);
-  const [stats, setStats] = useState({
-    total: 0,
-    resolved: 0,
-    pending: 0,
-    unidentified: 0,
-  });
+  // const [stats, setStats] = useState({
+  //   total: 0,
+  //   resolved: 0,
+  //   pending: 0,
+  //   unidentified: 0,
+  // });
   const [loading, setLoading] = useState<boolean>(true);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
@@ -50,13 +50,13 @@ const GovReportsPage = () => {
       ]);
 
       if (statsRes.ok) {
-        const s = await statsRes.json();
-        setStats({
-          total: s.total_submissions ?? 0,
-          resolved: s.resolved ?? 0,
-          pending: s.needs_field_visit ?? 0,
-          unidentified: s.unidentified ?? 0,
-        });
+        // const s = await statsRes.json();
+        // setStats({
+        //   total: s.total_submissions ?? 0,
+        //   resolved: s.resolved ?? 0,
+        //   pending: s.needs_field_visit ?? 0,
+        //   unidentified: s.unidentified ?? 0,
+        // });
       }
 
       if (subRes.ok) {
@@ -145,52 +145,7 @@ const GovReportsPage = () => {
     return { topDiseases, topCrops, topDistricts };
   }, [filteredCases]);
 
-  // CSV Export
-  const exportCSV = () => {
-    if (filteredCases.length === 0) {
-      showToast('No records available for export based on current filters.');
-      return;
-    }
-
-    const headers = [
-      'Case ID',
-      'Farmer Name',
-      'District Location',
-      'Crop Species',
-      'AI Diagnosis',
-      'Severity',
-      'Priority',
-      'Case Status',
-      'Assigned Field Officer',
-      'Resolution Outcome / Notes',
-      'Date Created'
-    ];
-
-    const rows = filteredCases.map((c) => [
-      `"${c.id}"`,
-      `"${c.farmer_name}"`,
-      `"${c.location}"`,
-      `"${c.crop}"`,
-      `"${c.disease || c.ai_result}"`,
-      `"${c.severity || 'Medium'}"`,
-      `"${c.priority || 'Standard'}"`,
-      `"${c.status}"`,
-      `"${c.assigned_officer || 'Unassigned'}"`,
-      `"${c.resolution_notes || 'Pending'}"`,
-      `"${c.created_at}"`
-    ]);
-
-    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `Government_PikSuraksha_Analytics_Report_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showToast('Exported Analytics Report CSV successfully.');
-  };
+  // CSV Export (unused)
 
   // PDF Export Function for Government Report
   const downloadPDFReport = (autoPrint: boolean = false) => {
