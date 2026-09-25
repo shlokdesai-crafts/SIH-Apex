@@ -870,9 +870,9 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
 
             {/* ── Page Header ── */}
             <div className="sc-header">
-              <h1 className="sc-title">Scan Your Crop <span>🌿</span></h1>
+              <h1 className="sc-title">{t("Scan Your Crop")} <span>🌿</span></h1>
               <p className="sc-subtitle">
-                Farmer-friendly AI crop diagnosis: select your crop, enter farm details, and scan for instant ICAR-verified pathological insights.
+                {t("Farmer-friendly AI crop diagnosis: select your crop, enter farm details, and scan for instant ICAR-verified pathological insights.")}
               </p>
             </div>
 
@@ -888,32 +888,32 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                       {/* Prominent Disease Title */}
                       <div className="sc-prominent-disease">
                         <span className="sc-result-icon">{(diagnosis as any).icon}</span>
-                        <span>Disease:</span>
+                        <span>{t("Disease")}:</span>
                         <span className={`sc-disease-highlight ${(diagnosis as any).disease === 'Healthy' || (diagnosis as any).disease === 'Healthy Plant' ? 'sc-disease-highlight--healthy' : ''}`}>
-                          {(diagnosis as any).disease}
+                          <TranslatedText text={(diagnosis as any).disease} />
                         </span>
                       </div>
 
                       <div className="sc-result-crop-name">
-                        🌾 Crop Identified: <strong>{(diagnosis as any).cropName}</strong>
+                        🌾 {t("Crop Identified")}: <strong><TranslatedText text={(diagnosis as any).cropName} /></strong>
                       </div>
 
                       {/* Expert Verification Banner if required */}
                       {(diagnosis as any).expertVerificationRequired && (
                         <div className="sc-expert-alert">
-                          ⚠️ Expert verification recommended
+                          ⚠️ {t("Expert verification recommended")}
                         </div>
                       )}
 
                       {/* Severity Label */}
                       <div className="sc-result-severity" style={{ color: (diagnosis as any).severityColor }}>
-                        Severity: <strong>{(diagnosis as any).severity}</strong>
+                        {t("Severity")}: <strong><TranslatedText text={(diagnosis as any).severity} /></strong>
                       </div>
 
                       {/* Crop and Disease Confidence Bars */}
                       <div className="sc-confidence-row">
                         <div className="sc-confidence-bar-wrap">
-                          <span className="sc-confidence-label">Crop Confidence:</span>
+                          <span className="sc-confidence-label">{t("Crop Confidence")}:</span>
                           <div className="sc-confidence-track">
                             <div className="sc-confidence-fill" style={{ width: `${(diagnosis as any).cropConfidence}%`, background: '#2e7d32' }} />
                           </div>
@@ -922,7 +922,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
 
                         {(diagnosis as any).diseaseConfidence !== null && (
                           <div className="sc-confidence-bar-wrap">
-                            <span className="sc-confidence-label">Diagnosis Confidence:</span>
+                            <span className="sc-confidence-label">{t("Diagnosis Confidence")}:</span>
                             <div className="sc-confidence-track">
                               <div className="sc-confidence-fill" style={{ width: `${(diagnosis as any).diseaseConfidence}%`, background: (diagnosis as any).severityColor }} />
                             </div>
@@ -936,19 +936,19 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                   {/* ICAR Verification Attribution Box */}
                   <div className="sc-icar-box">
                     <div className="sc-icar-header">
-                      <span className="sc-icar-badge">✓ SCIENTIFICALLY VERIFIED</span>
+                      <span className="sc-icar-badge">✓ {t("SCIENTIFICALLY VERIFIED")}</span>
                       <span className="sc-icar-title">{(diagnosis as any).verification?.referenceSource || 'ICAR Pathology Repository'}</span>
                     </div>
                     <div className="sc-icar-protocol">
-                      <span><strong>Diagnostic Protocol:</strong> {(diagnosis as any).verification?.referenceProtocol || 'ICAR Standard Diagnostic Protocol'}</span>
-                      <span className="sc-icar-rate">Pathology Verification: <strong>{(diagnosis as any).verification?.accuracyPercentage || 98.4}%</strong></span>
+                      <span><strong>{t("Diagnostic Protocol")}:</strong> {(diagnosis as any).verification?.referenceProtocol || 'ICAR Standard Diagnostic Protocol'}</span>
+                      <span className="sc-icar-rate">{t("Pathology Verification")}: <strong>{(diagnosis as any).verification?.accuracyPercentage || 98.4}%</strong></span>
                     </div>
                     {(diagnosis as any).topPredictions && (diagnosis as any).topPredictions.length > 1 && (
                       <div className="sc-top-preds">
-                        <span className="sc-top-preds-label">Differential Candidates:</span>
+                        <span className="sc-top-preds-label">{t("Differential Candidates")}:</span>
                         {(diagnosis as any).topPredictions.slice(0, 3).map((p: any, idx: number) => (
                           <span key={idx} className="sc-top-pred-tag">
-                            {p.condition} ({Math.round(p.confidence * 100)}%)
+                            <TranslatedText text={p.condition} /> ({Math.round(p.confidence * 100)}%)
                           </span>
                         ))}
                       </div>
@@ -957,18 +957,18 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
 
                   {/* Backend Advisory Explanation */}
                   <p className="sc-result-desc">
-                    <strong>Diagnosis Summary:</strong> {(diagnosis as any).description}
+                    <strong>{t("Diagnosis Summary")}:</strong> <TranslatedText text={(diagnosis as any).description} />
                   </p>
 
                   {/* Symptoms Section */}
                   {(diagnosis as any).symptoms && (diagnosis as any).symptoms.length > 0 && (
                     <div className="sc-advisory-block sc-symptoms-block">
-                      <div className="sc-block-title">🔍 Field Symptoms</div>
+                      <div className="sc-block-title">🔍 {t("Field Symptoms")}</div>
                       <ul className="sc-rec-list">
                         {(diagnosis as any).symptoms.map((s: string, i: number) => (
                           <li key={i} className="sc-rec-item">
                             <span className="sc-rec-dot" />
-                            {s}
+                            <TranslatedText text={s} />
                           </li>
                         ))}
                       </ul>
@@ -978,12 +978,12 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                   {/* Recommended Actions Section */}
                   {(diagnosis as any).recommended_actions && (diagnosis as any).recommended_actions.length > 0 && (
                     <div className="sc-advisory-block sc-actions-block">
-                      <div className="sc-block-title">📋 Recommended Cultural Actions</div>
+                      <div className="sc-block-title">📋 {t("Recommended Cultural Actions")}</div>
                       <ul className="sc-rec-list">
                         {(diagnosis as any).recommended_actions.map((a: string, i: number) => (
                           <li key={i} className="sc-rec-item">
                             <span className="sc-rec-dot" />
-                            {a}
+                            <TranslatedText text={a} />
                           </li>
                         ))}
                       </ul>
@@ -993,12 +993,12 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                   {/* Prevention Measures Section */}
                   {(diagnosis as any).prevention && (diagnosis as any).prevention.length > 0 && (
                     <div className="sc-advisory-block sc-prevention-block">
-                      <div className="sc-block-title">🛡️ Prevention &amp; Field Hygiene</div>
+                      <div className="sc-block-title">🛡️ {t("Prevention & Field Hygiene")}</div>
                       <ul className="sc-rec-list">
                         {(diagnosis as any).prevention.map((p: string, i: number) => (
                           <li key={i} className="sc-rec-item">
                             <span className="sc-rec-dot" />
-                            {p}
+                            <TranslatedText text={p} />
                           </li>
                         ))}
                       </ul>
@@ -1008,13 +1008,13 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                   <div className="sc-farm-sync-banner">
                     <span className="sc-farm-sync-check">✓</span>
                     <div className="sc-farm-sync-text">
-                      Analysis recorded in <strong><TranslatedText text="My Farm" /></strong> overview. Field health, priority actions, and activity log have been updated.
+                      {t("Analysis recorded in")} <strong>{t("My Farm")}</strong> {t("overview. Field health, priority actions, and activity log have been updated.")}
                     </div>
                   </div>
 
                   <div className="sc-result-actions">
                     <button type="button" className="sc-action-btn sc-action-primary" onClick={reset}>
-                      🔄 Scan Another Crop
+                      🔄 {t("Scan Another Crop")}
                     </button>
                     {onNavigateTab && (
                       <button
@@ -1030,7 +1030,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                         onClick={handleOpenAdvisory}
                         id="btn-open-nutrient-advisory"
                       >
-                        💡 Open Soil &amp; Nutrient Advisory →
+                        💡 {t("Open Soil & Nutrient Advisory")} →
                       </button>
                     )}
                     <button
@@ -1039,7 +1039,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                       onClick={() => window.open('/CropGuard_Maharashtra_20_Crops_Dataset_Directory.pdf', '_blank')}
                       title="Download Official 20-Crops Dataset Directory PDF"
                     >
-                      📥 Download Report / PDF
+                      📥 {t("Download Report / PDF")}
                     </button>
                     {onNavigateTab && (
                       <button
@@ -1047,12 +1047,12 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                         className="sc-action-btn sc-action-outline"
                         onClick={() => onNavigateTab('farm')}
                       >
-                        🌿 View in My Farm →
+                        🌿 {t("View in My Farm →")}
                       </button>
                     )}
                   </div>
                   <div className="sc-result-footer-note">
-                    AI diagnosis verified against ICAR &amp; State Agricultural Universities agronomic pathology datasets (Govt. of India OGDL).
+                    {t("AI diagnosis verified against ICAR & State Agricultural Universities agronomic pathology datasets (Govt. of India OGDL).")}
                   </div>
                 </div>
               </div>
@@ -1065,13 +1065,13 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                     ───────────────────────────────────────────────────────────── */}
                 <div className="sc-step-card sc-step-1">
                   <div className="sc-step-header">
-                    <div className="sc-step-badge">STEP 1</div>
+                    <div className="sc-step-badge">{t("STEP 1")}</div>
                     <div className="sc-step-header-text">
                       <h2 className="sc-step-title">
-                        Select Your Crop <span className="sc-required-star">*</span>
+                        {t("Select Your Crop")} <span className="sc-required-star">*</span>
                       </h2>
                       <p className="sc-step-subtitle">
-                        Select the crop you want to scan or add to your farm
+                        {t("Select the crop you want to scan or add to your farm")}
                       </p>
                     </div>
                   </div>
@@ -1083,8 +1083,8 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                         <div className="sc-selected-crop-left">
                           <span className="sc-selected-crop-check">✓</span>
                           <div className="sc-selected-crop-info">
-                            <span className="sc-selected-crop-label">Currently Selected Crop:</span>
-                            <strong className="sc-selected-crop-name">🌾 {selectedCrop}</strong>
+                            <span className="sc-selected-crop-label">{t("Currently Selected Crop:")}</span>
+                            <strong className="sc-selected-crop-name">🌾 <TranslatedText text={selectedCrop} /></strong>
                           </div>
                         </div>
                         <button
@@ -1093,7 +1093,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                           onClick={() => setSelectedCrop(null)}
                           title="Change crop selection"
                         >
-                          Change Crop
+                          {t("Change Crop")}
                         </button>
                       </div>
 
@@ -1113,10 +1113,10 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                         }}>
                           <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>⚠️</span>
                           <div>
-                            <strong>Disease detection model unavailable for {selectedCrop}.</strong>
+                            <strong>{t("Disease detection model unavailable for")} <TranslatedText text={selectedCrop} />.</strong>
                             <div style={{ marginTop: '2px', color: '#b45309' }}>
-                              Automated visual disease detection is currently trained for: Cotton, Soybean, Sugarcane, Rice, Wheat, Tomato, Chickpea, and Maize.
-                              You can still add and manage {selectedCrop} in <strong>My Farm</strong> and view agronomic guidance, but automated visual scanning is unavailable.
+                              {t("Automated visual disease detection is currently trained for: Cotton, Soybean, Sugarcane, Rice, Wheat, Tomato, Chickpea, and Maize.")}
+                              {t("You can still add and manage")} <TranslatedText text={selectedCrop} /> {t("in")} <strong>{t("My Farm")}</strong> {t("and view agronomic guidance, but automated visual scanning is unavailable.")}
                             </div>
                           </div>
                         </div>
@@ -1124,15 +1124,15 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                     </>
                   ) : (
                     <div className="sc-select-crop-prompt">
-                      <span>💡 Please select a crop from the cards below.</span>
+                      <span>💡 {t("Please select a crop from the cards below.")}</span>
                     </div>
                   )}
 
                   {/* Popular Crops Grid */}
                   <div className="sc-popular-crops-section">
                     <div className="sc-popular-crops-title-row">
-                      <span className="sc-popular-crops-title">Popular Crops</span>
-                      <span className="sc-popular-hint">Click a card to select</span>
+                      <span className="sc-popular-crops-title">{t("Popular Crops")}</span>
+                      <span className="sc-popular-hint">{t("Click a card to select")}</span>
                     </div>
 
                     <div className="sc-popular-crops-grid">
@@ -1173,9 +1173,9 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                                   ? '🌿'
                                   : '🌱'}
                               </div>
-                              {isSelected && <span className="sc-crop-card-badge">✓ Selected</span>}
+                              {isSelected && <span className="sc-crop-card-badge">✓ {t("Selected")}</span>}
                             </div>
-                            <span className="sc-crop-card-title">{crop.name}</span>
+                            <span className="sc-crop-card-title"><TranslatedText text={crop.name} /></span>
                           </button>
                         );
                       })}
@@ -1188,10 +1188,10 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                     ───────────────────────────────────────────────────────────── */}
                 <div className="sc-step-card sc-step-2">
                   <div className="sc-step-header">
-                    <div className="sc-step-badge">STEP 2</div>
+                    <div className="sc-step-badge">{t("STEP 2")}</div>
                     <div className="sc-step-header-text">
-                      <h2 className="sc-step-title">Basic Farm Details</h2>
-                      <p className="sc-step-subtitle">Farm area and location only</p>
+                      <h2 className="sc-step-title">{t("Basic Farm Details")}</h2>
+                      <p className="sc-step-subtitle">{t("Farm area and location only")}</p>
                     </div>
                   </div>
 
@@ -1200,7 +1200,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                       {/* Farm Area (Required) + Unit */}
                       <div className="sc-input-group">
                         <label className="sc-label" htmlFor="sc-cultivated-area-input">
-                          Farm Area <span className="sc-required-star">*</span>
+                          {t("Farm Area")} <span className="sc-required-star">*</span>
                         </label>
                         <div className="sc-area-input-row">
                           <input
@@ -1227,14 +1227,14 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                             onChange={(e) => setAreaUnit(e.target.value as any)}
                             aria-label="Farm Area Unit"
                           >
-                            <option value="Acres">Acres</option>
-                            <option value="Hectares">Hectares</option>
-                            <option value="Guntha">Guntha</option>
+                            <option value="Acres">{t("Acres")}</option>
+                            <option value="Hectares">{t("Hectares")}</option>
+                            <option value="Guntha">{t("Guntha")}</option>
                           </select>
                         </div>
                         {(!cultivatedArea || isNaN(parseFloat(cultivatedArea)) || parseFloat(cultivatedArea) <= 0) && (
                           <div className="sc-area-validation-msg">
-                            ⚠️ Please enter a valid positive farm area (e.g. 1.5).
+                            ⚠️ {t("Please enter a valid positive farm area (e.g. 1.5).")}
                           </div>
                         )}
                       </div>
@@ -1242,7 +1242,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                       {/* Farm Location (Manual + GPS) */}
                       <div className="sc-input-group">
                         <label className="sc-label" htmlFor="sc-farm-location-input">
-                          Farm Location
+                          {t("Farm Location")}
                         </label>
                         <div className="sc-location-input-row">
                           <input
@@ -1260,7 +1260,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                             disabled={isDetectingLocation}
                             title="Auto-detect current GPS location"
                           >
-                            {isDetectingLocation ? '📡 Locating…' : '📍 Use GPS'}
+                            {isDetectingLocation ? t('📡 Locating…') : t('📍 Use GPS')}
                           </button>
                         </div>
                         {locationFeedback && (
@@ -1277,10 +1277,10 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                         onClick={() => onNavigateTab && onNavigateTab('farm')}
                         title="Navigate to My Farm to edit crop variety, sowing date, soil, and irrigation"
                       >
-                        Edit Farm Details →
+                        {t("Edit Farm Details →")}
                       </button>
                       <span className="sc-edit-farm-sub">
-                        (Add variety, sowing date, irrigation, and soil details in My Farm)
+                        {t("(Add variety, sowing date, irrigation, and soil details in My Farm)")}
                       </span>
                     </div>
 
@@ -1288,7 +1288,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                     <div className="sc-stage-compact-row">
                       <div className="sc-stage-input-group">
                         <label className="sc-label" htmlFor="sc-growth-stage-select">
-                          Growing Stage <span className="sc-optional-tag">(Optional)</span>
+                          {t("Growing Stage")} <span className="sc-optional-tag">{t("(Optional)")}</span>
                         </label>
                         <select
                           id="sc-growth-stage-select"
@@ -1297,16 +1297,16 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                           onChange={(e) => setGrowthStage(e.target.value)}
                           aria-label="Growing Stage (Optional)"
                         >
-                          <option value="">-- Not sure / Skip stage --</option>
+                          <option value="">{t("-- Not sure / Skip stage --")}</option>
                           {activeGrowthStages.map((stage) => (
                             <option key={stage} value={stage}>
-                              {stage}
+                              {t(stage)}
                             </option>
                           ))}
                         </select>
                       </div>
                       <div className="sc-stage-inline-hint">
-                        💡 <strong>Optional:</strong> You can skip this. Disease diagnosis works with or without a stage.
+                        💡 <strong>{t("Optional:")}</strong> {t("You can skip this. Disease diagnosis works with or without a stage.")}
                       </div>
                     </div>
                   </div>
@@ -1317,13 +1317,13 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                     ───────────────────────────────────────────────────────────── */}
                 <div className="sc-step-card sc-step-3 sc-main-card">
                   <div className="sc-step-header">
-                    <div className="sc-step-badge">STEP 3</div>
+                    <div className="sc-step-badge">{t("STEP 3")}</div>
                     <div className="sc-step-header-text">
                       <h2 className="sc-step-title">
-                        Scan Your Crop <span className="sc-required-star">*</span>
+                        {t("Scan Your Crop")} <span className="sc-required-star">*</span>
                       </h2>
                       <p className="sc-step-subtitle">
-                        Upload or capture a clear photo of the leaf, stem, fruit, or affected plant part
+                        {t("Upload or capture a clear photo of the leaf, stem, fruit, or affected plant part")}
                       </p>
                     </div>
                   </div>
@@ -1349,10 +1349,10 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                         <span className="sc-cam-plus">+</span>
                       </div>
                       <h3 className="sc-drop-title">
-                        {selectedCrop ? `Click to upload a ${selectedCrop} photo` : 'Click to upload a crop photo'}
+                        {selectedCrop ? t('Click to upload a crop photo') : t('Click to upload a crop photo')}
                       </h3>
-                      <p className="sc-drop-sub">or drag and drop an image file here</p>
-                      <p className="sc-drop-hint">Supports: JPG, PNG, WEBP (Max 10 MB)</p>
+                      <p className="sc-drop-sub">{t("or drag and drop an image file here")}</p>
+                      <p className="sc-drop-hint">{t("Supports: JPG, PNG, WEBP (Max 10 MB)")}</p>
                     </div>
                   )}
 
@@ -1363,7 +1363,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                       <div className="sc-preview-overlay">
                         <div className="sc-preview-badges-wrap">
                           <div className={`sc-preview-badge ${selectedCrop ? 'sc-preview-badge--selected' : 'sc-preview-badge--empty'}`}>
-                            {selectedCrop ? `🌾 ${selectedCrop}` : '⚠️ No crop selected'}
+                            {selectedCrop ? `🌾 ${t(selectedCrop)}` : `⚠️ ${t("No crop selected")}`}
                           </div>
                           {selectedField && (
                             <div className="sc-preview-badge sc-preview-badge--field">
@@ -1372,11 +1372,11 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                           )}
                           {growthStage && (
                             <div className="sc-preview-badge sc-preview-badge--stage">
-                              🌿 {growthStage}
+                              🌿 {t(growthStage)}
                             </div>
                           )}
                         </div>
-                        <button type="button" className="sc-change-btn" onClick={changePhoto}>Change Photo</button>
+                        <button type="button" className="sc-change-btn" onClick={changePhoto}>{t("Change Photo")}</button>
                       </div>
 
                       {/* Warning banner if crop not selected */}
@@ -1384,8 +1384,8 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                         <div className="sc-crop-required-banner">
                           <span className="sc-crop-required-icon">⚠️</span>
                           <div className="sc-crop-required-text">
-                            <strong>Please select a crop in Step 1 before continuing.</strong>
-                            <span>Select your crop from the Popular Crops cards above.</span>
+                            <strong>{t("Please select a crop in Step 1 before continuing.")}</strong>
+                            <span>{t("Select your crop from the Popular Crops cards above.")}</span>
                           </div>
                         </div>
                       )}
@@ -1401,7 +1401,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                         <div className="sc-scan-overlay" />
                       </div>
                       <div className="sc-scan-info">
-                        <div className="sc-scan-label">{currentScanStep.label}…</div>
+                        <div className="sc-scan-label">{t(currentScanStep.label)}…</div>
                         <div className="sc-scan-bar-track">
                           <div className="sc-scan-bar-fill" style={{ width: `${scanProgress}%` }} />
                         </div>
@@ -1420,8 +1420,8 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                             <circle cx="12" cy="13" r="4"/>
                           </svg>
                           <div>
-                            <span className="sc-btn-main">Use Camera</span>
-                            <span className="sc-btn-sub">Take a new photo</span>
+                            <span className="sc-btn-main">{t("Use Camera")}</span>
+                            <span className="sc-btn-sub">{t("Take a new photo")}</span>
                           </div>
                         </button>
 
@@ -1432,8 +1432,8 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                             <line x1="12" y1="3" x2="12" y2="15"/>
                           </svg>
                           <div>
-                            <span className="sc-btn-main">Choose from Gallery</span>
-                            <span className="sc-btn-sub">Select existing image</span>
+                            <span className="sc-btn-main">{t("Choose from Gallery")}</span>
+                            <span className="sc-btn-sub">{t("Select existing image")}</span>
                           </div>
                         </button>
                       </div>
@@ -1463,10 +1463,10 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                         }}>
                           <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>⚠️</span>
                           <div>
-                            <strong>Disease detection model unavailable for {selectedCrop}</strong>
+                            <strong>{t("Disease detection model unavailable for")} <TranslatedText text={selectedCrop} /></strong>
                             <div style={{ marginTop: '2px', color: '#b45309' }}>
-                              Automated visual disease detection is currently trained for: Cotton, Soybean, Sugarcane, Rice, Wheat, Tomato, Chickpea, Maize, Potato, and Grape.
-                              Visual diagnosis is not supported for {selectedCrop}, but you can record it in <strong>My Farm</strong>.
+                              {t("Automated visual disease detection is currently trained for: Cotton, Soybean, Sugarcane, Rice, Wheat, Tomato, Chickpea, Maize, Potato, and Grape.")}
+                              {t("Visual diagnosis is not supported for")} <TranslatedText text={selectedCrop} />, {t("but you can record it in")} <strong>{t("My Farm")}</strong>.
                             </div>
                           </div>
                         </div>
@@ -1488,21 +1488,21 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                         }
                         title={
                           !selectedCrop
-                            ? "Please select a crop in Step 1 first."
+                            ? t("Please select a crop in Step 1 first.")
                             : !isSelectedCropModelSupported
                             ? `Disease detection model unavailable for ${selectedCrop}.`
                             : !uploadedFile
-                            ? "Please upload or capture a crop photo in Step 3 first."
+                            ? t("Please upload or capture a crop photo in Step 3 first.")
                             : (!cultivatedArea || isNaN(parseFloat(cultivatedArea)) || parseFloat(cultivatedArea) <= 0)
-                            ? "Please enter a valid positive farm area in Step 2."
-                            : "Analyze Crop with AI"
+                            ? t("Please enter a valid positive farm area in Step 2.")
+                            : t("Analyze Crop with AI")
                         }
                       >
                         {isSubmitting
-                          ? '⏳ Analyzing Crop…'
+                          ? t('⏳ Analyzing Crop…')
                           : !isSelectedCropModelSupported && selectedCrop
-                          ? `⚠️ Model Unavailable for ${selectedCrop}`
-                          : '🔬 Analyze Crop'}
+                          ? `⚠️ ${t("Model Unavailable for")} ${selectedCrop}`
+                          : `🔬 ${t("Analyze Crop")}`}
                       </button>
                     </div>
                   )}
@@ -1519,7 +1519,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="#4caf50">
                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
                     </svg>
-                    Past Scans
+                    {t("Past Scans")}
                   </div>
                 </div>
                 <div className="sc-history-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
@@ -1556,7 +1556,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                         )}
                         <div style={{ flex: 1 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                            <span style={{ fontWeight: 'bold', fontSize: '0.95rem', color: '#1f2937' }}>{record.crop}</span>
+                            <span style={{ fontWeight: 'bold', fontSize: '0.95rem', color: '#1f2937' }}><TranslatedText text={record.crop} /></span>
                             <span style={{
                               fontSize: '0.72rem',
                               padding: '2px 7px',
@@ -1565,7 +1565,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                               background: isHealthy ? '#dcfce7' : '#fee2e2',
                               color: isHealthy ? '#15803d' : '#b91c1c'
                             }}>
-                              {isHealthy ? 'Healthy' : (record.severity || 'Action Needed')}
+                              {isHealthy ? t('Healthy') : (record.severity ? t(record.severity) : t('Action Needed'))}
                             </span>
                             <span style={{
                               fontSize: '0.68rem',
@@ -1579,10 +1579,10 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                               alignItems: 'center',
                               gap: '3px'
                             }}>
-                              ✓ {record.accuracyPercentage || record.verification?.accuracyPercentage || 98.4}% Verified
+                              ✓ {record.accuracyPercentage || record.verification?.accuracyPercentage || 98.4}% {t("Verified")}
                             </span>
                           </div>
-                          <div style={{ fontSize: '0.85rem', color: '#4b5563', marginTop: '2px' }}>{record.disease} • {record.confidence}%</div>
+                          <div style={{ fontSize: '0.85rem', color: '#4b5563', marginTop: '2px' }}><TranslatedText text={record.disease} /> • {record.confidence}%</div>
                           <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '2px' }}>{new Date(record.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</div>
                         </div>
                         <button 
@@ -1609,8 +1609,8 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
             <div className="sc-banner">
               <div className="sc-banner-icon">🌱</div>
               <div>
-                <div className="sc-banner-title">Healthy Plants &nbsp; Stronger Farmers</div>
-                <div className="sc-banner-sub">"AI for a Better Tomorrow"</div>
+                <div className="sc-banner-title">{t("Healthy Plants   Stronger Farmers")}</div>
+                <div className="sc-banner-sub">{t('"AI for a Better Tomorrow"')}</div>
               </div>
               <div className="sc-banner-sun">☀️</div>
             </div>
@@ -1619,13 +1619,13 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
             <div className="sc-tips-card">
               <div className="sc-tips-head">
                 <span className="sc-tips-bulb">💡</span>
-                <span className="sc-tips-title"><TranslatedText text="Tips for a Better Result" /></span>
+                <span className="sc-tips-title">{t("Tips for a Better Result")}</span>
               </div>
               {[
-                { icon: '🌿', text: 'Take a clear and well-lit photo' },
-                { icon: '🔍', text: 'Focus on the affected part (leaf, stem, fruit)' },
-                { icon: '☀️', text: 'Avoid blurry or dark images' },
-                { icon: '🪴', text: 'You can also upload a full plant or field image' },
+                { icon: '🌿', text: t('Take a clear and well-lit photo') },
+                { icon: '🔍', text: t('Focus on the affected part (leaf, stem, fruit)') },
+                { icon: '☀️', text: t('Avoid blurry or dark images') },
+                { icon: '🪴', text: t('You can also upload a full plant or field image') },
               ].map((tip, i) => (
                 <div key={i} className="sc-tip-row">
                   <span className="sc-tip-icon">{tip.icon}</span>
@@ -1636,13 +1636,13 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
 
             {/* Example Images */}
             <div className="sc-examples-card">
-              <div className="sc-examples-title">Example Images</div>
+              <div className="sc-examples-title">{t("Example Images")}</div>
               <div className="sc-examples-grid">
                 {[
-                  { img: '/images/crop_healthy_leaf.jpg',  label: 'Healthy Leaf',    color: '#2e7d32' },
-                  { img: '/images/crop_leaf_spots.jpg',    label: 'Leaf with Spots', color: '#f57c00' },
-                  { img: '/images/crop_infected_leaf.jpg', label: 'Infected Leaf',   color: '#c62828' },
-                  { img: '/images/crop_pest_leaf.jpg',     label: 'Pest on Leaf',    color: '#1565c0' },
+                  { img: '/images/crop_healthy_leaf.jpg',  label: t('Healthy Leaf'),    color: '#2e7d32' },
+                  { img: '/images/crop_leaf_spots.jpg',    label: t('Leaf with Spots'), color: '#f57c00' },
+                  { img: '/images/crop_infected_leaf.jpg', label: t('Infected Leaf'),   color: '#c62828' },
+                  { img: '/images/crop_pest_leaf.jpg',     label: t('Pest on Leaf'),    color: '#1565c0' },
                 ].map((ex, i) => (
                   <button
                     key={i}
@@ -1662,19 +1662,19 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
               <div className="sc-help-head">
                 <span className="sc-help-icon">🎧</span>
                 <div>
-                  <div className="sc-help-title">Need Help?</div>
-                  <div className="sc-help-desc">Watch this short video to learn how to scan your crop.</div>
+                  <div className="sc-help-title">{t("Need Help?")}</div>
+                  <div className="sc-help-desc">{t("Watch this short video to learn how to scan your crop.")}</div>
                 </div>
               </div>
               <button className="sc-video-btn">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                Watch Video (1 min)
+                {t("Watch Video (1 min)")}
               </button>
               <div className="sc-assistant-row">
                 <span className="sc-assistant-icon">💬</span>
                 <div>
-                  <div className="sc-assistant-title">Talk to AI Assistant</div>
-                  <div className="sc-assistant-desc">Ask anything about your crop in your language</div>
+                  <div className="sc-assistant-title">{t("Talk to AI Assistant")}</div>
+                  <div className="sc-assistant-desc">{t("Ask anything about your crop in your language")}</div>
                 </div>
               </div>
             </div>

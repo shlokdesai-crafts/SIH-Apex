@@ -15,6 +15,7 @@ import {
 } from '../data/advisoryCropData';
 import { getOrganicPreparationDetails } from '../utils/organicGuides';
 import { useTranslation } from '../i18n/useTranslation';
+import TranslatedText from './TranslatedText';
 import { 
   calculateAdvisory, 
   fetchFarmerAdvisoryContext, 
@@ -601,12 +602,12 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
           {isCalculating ? (
             <span className="badge-live-pulse" style={{ background: '#e8f5e9', color: '#2e7d32', borderColor: '#a5d6a7' }}>
               <span className="pulse-indicator"></span>
-              Updating Soil Intelligence...
+              {t('Updating Soil Intelligence...')}
             </span>
           ) : (
             <span className="badge-live-pulse" title={calcError || undefined}>
               <span className="pulse-indicator"></span>
-              Soil &amp; Nutrient Intelligence
+              {t('{t('Soil & Nutrient Intelligence')}')}
             </span>
           )}
           <span className="badge-location-pill">📍 {displayLocation}</span>
@@ -629,7 +630,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                 gap: '5px'
               }}
             >
-              <span>Dedicated Fertilizer View</span>
+              <span>{t('Dedicated Fertilizer View')}</span>
               <span>→</span>
             </button>
           )}
@@ -649,9 +650,9 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
             <div className="fert-banner-badge-row">
               <span className="fert-banner-pill">
                 <span className="fert-leaf-icon">🌱</span>
-                <span>PRECISION AGRONOMY</span>
+                <span>{t('PRECISION AGRONOMY')}</span>
               </span>
-              <span className="fert-season-badge">Soil Health &amp; Crop Intelligence</span>
+              <span className="fert-season-badge">{t('{t('Soil Health & Crop Intelligence')}')}</span>
             </div>
 
             <h1 className="fert-banner-title">{t('Crop Advisory & Nutrient Intelligence')}</h1>
@@ -813,7 +814,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
           <div className="advice-focal-body">
             <div className="advice-focal-quote-wrap">
               <span className="advice-focal-bulb">💡</span>
-              <p className="advice-focal-quote">"{crop.todayAdvice}"</p>
+              <p className="advice-focal-quote">"<TranslatedText text={crop.todayAdvice} />"</p>
             </div>
 
             <div className="advice-focal-actions">
@@ -868,14 +869,14 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
           <div className="fert-card-header">
             <div className="fert-card-title-group">
               <div className="fert-card-icon soil-icon">🧪</div>
-              <h2 className="fert-card-title" id="heading-soil-status">Soil Nutrient Status</h2>
+              <h2 className="fert-card-title" id="heading-soil-status">{t('Soil Nutrient Status')}</h2>
             </div>
             <button 
               className="fert-card-link"
               onClick={() => setShowSoilModal(true)}
               id="link-detailed-soil-report"
             >
-              <span>View Detailed Soil Report</span>
+              <span>{t('View Detailed Soil Report')}</span>
               <span className="link-arrow">→</span>
             </button>
           </div>
@@ -886,9 +887,9 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
               {/* Nitrogen Block */}
               <div className={`nutrient-status-box box-nitrogen status-${activeSoilNutrients.nitrogen.status.toLowerCase()}`}>
                 <div className="nutrient-header">
-                  <span className="nutrient-name">Nitrogen</span>
+                  <span className="nutrient-name">{t('Nitrogen')}</span>
                   <span className={`nutrient-pill ${activeSoilNutrients.nitrogen.status === 'Low' ? 'red-pill' : activeSoilNutrients.nitrogen.status === 'Adequate' ? 'green-pill' : 'amber-pill'}`}>
-                    {activeSoilNutrients.nitrogen.status}
+                    {t(activeSoilNutrients.nitrogen.status)}
                   </span>
                 </div>
                 <div className="nutrient-value-row">
@@ -896,7 +897,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                   <span className="nutrient-unit">{activeSoilNutrients.nitrogen.unit}</span>
                 </div>
                 <div className="nutrient-target-text">
-                  Target: {activeSoilNutrients.nitrogen.targetVal} {activeSoilNutrients.nitrogen.unit}
+                  {t('Target')}: {activeSoilNutrients.nitrogen.targetVal} {activeSoilNutrients.nitrogen.unit}
                 </div>
                 <div className="nutrient-meter-bar">
                   <div 
@@ -909,9 +910,9 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
               {/* Phosphorus Block */}
               <div className={`nutrient-status-box box-phosphorus status-${activeSoilNutrients.phosphorus.status.toLowerCase()}`}>
                 <div className="nutrient-header">
-                  <span className="nutrient-name">Phosphorus</span>
+                  <span className="nutrient-name">{t('Phosphorus')}</span>
                   <span className={`nutrient-pill ${activeSoilNutrients.phosphorus.status === 'Low' ? 'red-pill' : activeSoilNutrients.phosphorus.status === 'Adequate' ? 'green-pill' : 'amber-pill'}`}>
-                    {activeSoilNutrients.phosphorus.status}
+                    {t(activeSoilNutrients.phosphorus.status)}
                   </span>
                 </div>
                 <div className="nutrient-value-row">
@@ -919,7 +920,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                   <span className="nutrient-unit">{activeSoilNutrients.phosphorus.unit}</span>
                 </div>
                 <div className="nutrient-target-text">
-                  Target: {activeSoilNutrients.phosphorus.targetVal} {activeSoilNutrients.phosphorus.unit}
+                  {t('Target')}: {activeSoilNutrients.phosphorus.targetVal} {activeSoilNutrients.phosphorus.unit}
                 </div>
                 <div className="nutrient-meter-bar">
                   <div 
@@ -932,9 +933,9 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
               {/* Potassium Block */}
               <div className={`nutrient-status-box box-potassium status-${activeSoilNutrients.potassium.status.toLowerCase()}`}>
                 <div className="nutrient-header">
-                  <span className="nutrient-name">Potassium</span>
+                  <span className="nutrient-name">{t('Potassium')}</span>
                   <span className={`nutrient-pill ${activeSoilNutrients.potassium.status === 'Low' ? 'red-pill' : activeSoilNutrients.potassium.status === 'Adequate' ? 'green-pill' : 'amber-pill'}`}>
-                    {activeSoilNutrients.potassium.status}
+                    {t(activeSoilNutrients.potassium.status)}
                   </span>
                 </div>
                 <div className="nutrient-value-row">
@@ -942,7 +943,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                   <span className="nutrient-unit">{activeSoilNutrients.potassium.unit}</span>
                 </div>
                 <div className="nutrient-target-text">
-                  Target: {activeSoilNutrients.potassium.targetVal} {activeSoilNutrients.potassium.unit}
+                  {t('Target')}: {activeSoilNutrients.potassium.targetVal} {activeSoilNutrients.potassium.unit}
                 </div>
                 <div className="nutrient-meter-bar">
                   <div 
@@ -959,26 +960,26 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                 <span className="secondary-metric-label">pH</span>
                 <div className="secondary-metric-val">
                   <strong>{activeSoilNutrients.ph.value}</strong>
-                  <span className="secondary-badge badge-neutral">{activeSoilNutrients.ph.label}</span>
+                  <span className="secondary-badge badge-neutral">{t(activeSoilNutrients.ph.label)}</span>
                 </div>
               </div>
 
               <div className="secondary-metric-divider"></div>
 
               <div className="secondary-metric-item">
-                <span className="secondary-metric-label">Organic Carbon</span>
+                <span className="secondary-metric-label">{t('Organic Carbon')}</span>
                 <div className="secondary-metric-val">
                   <strong>{activeSoilNutrients.organicCarbon.value}</strong>
-                  <span className="secondary-badge badge-low">{activeSoilNutrients.organicCarbon.label}</span>
+                  <span className="secondary-badge badge-low">{t(activeSoilNutrients.organicCarbon.label)}</span>
                 </div>
               </div>
 
               <div className="secondary-metric-divider"></div>
 
               <div className="secondary-metric-item">
-                <span className="secondary-metric-label">Micronutrients</span>
+                <span className="secondary-metric-label">{t('Micronutrients')}</span>
                 <div className="secondary-metric-val">
-                  <strong className="text-attention">{activeSoilNutrients.micronutrients.label}</strong>
+                  <strong className="text-attention">{t(activeSoilNutrients.micronutrients.label)}</strong>
                   <span className="secondary-subelements">{activeSoilNutrients.micronutrients.elements}</span>
                 </div>
               </div>
@@ -998,10 +999,10 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
             <div className="fert-card-title-group">
               <div className="fert-card-icon prod-icon">🛍️</div>
               <div>
-                <h2 className="fert-card-title" id="heading-products">Recommended Fertilizer Products</h2>
+                <h2 className="fert-card-title" id="heading-products">{t('Recommended Fertilizer Products')}</h2>
                 <div className="fert-selected-count-chip">
                   <span className="count-dot"></span>
-                  <span>{selectedFertilizers.length} of {activeRecommendedProducts.length} Selected for Plan</span>
+                  <span>{selectedFertilizers.length} of {activeRecommendedProducts.length} {t('Selected for Plan')}</span>
                   {apiCalculation?.costSummary ? (
                     <span 
                       style={{
@@ -1053,14 +1054,14 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                 title="Calculate custom fertilizer quantities based on your field size"
               >
                 <span className="calc-btn-icon">🧮</span>
-                <span>Fertilizer Calculator</span>
+                <span>{t('Fertilizer Calculator')}</span>
               </button>
               <button 
                 className="fert-card-link"
                 onClick={() => setShowCatalogModal(true)}
                 id="link-view-all-products"
               >
-                <span>View All Catalog</span>
+                <span>{t('View All Catalog')}</span>
                 <span className="link-arrow">→</span>
               </button>
             </div>
@@ -1114,7 +1115,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                       
                       <div className="fert-prod-dosage-box">
                         <div className="dosage-rate-line">
-                          <span className="dosage-label">Recommended Rate:</span>
+                          <span className="dosage-label">{t('Recommended Rate:')}</span>
                           <span className="dosage-num">{prod.ratePerAcre} {prod.unit}</span>
                         </div>
 
@@ -1134,7 +1135,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                         )}
                       </div>
 
-                      {/* Select / Add to Plan button */}
+                      {/* {t('Select / Add to Plan')} button */}
                       <button 
                         type="button"
                         className={`btn-add-plan ${isSelected ? 'btn-added' : ''}`}
@@ -1145,12 +1146,12 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                         {isSelected ? (
                           <>
                             <span className="check-mark">✓</span>
-                            <span>Selected for Plan</span>
+                            <span>{t('Selected for Plan')}</span>
                           </>
                         ) : (
                           <>
                             <span className="plus-sign">+</span>
-                            <span>Select / Add to Plan</span>
+                            <span>{t('Select / Add to Plan')}</span>
                           </>
                         )}
                       </button>
@@ -1169,7 +1170,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                 id="btn-view-more-fertilizers"
               >
                 <span style={{ fontSize: '18px' }}>🛍️</span>
-                <span>View More Fertilizers ({dbFertilizers.length || 10} Available in Database Catalog)</span>
+                <span>{t('View More Fertilizers')} ({dbFertilizers.length || 10} {t('Available in Database Catalog')})</span>
                 <span style={{ fontSize: '16px', fontWeight: 800 }}>→</span>
               </button>
             </div>
@@ -1187,9 +1188,9 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
           <div className="fert-card-header">
             <div className="fert-card-title-group">
               <div className="fert-card-icon timing-icon">🕒</div>
-              <h2 className="fert-card-title" id="heading-timing-tips">Application Timing &amp; Safety Tips</h2>
+              <h2 className="fert-card-title" id="heading-timing-tips">{t('Application Timing & Safety Tips')}</h2>
             </div>
-            <span className="timing-calendar-chip">Season Schedule</span>
+            <span className="timing-calendar-chip">{t('Season Schedule')}</span>
           </div>
 
           <div className="fert-card-body timing-body-layout">
@@ -1208,10 +1209,10 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
 
                   <div className="timing-step-content">
                     <div className="step-header-row">
-                      <h3 className="step-title">{step.title}</h3>
-                      <span className="step-timing-badge">{step.timing}</span>
+                      <h3 className="step-title"><TranslatedText text={step.title} /></h3>
+                      <span className="step-timing-badge"><TranslatedText text={step.timing} /></span>
                     </div>
-                    <p className="step-detail-text">{step.details}</p>
+                    <p className="step-detail-text"><TranslatedText text={step.details} /></p>
                   </div>
                 </div>
               )))}
@@ -1221,7 +1222,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
               <div className="safety-box-header">
                 <div className="safety-icon-title">
                   <span className="shield-icon">🛡️</span>
-                  <span className="safety-title">Safety Tips</span>
+                  <span className="safety-title">{t('Safety Tips')}</span>
                 </div>
                 <span className="safety-leaf-accent">🌿</span>
               </div>
@@ -1230,7 +1231,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                 {crop.safetyTips.map((tip, idx) => (
                   <li key={idx} className="safety-tip-item">
                     <span className="safety-bullet-dot">✓</span>
-                    <span className="safety-tip-text">{tip}</span>
+                    <span className="safety-tip-text"><TranslatedText text={tip} /></span>
                   </li>
                 ))}
               </ul>
@@ -1250,8 +1251,8 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
       >
         <summary className="more-details-summary" id="summary-more-details">
           <div className="more-details-summary-title">
-            <span className="more-details-badge">More Details</span>
-            <span>📋 Crop Nutrient Requirements, Key Insights &amp; Organic Alternatives</span>
+            <span className="more-details-badge">{t('More Details')}</span>
+            <span>📋 {t('Crop Nutrient Requirements, Key Insights & Organic Alternatives')}</span>
           </div>
           <span className="more-details-chevron">{moreDetailsOpen ? '▲' : '▼'}</span>
         </summary>
@@ -1268,7 +1269,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
             <div className="fert-card-header">
               <div className="fert-card-title-group">
                 <div className="fert-card-icon req-icon">📊</div>
-                <h2 className="fert-card-title" id="heading-requirements">Crop Nutrient Requirement</h2>
+                <h2 className="fert-card-title" id="heading-requirements">{t('Crop Nutrient Requirement')}</h2>
               </div>
               <span className="fert-stage-tag">{crop.stage}</span>
             </div>
@@ -1277,7 +1278,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
               <table className="fert-req-table" aria-label="Crop Nutrient Requirement Table">
                 <thead>
                   <tr>
-                    <th scope="col" className="th-nutrient">Nutrient</th>
+                    <th scope="col" className="th-nutrient">{t('Nutrient')}</th>
                     <th scope="col" className="th-num">Recommended <span className="th-unit">(kg/acre)</span></th>
                     <th scope="col" className="th-num">Current <span className="th-unit">(kg/acre)</span></th>
                     <th scope="col" className="th-num th-highlight">Additional Required</th>
@@ -1325,11 +1326,11 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
             <div className="fert-card-header">
               <div className="fert-card-title-group">
                 <div className="fert-card-icon insight-icon">💡</div>
-                <h2 className="fert-card-title" id="heading-insights">Key Insights</h2>
+                <h2 className="fert-card-title" id="heading-insights">{t('Key Insights')}</h2>
               </div>
               <span className="ai-badge-pill">
                 <span className="ai-sparkle">🤖</span>
-                <span>AI Powered</span>
+                <span>{t('AI Powered')}</span>
               </span>
             </div>
 
@@ -1342,7 +1343,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
                     </div>
-                    <p className="insight-text">{insight}</p>
+                    <p className="insight-text"><TranslatedText text={insight} /></p>
                   </li>
                 ))}
               </ul>
@@ -1352,7 +1353,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                   <span className="callout-bulb">💡</span>
                 </div>
                 <div className="callout-content-col">
-                  <p className="callout-text">{crop.calloutMessage}</p>
+                  <p className="callout-text"><TranslatedText text={crop.calloutMessage} /></p>
                 </div>
               </div>
             </div>
@@ -1369,11 +1370,11 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
               <div className="organic-header-left">
                 <div className="fert-card-icon organic-icon">🌱</div>
                 <div>
-                  <h2 className="organic-section-title">Organic &amp; Regenerative Alternatives</h2>
-                  <p className="organic-section-sub">Eco-friendly biological supplements for long-term soil carbon and microbial vitality</p>
+                  <h2 className="organic-section-title">{t('Organic & Regenerative Alternatives')}</h2>
+                  <p className="organic-section-sub">{t('Eco-friendly biological supplements for long-term soil carbon and microbial vitality')}</p>
                 </div>
               </div>
-              <span className="organic-badge-pill">100% Bio-Certified</span>
+              <span className="organic-badge-pill">{t('100% Bio-Certified')}</span>
             </div>
 
             <div className="organic-cards-grid">
@@ -1392,7 +1393,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                       onClick={() => setSelectedOrganicGuide(alt)}
                       id={`btn-guide-${i}`}
                     >
-                      <span>View Preparation Guide</span>
+                      <span>{t('View Preparation Guide')}</span>
                       <span>→</span>
                     </button>
                   </div>
@@ -1419,8 +1420,8 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
               <div className="modal-title-wrap">
                 <span className="modal-icon">🌾</span>
                 <div>
-                  <h3 className="fert-modal-title">Select Active Crop</h3>
-                  <p className="fert-modal-desc">Switch monitored crop to view tailor-made nutrient plans</p>
+                  <h3 className="fert-modal-title">{t('Select Active Crop')}</h3>
+                  <p className="fert-modal-desc">{t('Switch monitored crop to view tailor-made nutrient plans')}</p>
                 </div>
               </div>
               <button className="fert-modal-close" onClick={() => setShowCropModal(false)}>✕</button>
@@ -1468,8 +1469,8 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
               <div className="modal-title-wrap">
                 <span className="modal-icon">🧠</span>
                 <div>
-                  <h3 className="fert-modal-title">Why This Advice?</h3>
-                  <p className="fert-modal-desc">AI-driven agronomy reasoning based on real-time soil &amp; crop metrics</p>
+                  <h3 className="fert-modal-title">{t('Why This Advice?')}</h3>
+                  <p className="fert-modal-desc">{t('AI-driven agronomy reasoning based on real-time soil & crop metrics')}</p>
                 </div>
               </div>
               <button className="fert-modal-close" onClick={() => setShowWhyModal(false)}>✕</button>
@@ -1478,10 +1479,10 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
             <div className="fert-modal-body">
               <div className="advice-modal-quote-box">
                 <span className="modal-quote-leaf">🌿</span>
-                <p className="modal-quote-text">"{crop.todayAdvice}"</p>
+                <p className="modal-quote-text">"<TranslatedText text={crop.todayAdvice} />"</p>
               </div>
 
-              <h4 className="advice-factors-title">Key Influencing Agronomic Factors</h4>
+              <h4 className="advice-factors-title">{t('Key Influencing Agronomic Factors')}</h4>
 
               <div className="advice-factors-list">
                 <div className="advice-factor-card">
@@ -1947,7 +1948,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                 <div className="modal-title-wrap">
                   <span className="modal-icon">📋</span>
                   <div>
-                    <h3 className="fert-modal-title">Agronomic Action Plan &amp; Weekly Schedule</h3>
+                    <h3 className="fert-modal-title">{t('Agronomic Action Plan & Weekly Schedule')}</h3>
                     <div className="plan-header-meta">
                       <span className="plan-meta-pill">🌾 {crop.name} ({crop.field})</span>
                       <span className="plan-meta-pill">📐 {fieldSize} {fieldUnit}</span>
@@ -1963,7 +1964,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                       onClick={() => setPlanViewMode('weekly')}
                       style={{ padding: '5px 10px', fontSize: '11px' }}
                     >
-                      📅 Weekly Calendar
+                      📅 {t('Weekly Calendar')}
                     </button>
                     <button
                       type="button"
@@ -1971,7 +1972,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                       onClick={() => setPlanViewMode('checklist')}
                       style={{ padding: '5px 10px', fontSize: '11px' }}
                     >
-                      ✓ Quick Checklist
+                      ✓ {t('Quick Checklist')}
                     </button>
                   </div>
                   <button className="fert-modal-close" onClick={() => setShowPlanModal(false)}>✕</button>
@@ -1984,7 +1985,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                   <div className="plan-summary-card summary-card-active">
                     <span className="summary-card-label">
                       <span>🛍️</span>
-                      <span>Selected for Plan</span>
+                      <span>{t('Selected for Plan')}</span>
                     </span>
                     <span className="summary-card-val">
                       {activeSelectedProducts.length} Product{activeSelectedProducts.length === 1 ? '' : 's'} Active
@@ -2034,7 +2035,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                     <span className="empty-plan-icon">💡</span>
                     <div className="empty-plan-text">
                       <strong>No fertilizers currently selected for your plan.</strong><br />
-                      In the <em>Recommended Fertilizer Products</em> section or catalog, click <strong>Select / Add to Plan</strong> on any fertilizer (e.g. Urea, DAP, MOP) to automatically generate its scheduled application dates, doses, and precautions here.
+                      In the <em>Recommended Fertilizer Products</em> section or catalog, click <strong>{t('Select / Add to Plan')}</strong> on any fertilizer (e.g. Urea, DAP, MOP) to automatically generate its scheduled application dates, doses, and precautions here.
                     </div>
                   </div>
                 )}
@@ -2362,7 +2363,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
               <div className="modal-title-wrap">
                 <span className="modal-icon">📑</span>
                 <div>
-                  <h3 className="fert-modal-title">Comprehensive Soil Test Report</h3>
+                  <h3 className="fert-modal-title">{t('Comprehensive Soil Test Report')}</h3>
                   <p className="fert-modal-desc">Soil Sample #SL-2025-084 • Lab: Akola District Agronomy Lab</p>
                 </div>
               </div>
@@ -2394,32 +2395,32 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                     <tr>
                       <td>Nitrogen (Available N)</td>
                       <td>{activeSoilNutrients.nitrogen.currentVal} kg/acre</td>
-                      <td>Target: {activeSoilNutrients.nitrogen.targetVal} kg/acre</td>
-                      <td><span className={`soil-tag tag-${activeSoilNutrients.nitrogen.status === 'Low' ? 'low' : activeSoilNutrients.nitrogen.status === 'Adequate' ? 'opt' : 'mod'}`}>{activeSoilNutrients.nitrogen.status}</span></td>
+                      <td>{t('Target')}: {activeSoilNutrients.nitrogen.targetVal} kg/acre</td>
+                      <td><span className={`soil-tag tag-${activeSoilNutrients.nitrogen.status === 'Low' ? 'low' : activeSoilNutrients.nitrogen.status === 'Adequate' ? 'opt' : 'mod'}`}>{t(activeSoilNutrients.nitrogen.status)}</span></td>
                     </tr>
                     <tr>
                       <td>Phosphorus (Available P₂O₅)</td>
                       <td>{activeSoilNutrients.phosphorus.currentVal} kg/acre</td>
-                      <td>Target: {activeSoilNutrients.phosphorus.targetVal} kg/acre</td>
-                      <td><span className={`soil-tag tag-${activeSoilNutrients.phosphorus.status === 'Low' ? 'low' : activeSoilNutrients.phosphorus.status === 'Adequate' ? 'opt' : 'mod'}`}>{activeSoilNutrients.phosphorus.status}</span></td>
+                      <td>{t('Target')}: {activeSoilNutrients.phosphorus.targetVal} kg/acre</td>
+                      <td><span className={`soil-tag tag-${activeSoilNutrients.phosphorus.status === 'Low' ? 'low' : activeSoilNutrients.phosphorus.status === 'Adequate' ? 'opt' : 'mod'}`}>{t(activeSoilNutrients.phosphorus.status)}</span></td>
                     </tr>
                     <tr>
                       <td>Potassium (Available K₂O)</td>
                       <td>{activeSoilNutrients.potassium.currentVal} kg/acre</td>
-                      <td>Target: {activeSoilNutrients.potassium.targetVal} kg/acre</td>
-                      <td><span className={`soil-tag tag-${activeSoilNutrients.potassium.status === 'Low' ? 'low' : activeSoilNutrients.potassium.status === 'Adequate' ? 'opt' : 'mod'}`}>{activeSoilNutrients.potassium.status}</span></td>
+                      <td>{t('Target')}: {activeSoilNutrients.potassium.targetVal} kg/acre</td>
+                      <td><span className={`soil-tag tag-${activeSoilNutrients.potassium.status === 'Low' ? 'low' : activeSoilNutrients.potassium.status === 'Adequate' ? 'opt' : 'mod'}`}>{t(activeSoilNutrients.potassium.status)}</span></td>
                     </tr>
                     <tr>
                       <td>Soil Reaction (pH)</td>
                       <td>{activeSoilNutrients.ph.value}</td>
                       <td>6.5 - 7.5</td>
-                      <td><span className="soil-tag tag-opt">{activeSoilNutrients.ph.label}</span></td>
+                      <td><span className="soil-tag tag-opt">{t(activeSoilNutrients.ph.label)}</span></td>
                     </tr>
                     <tr>
                       <td>Organic Carbon</td>
                       <td>{activeSoilNutrients.organicCarbon.value}</td>
                       <td>0.75 - 1.25%</td>
-                      <td><span className="soil-tag tag-low">{activeSoilNutrients.organicCarbon.label}</span></td>
+                      <td><span className="soil-tag tag-low">{t(activeSoilNutrients.organicCarbon.label)}</span></td>
                     </tr>
                   </tbody>
                 </table>
@@ -2435,7 +2436,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                   triggerToast('Soil test report downloaded as PDF!');
                 }}
               >
-                Download PDF Report ↓
+                {t('Download PDF Report')} ↓
               </button>
             </div>
           </div>
@@ -2452,7 +2453,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
               <div className="modal-title-wrap">
                 <span className="modal-icon">🛍️</span>
                 <div>
-                  <h3 className="fert-modal-title">Authorized Fertilizer Products Catalog</h3>
+                  <h3 className="fert-modal-title">{t('Authorized Fertilizer Products Catalog')}</h3>
                   <p className="fert-modal-desc">
                     {dbFertilizers.length || 10} certified products in catalog • Search, filter &amp; select for seasonal plan
                   </p>
@@ -2470,7 +2471,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                     <input
                       type="text"
                       className="catalog-search-input"
-                      placeholder="Search by fertilizer name, composition (e.g. 46% N), formula..."
+                      placeholder={t('Search by fertilizer name, composition (e.g. 46% N), formula...')}
                       value={catalogSearchQuery}
                       onChange={(e) => setCatalogSearchQuery(e.target.value)}
                       autoFocus
@@ -2570,7 +2571,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                             onClick={() => handleToggleFertilizer(prodId, p.name)}
                             id={`catalog-btn-select-${prodId}`}
                           >
-                            {isSelected ? '✓ Selected in Plan' : '+ Select / Add to Plan'}
+                            {isSelected ? '✓ Selected in Plan' : '+ {t('Select / Add to Plan')}'}
                           </button>
                         </div>
                       </div>
@@ -2602,7 +2603,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
             <div className="fert-modal-footer" style={{ justifyContent: 'space-between' }}>
               <div style={{ fontSize: '13px', fontWeight: 700, color: '#15803d', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span>🌾</span>
-                <span>{selectedFertilizers.length} Fertilizer{selectedFertilizers.length !== 1 ? 's' : ''} Selected for Plan</span>
+                <span>{selectedFertilizers.length} Fertilizer{selectedFertilizers.length !== 1 ? 's' : ''} {t('Selected for Plan')}</span>
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button className="btn-modal-cancel" onClick={() => setShowCatalogModal(false)}>Close</button>
@@ -2625,7 +2626,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
               <div className="modal-title-wrap">
                 <span className="modal-icon">🧮</span>
                 <div>
-                  <h3 className="fert-modal-title">Fertilizer Requirement Calculator</h3>
+                  <h3 className="fert-modal-title">{t('Fertilizer Requirement Calculator')}</h3>
                   <p className="fert-modal-desc">
                     Calculated for {crop.name} ({crop.field}) based on selected fertilizers &amp; field area
                   </p>
@@ -2637,7 +2638,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
             <div className="fert-modal-body">
               {/* Field Size Controls */}
               <div className="calc-popup-field-box">
-                <label className="calc-input-label" htmlFor="popup-field-size">Configure Your Field Area</label>
+                <label className="calc-input-label" htmlFor="popup-field-size">{t('Configure Your Field Area')}</label>
                 <div className="calc-input-controls">
                   <div className="calc-number-box">
                     <input
@@ -2827,7 +2828,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                 <div className="guide-section-block">
                   <h4 className="guide-block-title">
                     <span>📋</span>
-                    <span>Step-by-Step Preparation Protocol</span>
+                    <span>{t('Step-by-Step Preparation Protocol')}</span>
                   </h4>
                   <div className="preparation-steps-timeline">
                     {guide.prepSteps.map((s, idx) => (
@@ -2846,7 +2847,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                 <div className="guide-section-block">
                   <h4 className="guide-block-title">
                     <span>🚜</span>
-                    <span>Field Application Method</span>
+                    <span>{t('Field Application Method')}</span>
                   </h4>
                   <div className="guide-method-box">
                     <span className="method-icon">🌱</span>
@@ -2858,7 +2859,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                 <div className="guide-section-block">
                   <h4 className="guide-block-title">
                     <span>⚠️</span>
-                    <span>Important Precautions &amp; Farmer Safety</span>
+                    <span>{t('Important Precautions & Farmer Safety')}</span>
                   </h4>
                   <div className="guide-precautions-card">
                     <span className="precautions-big-icon">🛡️</span>
