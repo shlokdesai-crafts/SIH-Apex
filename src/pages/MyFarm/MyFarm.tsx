@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import TranslatedText from '../../components/TranslatedText';
 import { useFarm } from '../../context/FarmContext';
 import { useTranslation } from '../../i18n/useTranslation';
+import { ALL_CROPS_LIST } from '../../constants/crops';
 import type { FarmCrop, FarmField, PriorityAction } from '../../types/farm';
 import { getCanonicalCropKey, CROP_ICONS } from '../../services/farmService';
 import './MyFarm.css';
@@ -211,537 +212,532 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
 
       {/* ════════════════ MAIN SHELL ════════════════ */}
       <main className="farm-main-shell">
-        <div className="farm-dashboard-layout">
-          {/* ── LEFT COLUMN: Profile & Health, My Crops, Bottom 3 Panels, Footer ── */}
-          <div className="farm-left-col">
-            {/* 1. Farm Profile & Health Score Card */}
-            <div className="farm-profile-hero-card">
-              {/* Subcard 1: Farm Info */}
-              <div className="farm-profile-info">
-                <img
-                  src="/images/farm_landscape.jpg"
-                  alt="Farm landscape thumbnail"
-                  className="farm-profile-thumb"
-                />
-                <div className="farm-profile-text">
-                  <h2>
-                    {farmDetails.name}
-                    <button title="Edit Farm Profile" onClick={() => setShowAddCropModal(true)}>
-                      ✏️
-                    </button>
-                  </h2>
-                  <div className="farm-profile-loc">
-                    <span role="img" aria-label="pin">📍</span> {farmDetails.location}
-                  </div>
-                  <div className="farm-profile-stats">
-                    <div className="farm-stat-pill">
-                      <span className="stat-icon">📐</span>
-                      <div>
-                        <span>{t('farm.totalArea')}</span>
-                        <strong>{farmDetails.totalAreaHa} Ha</strong>
-                      </div>
-                    </div>
-                    <div className="farm-stat-pill">
-                      <span className="stat-icon">🌾</span>
-                      <div>
-                        <span>Farm Type</span>
-                        <strong>{farmDetails.farmType}</strong>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+        {/* 1. Farm Profile & Health Score Card */}
+        <div className="farm-profile-hero-card">
+          {/* Subcard 1: Farm Info */}
+          <div className="farm-profile-info">
+            <img
+              src="/images/farm_landscape.jpg"
+              alt="Farm landscape thumbnail"
+              className="farm-profile-thumb"
+            />
+            <div className="farm-profile-text">
+              <h2>
+                {farmDetails.name}
+                <button title="Edit Farm Profile" onClick={() => setShowAddCropModal(true)}>
+                  ✏️
+                </button>
+              </h2>
+              <div className="farm-profile-loc">
+                <span role="img" aria-label="pin">📍</span> {farmDetails.location}
               </div>
-
-              <div className="farm-profile-divider" />
-
-              {/* Subcard 2: Farm Health Score */}
-              <div className="farm-health-gauge-section">
-                <div className="farm-health-header">
-                  <span className="farm-health-header-icon">🌿</span>
-                  <span><TranslatedText text="Farm Health Score" /></span>
-                </div>
-
-                <div className="farm-gauge-row">
-                  <div className="health-gauge-circle">
-                    <svg viewBox="0 0 92 92">
-                      <circle className="gauge-bg-ring" cx="46" cy="46" r={radius} />
-                      <circle
-                        className={`gauge-fill-ring ${healthClass}`}
-                        cx="46"
-                        cy="46"
-                        r={radius}
-                        strokeDasharray={circumference}
-                        strokeDashoffset={strokeDashoffset}
-                      />
-                    </svg>
-                    <div className="gauge-center-text">
-                      <strong>{hasScans ? `${overallHealthScore}%` : '--'}</strong>
-                      <span>{t(healthLabel)}</span>
-                    </div>
+              <div className="farm-profile-stats">
+                <div className="farm-stat-pill">
+                  <span className="stat-icon">📐</span>
+                  <div>
+                    <span>{t('farm.totalArea')}</span>
+                    <strong>{farmDetails.totalAreaHa} Ha</strong>
                   </div>
-
-                  <div className={`farm-health-callout ${healthClass}`}>
-                    <span className="callout-icon">{hasScans ? '🌱' : '📋'}</span>
-                    <div>
-                      {!hasScans
-                        ? t('Scan your first crop to assess your farm health score and receive AI diagnoses.')
-                        : overallHealthScore >= 75
-                        ? t('Your farm is in good condition! Keep up the healthy practices.')
-                        : overallHealthScore >= 55
-                        ? t('Attention needed: Some fields show moderate risk or early symptoms.')
-                        : t('Immediate action required: Severe disease symptoms detected.')}
-                    </div>
+                </div>
+                <div className="farm-stat-pill">
+                  <span className="stat-icon">🌾</span>
+                  <div>
+                    <span>Farm Type</span>
+                    <strong>{farmDetails.farmType}</strong>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* 2. Middle Section: 🌿 My Crops (Genuine Scanned Crops Only) */}
-            <section className="farm-crops-section">
-              <div className="panel-header">
-                <h3>🌿 {t('farm.monitoredCrops')} ({scannedCrops.length})</h3>
-                {scannedCrops.length > 0 && (
-                  <button
-                    className="panel-view-all-btn"
-                    onClick={() => onNavigateTab ? onNavigateTab('scan') : null}
-                  >
-                    + {t('scan.scanAnother')} →
-                  </button>
-                )}
+          <div className="farm-profile-divider" />
+
+          {/* Subcard 2: Farm Health Score */}
+          <div className="farm-health-gauge-section">
+            <div className="farm-health-header">
+              <span className="farm-health-header-icon">🌿</span>
+              <span><TranslatedText text="Farm Health Score" /></span>
+            </div>
+
+            <div className="farm-gauge-row">
+              <div className="health-gauge-circle">
+                <svg viewBox="0 0 92 92">
+                  <circle className="gauge-bg-ring" cx="46" cy="46" r={radius} />
+                  <circle
+                    className={`gauge-fill-ring ${healthClass}`}
+                    cx="46"
+                    cy="46"
+                    r={radius}
+                    strokeDasharray={circumference}
+                    strokeDashoffset={strokeDashoffset}
+                  />
+                </svg>
+                <div className="gauge-center-text">
+                  <strong>{hasScans ? `${overallHealthScore}%` : '--'}</strong>
+                  <span>{t(healthLabel)}</span>
+                </div>
               </div>
 
-              {scannedCrops.length === 0 ? (
-                <div className="farm-empty-scans-card">
-                  <div className="farm-empty-scans-icon">🌱</div>
-                  <h3 className="farm-empty-scans-title">Your farm journey starts here!</h3>
-                  <p className="farm-empty-scans-desc">
-                    You haven&apos;t scanned any crops yet. Scan your first crop to start building your farm records.
-                  </p>
-                  <button
-                    type="button"
-                    className="btn-primary farm-empty-scans-btn"
-                    onClick={() => onNavigateTab ? onNavigateTab('scan') : null}
-                  >
-                    <span>📷</span> Scan Your First Crop
-                  </button>
+              <div className={`farm-health-callout ${healthClass}`}>
+                <span className="callout-icon">{hasScans ? '🌱' : '📋'}</span>
+                <div>
+                  {!hasScans
+                    ? t('Scan your first crop to assess your farm health score and receive AI diagnoses.')
+                    : overallHealthScore >= 75
+                    ? t('Your farm is in good condition! Keep up the healthy practices.')
+                    : overallHealthScore >= 55
+                    ? t('Attention needed: Some fields show moderate risk or early symptoms.')
+                    : t('Immediate action required: Severe disease symptoms detected.')}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. Middle Section: 🌿 My Crops (Genuine Scanned Crops Only) */}
+        <section className="farm-crops-section">
+          <div className="panel-header">
+            <h3>🌿 {t('farm.monitoredCrops')} ({scannedCrops.length})</h3>
+            {scannedCrops.length > 0 && (
+              <button
+                className="panel-view-all-btn"
+                onClick={() => onNavigateTab ? onNavigateTab('scan') : null}
+              >
+                + {t('scan.scanAnother')} →
+              </button>
+            )}
+          </div>
+
+          {scannedCrops.length === 0 ? (
+            <div className="farm-empty-scans-card">
+              <div className="farm-empty-scans-icon">🌱</div>
+              <h3 className="farm-empty-scans-title">Your farm journey starts here!</h3>
+              <p className="farm-empty-scans-desc">
+                You haven&apos;t scanned any crops yet. Scan your first crop to start building your farm records.
+              </p>
+              <button
+                type="button"
+                className="btn-primary farm-empty-scans-btn"
+                onClick={() => onNavigateTab ? onNavigateTab('scan') : null}
+              >
+                <span>📷</span> Scan Your First Crop
+              </button>
+            </div>
+          ) : (
+            <div className="crops-cards-row">
+              {scannedCrops.map((crop) => {
+                const statusSlug = crop.status.toLowerCase().replace(/\s+/g, '-');
+                const cKey = getCanonicalCropKey(crop.id || crop.name);
+                const matchingField = (fields || []).find(
+                  (f) => getCanonicalCropKey(f.crop) === cKey || f.crop.toLowerCase() === crop.name.toLowerCase()
+                );
+                const latestScan = (farmState.scans || []).find(
+                  (s) => getCanonicalCropKey(s.crop) === cKey
+                );
+                const areaDisplay = crop.cultivatedArea !== undefined
+                  ? `${crop.cultivatedArea} ${crop.areaUnit || 'Acres'}`
+                  : `${crop.areaHa} Ha`;
+
+                return (
+                  <div key={crop.id} className="crop-mini-card">
+                    <div className="crop-card-img-wrap">
+                      <img src={crop.image} alt={t(crop.name)} />
+                      {matchingField && (
+                        <span className="crop-card-field-badge">
+                          🌱 {matchingField.name}
+                        </span>
+                      )}
+                    </div>
+                    <div className="crop-card-content">
+                      <div className="crop-card-topline">
+                        <h4>
+                          <span>{crop.icon}</span> {t(crop.name)}
+                        </h4>
+                        <span className={`status-badge ${statusSlug}`}>
+                          {t(crop.status)}
+                        </span>
+                      </div>
+
+                      <div className="crop-card-condition-line">
+                        <span className="condition-lbl">{t('Latest')}:</span>
+                        <strong className="condition-val" title={crop.detectedDisease || 'Healthy'}>
+                          {t(crop.detectedDisease || 'Healthy Plant')}
+                        </strong>
+                      </div>
+
+                      <div className="crop-card-metrics">
+                        <div className="crop-card-metric-row">
+                          <span className="metric-lbl">{t('Area')}</span>
+                          <strong className="metric-val">{areaDisplay}</strong>
+                        </div>
+                        <div className="crop-card-metric-row">
+                          <span className="metric-lbl">{t('Scanned')}</span>
+                          <strong className="metric-val">{crop.lastScanDate}</strong>
+                        </div>
+                        {latestScan?.confidence ? (
+                          <div className="crop-card-metric-row">
+                            <span className="metric-lbl">{t('Confidence')}</span>
+                            <strong className="metric-val" style={{ color: '#16a34a' }}>{latestScan.confidence}%</strong>
+                          </div>
+                        ) : null}
+                        <div className="crop-card-yield-row" style={{ marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                          <button
+                            type="button"
+                            className="crop-card-history-link"
+                            onClick={() => setSelectedCrop(crop)}
+                          >
+                            {t('View Details →')}
+                          </button>
+                          <button
+                            type="button"
+                            className="crop-card-advisory-btn"
+                            title={`Get Soil & Nutrient Advisory for ${crop.name}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              startAdvisoryForCrop(crop, matchingField);
+                              if (onNavigateTab) onNavigateTab('advisory');
+                            }}
+                          >
+                            <span>💡</span> {t('Advisory')}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* 3. Bottom Dashboard Section (Full-Width Responsive Grid) */}
+        <div className="farm-bottom-section">
+          {/* ⚡ Quick Actions Card */}
+          <div className="farm-panel-card quick-actions-card">
+            <div className="panel-header">
+              <h3>⚡ Quick Actions</h3>
+            </div>
+            <div className="quick-actions-grid">
+              <button
+                className="quick-action-item"
+                onClick={() => onNavigateTab ? onNavigateTab('scan') : null}
+              >
+                <div className="qa-left">
+                  <div className="qa-icon-circle cam">📷</div>
+                  <div className="qa-text">
+                    <strong><TranslatedText text="Scan Field Crop" /></strong>
+                    <span>AI disease diagnosis</span>
+                  </div>
+                </div>
+                <span className="qa-chevron">›</span>
+              </button>
+
+              <button
+                className="quick-action-item"
+                onClick={() => setShowAddCropModal(true)}
+              >
+                <div className="qa-left">
+                  <div className="qa-icon-circle leaf">🌿</div>
+                  <div className="qa-text">
+                    <strong><TranslatedText text="Add Crop Record" /></strong>
+                    <span>Update your crop details</span>
+                  </div>
+                </div>
+                <span className="qa-chevron">›</span>
+              </button>
+
+              <button
+                className="quick-action-item"
+                onClick={() => {
+                  if (scannedCrops.length > 0) {
+                    const primaryCrop = scannedCrops[0];
+                    const matchingField = (fields || []).find(
+                      (f) => getCanonicalCropKey(f.crop) === getCanonicalCropKey(primaryCrop.id || primaryCrop.name)
+                    );
+                    startAdvisoryForCrop(primaryCrop, matchingField);
+                  } else if (fields.length > 0) {
+                    startAdvisoryForField(fields[0]);
+                  } else {
+                    clearAdvisoryTarget();
+                  }
+                  if (onNavigateTab) onNavigateTab('advisory');
+                }}
+              >
+                <div className="qa-left">
+                  <div className="qa-icon-circle bulb">💡</div>
+                  <div className="qa-text">
+                    <strong>Get Advisory</strong>
+                    <span>Personalized farming tips</span>
+                  </div>
+                </div>
+                <span className="qa-chevron">›</span>
+              </button>
+
+              <button
+                className="quick-action-item"
+                onClick={() => setShowReportModal(true)}
+              >
+                <div className="qa-left">
+                  <div className="qa-icon-circle report">📄</div>
+                  <div className="qa-text">
+                    <strong><TranslatedText text="View Farm Report" /></strong>
+                    <span>Download complete report</span>
+                  </div>
+                </div>
+                <span className="qa-chevron">›</span>
+              </button>
+
+              <button
+                className="quick-action-item"
+                onClick={() => setShowVisitModal(true)}
+              >
+                <div className="qa-left">
+                  <div className="qa-icon-circle calendar">📅</div>
+                  <div className="qa-text">
+                    <strong><TranslatedText text="Schedule Field Visit" /></strong>
+                    <span>Book a visit with expert</span>
+                  </div>
+                </div>
+                <span className="qa-chevron">›</span>
+              </button>
+            </div>
+          </div>
+
+          {/* ✨ Farm Insights Card */}
+          <div className="farm-panel-card farm-insights-card">
+            <div className="panel-header">
+              <h3>✨ Farm Insights</h3>
+              <button
+                className="panel-view-all-btn"
+                onClick={() => onNavigateTab ? onNavigateTab('risk') : null}
+              >
+                View All →
+              </button>
+            </div>
+
+            <div className="insights-grid">
+              {farmInsights.length === 0 ? (
+                <div className="empty-state-text">
+                  Insights will appear as your farm data grows.
                 </div>
               ) : (
-                <div className="crops-cards-row">
-                  {scannedCrops.map((crop) => {
-                    const statusSlug = crop.status.toLowerCase().replace(/\s+/g, '-');
-                    const cKey = getCanonicalCropKey(crop.id || crop.name);
-                    const matchingField = (fields || []).find(
-                      (f) => getCanonicalCropKey(f.crop) === cKey || f.crop.toLowerCase() === crop.name.toLowerCase()
-                    );
-                    const latestScan = (farmState.scans || []).find(
-                      (s) => getCanonicalCropKey(s.crop) === cKey
-                    );
-                    const areaDisplay = crop.cultivatedArea !== undefined
-                      ? `${crop.cultivatedArea} ${crop.areaUnit || 'Acres'}`
-                      : `${crop.areaHa} Ha`;
+                farmInsights.slice(0, 3).map((fi) => (
+                  <div
+                    key={fi.id}
+                    className="insight-card-item"
+                    onClick={() => onNavigateTab ? onNavigateTab('risk') : null}
+                  >
+                    <div className="insight-card-left">
+                      <div className={`insight-icon-box ${fi.iconType}`}>
+                        {fi.iconType === 'leaf' && '🌿'}
+                        {fi.iconType === 'alert' && '⚠️'}
+                        {fi.iconType === 'chart' && '📊'}
+                      </div>
+                      <div className="insight-card-text">
+                        <strong>{fi.title}</strong>
+                        <span>{fi.subtitle}</span>
+                      </div>
+                    </div>
+                    <span className="qa-chevron">›</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* 3-Card Grid: Recent Activity, Your Fields, Priority Actions */}
+          <div className="farm-grid-three-cards">
+            {/* Card 1: 🕒 Recent Activity */}
+            <div className="farm-panel-card">
+              <div className="panel-header">
+                <h3>🕒 {t('Recent Activity')}</h3>
+                <button
+                  className="panel-view-all-btn"
+                  onClick={() => setViewAllActivityModal(true)}
+                >
+                  {t('View All →')}
+                </button>
+              </div>
+
+              {activities.length === 0 ? (
+                <div className="empty-state-text">{t('No recent activity')}</div>
+              ) : (
+                <div className="activity-table-wrap">
+                  <table className="activity-table">
+                    <thead>
+                      <tr>
+                        <th>{t('Date')}</th>
+                        <th>{t('Activity')}</th>
+                        <th>{t('Crop')}</th>
+                        <th>{t('Details')}</th>
+                        <th>{t('Status')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {activities.slice(0, 4).map((act) => {
+                        const statusClass = act.status.toLowerCase();
+                        const cropIcon =
+                          act.crop.toLowerCase() === 'tomato'
+                            ? '🍅'
+                            : act.crop.toLowerCase() === 'cotton'
+                            ? '☁️'
+                            : act.crop.toLowerCase() === 'soybean'
+                            ? '🌱'
+                            : act.crop.toLowerCase() === 'onion'
+                            ? '🧅'
+                            : '🌿';
+
+                        return (
+                          <tr key={act.id}>
+                            <td className="act-date">{act.date}</td>
+                            <td className="act-name">
+                              <span>{cropIcon}</span> {t(act.activity)}
+                            </td>
+                            <td className="act-crop">{t(act.crop)}</td>
+                            <td className="act-details" title={act.details}>
+                              {t(act.details)}
+                            </td>
+                            <td>
+                              <span className={`status-badge ${statusClass}`}>
+                                {t(act.status)}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Card 2: 🌾 Your Fields */}
+            <div className="farm-panel-card">
+              <div className="panel-header">
+                <h3>🌾 {t('Your Fields')}</h3>
+                <button
+                  className="panel-view-all-btn"
+                  onClick={() => setViewAllFieldsModal(true)}
+                >
+                  {t('View All →')}
+                </button>
+              </div>
+
+              {fields.length === 0 ? (
+                <div className="empty-state-text">{t('No fields added yet')}</div>
+              ) : (
+                <div className="fields-list">
+                  {fields.slice(0, 4).map((field) => {
+                    const statusSlug = field.status.toLowerCase().replace(/\s+/g, '-');
+                    const fieldCrop = field.crop?.toLowerCase() || '';
+                    const fieldIcon =
+                      fieldCrop === 'tomato' ? '🍅' : fieldCrop === 'cotton' ? '☁️' : '🌱';
 
                     return (
-                      <div key={crop.id} className="crop-mini-card">
-                        <div className="crop-card-img-wrap">
-                          <img src={crop.image} alt={t(crop.name)} />
-                          {matchingField && (
-                            <span className="crop-card-field-badge">
-                              🌱 {matchingField.name}
-                            </span>
-                          )}
+                      <div
+                        key={field.id}
+                        className="field-list-item field-list-item--clickable"
+                        onClick={() => setSelectedField(field)}
+                        title={`View ${field.name} details & scan history`}
+                      >
+                        <div className="field-item-left">
+                          <span className="field-bullet-icon">{fieldIcon}</span>
+                          <div className="field-item-names">
+                            <strong>{field.name}</strong>
+                            <span>{t(field.crop)} · {field.areaHa} Ha</span>
+                          </div>
                         </div>
-                        <div className="crop-card-content">
-                          <div className="crop-card-topline">
-                            <h4>
-                              <span>{crop.icon}</span> {t(crop.name)}
-                            </h4>
-                            <span className={`status-badge ${statusSlug}`}>
-                              {t(crop.status)}
-                            </span>
-                          </div>
-
-                          <div className="crop-card-condition-line">
-                            <span className="condition-lbl">{t('Latest')}:</span>
-                            <strong className="condition-val" title={crop.detectedDisease || 'Healthy'}>
-                              {t(crop.detectedDisease || 'Healthy Plant')}
-                            </strong>
-                          </div>
-
-                          <div className="crop-card-metrics">
-                            <div className="crop-card-metric-row">
-                              <span className="metric-lbl">{t('Area')}</span>
-                              <strong className="metric-val">{areaDisplay}</strong>
-                            </div>
-                            <div className="crop-card-metric-row">
-                              <span className="metric-lbl">{t('Scanned')}</span>
-                              <strong className="metric-val">{crop.lastScanDate}</strong>
-                            </div>
-                            {latestScan?.confidence ? (
-                              <div className="crop-card-metric-row">
-                                <span className="metric-lbl">{t('Confidence')}</span>
-                                <strong className="metric-val" style={{ color: '#16a34a' }}>{latestScan.confidence}%</strong>
-                              </div>
-                            ) : null}
-                            <div className="crop-card-yield-row" style={{ marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                              <button
-                                type="button"
-                                className="crop-card-history-link"
-                                onClick={() => setSelectedCrop(crop)}
-                              >
-                                {t('View Details →')}
-                              </button>
-                              <button
-                                type="button"
-                                className="crop-card-advisory-btn"
-                                title={`Get Soil & Nutrient Advisory for ${crop.name}`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  startAdvisoryForCrop(crop, matchingField);
-                                  if (onNavigateTab) onNavigateTab('advisory');
-                                }}
-                              >
-                                <span>💡</span> {t('Advisory')}
-                              </button>
-                            </div>
-                          </div>
+                        <div className="field-item-right-group">
+                          <span className={`status-badge ${statusSlug}`}>
+                            {t(field.status)}
+                          </span>
+                          <button
+                            type="button"
+                            className="field-quick-advisory-btn"
+                            title={`View Advisory for ${field.name}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              startAdvisoryForField(field);
+                              if (onNavigateTab) onNavigateTab('advisory');
+                            }}
+                          >
+                            💡
+                          </button>
+                          <button
+                            type="button"
+                            className="field-quick-scan-btn"
+                            title={`Scan ${field.name} now`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              startScanForField(field);
+                              if (onNavigateTab) onNavigateTab('scan');
+                            }}
+                          >
+                            📷
+                          </button>
                         </div>
                       </div>
                     );
                   })}
                 </div>
               )}
-            </section>
-
-            {/* 3. Bottom Grid: Recent Activity, Your Fields, Priority Actions */}
-            <div className="farm-grid-bottom">
-              {/* Card 1: 🕒 Recent Activity */}
-              <div className="farm-panel-card">
-                <div className="panel-header">
-                  <h3>🕒 {t('Recent Activity')}</h3>
-                  <button
-                    className="panel-view-all-btn"
-                    onClick={() => setViewAllActivityModal(true)}
-                  >
-                    {t('View All →')}
-                  </button>
-                </div>
-
-                {activities.length === 0 ? (
-                  <div className="empty-state-text">{t('No recent activity')}</div>
-                ) : (
-                  <div className="activity-table-wrap">
-                    <table className="activity-table">
-                      <thead>
-                        <tr>
-                          <th>{t('Date')}</th>
-                          <th>{t('Activity')}</th>
-                          <th>{t('Crop')}</th>
-                          <th>{t('Details')}</th>
-                          <th>{t('Status')}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {activities.slice(0, 4).map((act) => {
-                          const statusClass = act.status.toLowerCase();
-                          const cropIcon =
-                            act.crop.toLowerCase() === 'tomato'
-                              ? '🍅'
-                              : act.crop.toLowerCase() === 'cotton'
-                              ? '☁️'
-                              : act.crop.toLowerCase() === 'soybean'
-                              ? '🌱'
-                              : act.crop.toLowerCase() === 'onion'
-                              ? '🧅'
-                              : '🌿';
-
-                          return (
-                            <tr key={act.id}>
-                              <td className="act-date">{act.date}</td>
-                              <td className="act-name">
-                                <span>{cropIcon}</span> {t(act.activity)}
-                              </td>
-                              <td className="act-crop">{t(act.crop)}</td>
-                              <td className="act-details" title={act.details}>
-                                {t(act.details)}
-                              </td>
-                              <td>
-                                <span className={`status-badge ${statusClass}`}>
-                                  {t(act.status)}
-                                </span>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-
-              {/* Card 2: 🌾 Your Fields */}
-              <div className="farm-panel-card">
-                <div className="panel-header">
-                  <h3>🌾 {t('Your Fields')}</h3>
-                  <button
-                    className="panel-view-all-btn"
-                    onClick={() => setViewAllFieldsModal(true)}
-                  >
-                    {t('View All →')}
-                  </button>
-                </div>
-
-                {fields.length === 0 ? (
-                  <div className="empty-state-text">{t('No fields added yet')}</div>
-                ) : (
-                  <div className="fields-list">
-                    {fields.slice(0, 4).map((field) => {
-                      const statusSlug = field.status.toLowerCase().replace(/\s+/g, '-');
-                      const fieldCrop = field.crop?.toLowerCase() || '';
-                      const fieldIcon =
-                        fieldCrop === 'tomato' ? '🍅' : fieldCrop === 'cotton' ? '☁️' : '🌱';
-
-                      return (
-                        <div
-                          key={field.id}
-                          className="field-list-item field-list-item--clickable"
-                          onClick={() => setSelectedField(field)}
-                          title={`View ${field.name} details & scan history`}
-                        >
-                          <div className="field-item-left">
-                            <span className="field-bullet-icon">{fieldIcon}</span>
-                            <div className="field-item-names">
-                              <strong>{field.name}</strong>
-                              <span>{t(field.crop)} · {field.areaHa} Ha</span>
-                            </div>
-                          </div>
-                          <div className="field-item-right-group">
-                            <span className={`status-badge ${statusSlug}`}>
-                              {t(field.status)}
-                            </span>
-                            <button
-                              type="button"
-                              className="field-quick-advisory-btn"
-                              title={`View Advisory for ${field.name}`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                startAdvisoryForField(field);
-                                if (onNavigateTab) onNavigateTab('advisory');
-                              }}
-                            >
-                              💡
-                            </button>
-                            <button
-                              type="button"
-                              className="field-quick-scan-btn"
-                              title={`Scan ${field.name} now`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                startScanForField(field);
-                                if (onNavigateTab) onNavigateTab('scan');
-                              }}
-                            >
-                              📷
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Card 3: ⚠️ Priority Actions */}
-              <div className="farm-panel-card">
-                <div className="panel-header">
-                  <h3>⚠️ Priority Actions</h3>
-                  <button
-                    className="panel-view-all-btn"
-                    onClick={() => {
-                      if (priorityActions.length > 0) {
-                        const firstAction = priorityActions[0];
-                        const cKey = getCanonicalCropKey(firstAction.crop);
-                        const matchingCrop = scannedCrops.find(
-                          (c) => getCanonicalCropKey(c.id || c.name) === cKey
-                        );
-                        const matchingField = (fields || []).find(
-                          (f) => getCanonicalCropKey(f.crop) === cKey || f.crop.toLowerCase() === firstAction.crop.toLowerCase()
-                        );
-                        startAdvisoryForCrop(matchingCrop || firstAction.crop, matchingField);
-                      }
-                      if (onNavigateTab) onNavigateTab('advisory');
-                    }}
-                  >
-                    View All →
-                  </button>
-                </div>
-
-                {priorityActions.length === 0 ? (
-                  <div className="empty-state-text">No priority actions</div>
-                ) : (
-                  <div className="priority-actions-list">
-                    {priorityActions.slice(0, 4).map((pa) => (
-                      <div
-                        key={pa.id}
-                        className="priority-action-card"
-                        onClick={() => setSelectedAction(pa)}
-                      >
-                        <div className="pa-card-left">
-                          <img
-                            src={pa.thumbnail || '/images/tomato_crop.jpg'}
-                            alt={pa.crop}
-                            className="pa-card-thumb"
-                          />
-                          <div className="pa-card-text">
-                            <strong>{pa.title}</strong>
-                            <span>{pa.subtitle}</span>
-                          </div>
-                        </div>
-                        <span className={`pa-priority-pill ${pa.priority.toLowerCase()}`}>
-                          {pa.priority}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
             </div>
-          </div>
 
-          {/* ── RIGHT COLUMN: Quick Actions & Farm Insights ── */}
-          <aside className="farm-right-col">
-            {/* ⚡ Quick Actions */}
+            {/* Card 3: ⚠️ Priority Actions */}
             <div className="farm-panel-card">
               <div className="panel-header">
-                <h3>⚡ Quick Actions</h3>
-              </div>
-              <div className="quick-actions-list">
+                <h3>⚠️ Priority Actions</h3>
                 <button
-                  className="quick-action-item"
-                  onClick={() => onNavigateTab ? onNavigateTab('scan') : null}
-                >
-                  <div className="qa-left">
-                    <div className="qa-icon-circle cam">📷</div>
-                    <div className="qa-text">
-                      <strong><TranslatedText text="Scan Field Crop" /></strong>
-                      <span>AI disease diagnosis</span>
-                    </div>
-                  </div>
-                  <span className="qa-chevron">›</span>
-                </button>
-
-                <button
-                  className="quick-action-item"
-                  onClick={() => setShowAddCropModal(true)}
-                >
-                  <div className="qa-left">
-                    <div className="qa-icon-circle leaf">🌿</div>
-                    <div className="qa-text">
-                      <strong><TranslatedText text="Add Crop Record" /></strong>
-                      <span>Update your crop details</span>
-                    </div>
-                  </div>
-                  <span className="qa-chevron">›</span>
-                </button>
-
-                <button
-                  className="quick-action-item"
+                  className="panel-view-all-btn"
                   onClick={() => {
-                    if (scannedCrops.length > 0) {
-                      const primaryCrop = scannedCrops[0];
-                      const matchingField = (fields || []).find(
-                        (f) => getCanonicalCropKey(f.crop) === getCanonicalCropKey(primaryCrop.id || primaryCrop.name)
+                    if (priorityActions.length > 0) {
+                      const firstAction = priorityActions[0];
+                      const cKey = getCanonicalCropKey(firstAction.crop);
+                      const matchingCrop = scannedCrops.find(
+                        (c) => getCanonicalCropKey(c.id || c.name) === cKey
                       );
-                      startAdvisoryForCrop(primaryCrop, matchingField);
-                    } else if (fields.length > 0) {
-                      startAdvisoryForField(fields[0]);
-                    } else {
-                      clearAdvisoryTarget();
+                      const matchingField = (fields || []).find(
+                        (f) => getCanonicalCropKey(f.crop) === cKey || f.crop.toLowerCase() === firstAction.crop.toLowerCase()
+                      );
+                      startAdvisoryForCrop(matchingCrop || firstAction.crop, matchingField);
                     }
                     if (onNavigateTab) onNavigateTab('advisory');
                   }}
-                >
-                  <div className="qa-left">
-                    <div className="qa-icon-circle bulb">💡</div>
-                    <div className="qa-text">
-                      <strong>Get Advisory</strong>
-                      <span>Personalized farming tips</span>
-                    </div>
-                  </div>
-                  <span className="qa-chevron">›</span>
-                </button>
-
-                <button
-                  className="quick-action-item"
-                  onClick={() => setShowReportModal(true)}
-                >
-                  <div className="qa-left">
-                    <div className="qa-icon-circle report">📄</div>
-                    <div className="qa-text">
-                      <strong><TranslatedText text="View Farm Report" /></strong>
-                      <span>Download complete report</span>
-                    </div>
-                  </div>
-                  <span className="qa-chevron">›</span>
-                </button>
-
-                <button
-                  className="quick-action-item"
-                  onClick={() => setShowVisitModal(true)}
-                >
-                  <div className="qa-left">
-                    <div className="qa-icon-circle calendar">📅</div>
-                    <div className="qa-text">
-                      <strong><TranslatedText text="Schedule Field Visit" /></strong>
-                      <span>Book a visit with expert</span>
-                    </div>
-                  </div>
-                  <span className="qa-chevron">›</span>
-                </button>
-              </div>
-            </div>
-
-            {/* ✨ Farm Insights */}
-            <div className="farm-panel-card">
-              <div className="panel-header">
-                <h3>✨ Farm Insights</h3>
-                <button
-                  className="panel-view-all-btn"
-                  onClick={() => onNavigateTab ? onNavigateTab('risk') : null}
                 >
                   View All →
                 </button>
               </div>
 
-              <div className="insights-list">
-                {farmInsights.length === 0 ? (
-                  <div className="empty-state-text">
-                    Insights will appear as your farm data grows.
-                  </div>
-                ) : (
-                  farmInsights.slice(0, 3).map((fi) => (
+              {priorityActions.length === 0 ? (
+                <div className="empty-state-text">No priority actions</div>
+              ) : (
+                <div className="priority-actions-list">
+                  {priorityActions.slice(0, 4).map((pa) => (
                     <div
-                      key={fi.id}
-                      className="insight-card-item"
-                      onClick={() => onNavigateTab ? onNavigateTab('risk') : null}
+                      key={pa.id}
+                      className="priority-action-card"
+                      onClick={() => setSelectedAction(pa)}
                     >
-                      <div className="insight-card-left">
-                        <div className={`insight-icon-box ${fi.iconType}`}>
-                          {fi.iconType === 'leaf' && '🌿'}
-                          {fi.iconType === 'alert' && '⚠️'}
-                          {fi.iconType === 'chart' && '📊'}
-                        </div>
-                        <div className="insight-card-text">
-                          <strong>{fi.title}</strong>
-                          <span>{fi.subtitle}</span>
+                      <div className="pa-card-left">
+                        <img
+                          src={pa.thumbnail || '/images/tomato_crop.jpg'}
+                          alt={pa.crop}
+                          className="pa-card-thumb"
+                        />
+                        <div className="pa-card-text">
+                          <strong>{pa.title}</strong>
+                          <span>{pa.subtitle}</span>
                         </div>
                       </div>
-                      <span className="qa-chevron">›</span>
+                      <span className={`pa-priority-pill ${pa.priority.toLowerCase()}`}>
+                        {pa.priority}
+                      </span>
                     </div>
-                  ))
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
-          </aside>
+          </div>
         </div>
 
         {/* 4. Footer Citation Bar */}
@@ -788,13 +784,18 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                 </p>
                 <div className="farm-modal-form-group">
                   <label>Crop Name</label>
-                  <input
-                    type="text"
+                  <select
                     required
-                    placeholder="e.g. Groundnut, Cotton, Tomato"
                     value={newCropName}
                     onChange={(e) => setNewCropName(e.target.value)}
-                  />
+                  >
+                    <option value="">-- Select Crop from List --</option>
+                    {ALL_CROPS_LIST.map((crop) => (
+                      <option key={crop} value={crop}>
+                        {crop}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="farm-modal-form-group">
                   <label>Plot Area (Hectares)</label>

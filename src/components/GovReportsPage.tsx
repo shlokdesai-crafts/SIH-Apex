@@ -185,16 +185,159 @@ const GovReportsPage = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `Government_CropGuard_Analytics_Report_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `Government_PikSuraksha_Analytics_Report_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     showToast('Exported Analytics Report CSV successfully.');
   };
 
+  // PDF Export Function for Government Report
+  const downloadPDFReport = (autoPrint: boolean = false) => {
+    if (filteredCases.length === 0) {
+      showToast('No records available for PDF generation based on current filters.');
+      return;
+    }
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      showToast('Please allow popups to download/print the PDF report.');
+      return;
+    }
+
+    const reportDate = new Date().toLocaleString('en-IN', { dateStyle: 'full', timeStyle: 'short' });
+
+    const rowsHTML = filteredCases.map((c, index) => `
+      <tr>
+        <td>${index + 1}</td>
+        <td><strong>#${c.id.substring(Math.max(0, c.id.length - 6)).toUpperCase()}</strong></td>
+        <td>${c.farmer_name || 'N/A'}</td>
+        <td>📍 ${c.location || 'General'}</td>
+        <td>🌾 ${c.crop || 'Unknown'}</td>
+        <td><strong>${c.disease || c.ai_result || 'Unidentified'}</strong></td>
+        <td><span class="badge ${(c.severity || 'Medium').toLowerCase()}">${c.severity || 'Medium'}</span></td>
+        <td><span class="badge status">${c.status || 'Pending'}</span></td>
+        <td>${c.assigned_officer ? '👤 ' + c.assigned_officer : 'Unassigned'}</td>
+        <td>${c.resolution_notes ? '"' + c.resolution_notes + '"' : 'Pending Action'}</td>
+      </tr>
+    `).join('');
+
+    const diseaseHTML = analyticsData.topDiseases.map(([disease, count]) => `
+      <tr>
+        <td>${disease}</td>
+        <td><strong>${count} cases</strong></td>
+        <td>${totalFiltered > 0 ? ((count / totalFiltered) * 100).toFixed(1) : 0}%</td>
+      </tr>
+    `).join('');
+
+    const cropHTML = analyticsData.topCrops.map(([crop, count]) => `
+      <tr>
+        <td>🌱 ${crop}</td>
+        <td><strong>${count} scans</strong></td>
+        <td>${totalFiltered > 0 ? ((count / totalFiltered) * 100).toFixed(1) : 0}%</td>
+      </tr>
+    `).join('');
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Maharashtra_Crop_Health_Report_${new Date().toISOString().split('T')[0]}</title>
+          <style>
+            @page { size: A4 portrait; margin: 12mm; }
+            body { font-family: 'Segoe UI', Arial, sans-serif; color: #1e293b; margin: 0; padding: 20px; font-size: 11px; background: #fff; }
+            .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #064e3b; padding-bottom: 10px; margin-bottom: 14px; }
+            .header-title { font-size: 18px; font-weight: 800; color: #064e3b; text-transform: uppercase; margin: 0; }
+            .header-sub { font-size: 10.5px; color: #166534; font-weight: 600; margin-top: 3px; }
+            .meta-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; display: flex; justify-content: space-between; font-size: 10.5px; }
+            .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+            .kpi-card { background: #f8fafc; border: 1px solid #cbd5e1; padding: 10px; border-radius: 8px; text-align: center; }
+            .kpi-card .val { font-size: 18px; font-weight: 800; color: #064e3b; }
+            .kpi-card .lbl { font-size: 9.5px; color: #64748b; font-weight: 700; text-transform: uppercase; margin-top: 2px; }
+            h3 { color: #064e3b; font-size: 12px; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 4px; margin-top: 16px; margin-bottom: 8px; text-transform: uppercase; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 10.5px; }
+            th, td { border: 1px solid #cbd5e1; padding: 5px 7px; text-align: left; }
+            th { background: #f1f5f9; color: #0f172a; font-weight: 700; }
+            tr:nth-child(even) { background: #f8fafc; }
+            .badge { padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; text-transform: uppercase; }
+            .badge.high, .badge.severe { background: #fee2e2; color: #b91c1c; }
+            .badge.medium { background: #fef3c7; color: #b45309; }
+            .badge.low { background: #e0f2fe; color: #0369a1; }
+            .badge.status { background: #dcfce7; color: #15803d; }
+            .footer { margin-top: 24px; border-top: 1px solid #cbd5e1; padding-top: 10px; display: flex; justify-content: space-between; font-size: 9.5px; color: #64748b; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <h1 class="header-title">🏛️ Government of Maharashtra</h1>
+              <div class="header-sub">Department of Agriculture • State Crop Health Intelligence Hub</div>
+            </div>
+            <div style="text-align: right;">
+              <strong style="color: #064e3b; font-size: 13px;">OFFICIAL EXECUTIVE PDF REPORT</strong>
+              <div style="font-size: 9.5px; color: #64748b;">PikSuraksha Agricultural Telemetry</div>
+            </div>
+          </div>
+
+          <div class="meta-box">
+            <div><strong>Generated:</strong> ${reportDate}</div>
+            <div><strong>District:</strong> ${selectedDistrict || 'All Maharashtra'}</div>
+            <div><strong>Status:</strong> ${selectedStatus || 'All Case Statuses'}</div>
+            <div><strong>Total Matching Cases:</strong> ${totalFiltered}</div>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="kpi-card"><div class="val">${totalFiltered}</div><div class="lbl">Total Scans</div></div>
+            <div class="kpi-card"><div class="val">${resolutionRate}%</div><div class="lbl">Clearance Rate</div></div>
+            <div class="kpi-card"><div class="val">${pendingVisitsFiltered}</div><div class="lbl">Active Field Visits</div></div>
+            <div class="kpi-card"><div class="val">${unidentifiedFiltered}</div><div class="lbl">AI Unidentified</div></div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div>
+              <h3>🧪 Top Diagnosed Pathogens</h3>
+              <table>
+                <thead><tr><th>Disease / Pathogen</th><th>Cases</th><th>Share</th></tr></thead>
+                <tbody>${diseaseHTML || '<tr><td colspan="3">No records</td></tr>'}</tbody>
+              </table>
+            </div>
+            <div>
+              <h3>🌾 Crop Vulnerability Breakdown</h3>
+              <table>
+                <thead><tr><th>Crop Species</th><th>Scans</th><th>Share</th></tr></thead>
+                <tbody>${cropHTML || '<tr><td colspan="3">No records</td></tr>'}</tbody>
+              </table>
+            </div>
+          </div>
+
+          <h3>📋 Detailed Case Resolution & Officer Action Log</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Case ID</th><th>Farmer Name</th><th>District</th><th>Crop</th><th>AI Diagnosis</th><th>Severity</th><th>Status</th><th>Officer</th><th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHTML}</tbody>
+          </table>
+
+          <div class="footer">
+            <div>Generated dynamically from PikSuraksha Agricultural Database. Confidential State Record.</div>
+            <div>Page 1 of 1 • Authorized Agriculture Extension Officer Seal</div>
+          </div>
+
+          ${autoPrint ? `<script>window.onload = function() { setTimeout(function() { window.print(); }, 250); };</script>` : ''}
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    showToast(autoPrint ? 'Opening Print View...' : 'Generated Official PDF Report successfully.');
+  };
+
   // Print Summary PDF Report
   const printReport = () => {
-    window.print();
+    downloadPDFReport(true);
   };
 
   const totalFiltered = filteredCases.length;
@@ -223,11 +366,11 @@ const GovReportsPage = () => {
         </div>
 
         <div className="banner-action-group">
-          <button className="gov-btn-action secondary" onClick={printReport} title="Print or Save PDF Summary">
-            🖨️ {t("Print PDF Executive Summary")}
+          <button className="gov-btn-action primary" onClick={() => downloadPDFReport(false)} title="Download Official PDF Report">
+            📄 {t("Download PDF Report")}
           </button>
-          <button className="gov-btn-action primary" onClick={exportCSV} title="Download CSV Dataset">
-            📥 {t("Export Data (CSV)")}
+          <button className="gov-btn-action secondary" onClick={printReport} title="Print or Save PDF Summary">
+            🖨️ {t("Print Summary")}
           </button>
         </div>
       </div>
@@ -414,9 +557,6 @@ const GovReportsPage = () => {
             <h3>📋 {t("Detailed Case Resolution & Officer Action Log")}</h3>
             <p className="subtext">{t("Displaying")} {filteredCases.length} {t("official active case records")}</p>
           </div>
-          <button className="btn-table-download" onClick={exportCSV}>
-            📥 {t("Download Full CSV")}
-          </button>
         </div>
 
         <div className="reports-table-container">

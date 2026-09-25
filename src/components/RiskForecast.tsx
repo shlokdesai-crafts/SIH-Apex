@@ -1,5 +1,6 @@
 import { useTranslation } from '../i18n/useTranslation';
 import { useState } from 'react';
+import { ALL_CROPS_LIST } from '../constants/crops';
 import './RiskForecast.css';
 import type { WeatherData } from '../services/weatherService';
 import type { LocationResult } from '../services/locationService';
@@ -172,13 +173,19 @@ export default function RiskForecast({
             <div className="rf-info-text">
               <span className="rf-info-label">{t("Crop")}</span>
               <select className="rf-crop-select" value={selectedCrop} onChange={e => setSelectedCrop(e.target.value)}>
-                {farmState && farmState.crops && farmState.crops.length > 0 ? farmState.crops.map(c => <option key={c.id} value={c.name}>
+                {farmState && farmState.crops && farmState.crops.length > 0 ? (
+                  farmState.crops.map(c => (
+                    <option key={c.id} value={c.name}>
                       {c.name} ({c.status})
-                    </option>) : <>
-                    <option value="Cotton">{t("Cotton")}</option>
-                    <option value="Soybean">{t("Soybean")}</option>
-                    <option value="Sugarcane">{t("Sugarcane")}</option>
-                  </>}
+                    </option>
+                  ))
+                ) : (
+                  ALL_CROPS_LIST.map((crop) => (
+                    <option key={crop} value={crop}>
+                      {t(crop)}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
           </div>
@@ -272,7 +279,6 @@ export default function RiskForecast({
               </svg>
               <h3>{t("Overall Crop Risk")}</h3>
             </div>
-            <a href="#" className="rf-link">{t("View Details →")}</a>
           </div>
           <div className="rf-overall-risk-content">
             <div className="rf-overall-icon">
@@ -365,7 +371,6 @@ export default function RiskForecast({
               </svg>
               <h3>{t("Risk by Issue Type")}</h3>
             </div>
-            <a href="#" className="rf-link">{t("View Details →")}</a>
           </div>
           <div className="rf-issue-list">
             {/* Dynamic Issue from Scan */}
@@ -452,7 +457,6 @@ export default function RiskForecast({
               </svg>
               <h3>{t("Weather Forecast")} <span>{t("(Next 7 Days)")}</span></h3>
             </div>
-            <a href="#" className="rf-link">{t("View Forecast →")}</a>
           </div>
           <div className="rf-weather-content">
             <div className="rf-weather-stats">

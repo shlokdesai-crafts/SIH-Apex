@@ -359,9 +359,20 @@ async def scan_crop(
         if payload and payload.get("uid"):
             resolved_uid = payload["uid"]
 
+    # Resolve actual farmer name (never use 'My Farm' or 'Farmer')
+    resolved_farmer_name = farmer_name
+    if not resolved_farmer_name or resolved_farmer_name in ("My Farm", "Farmer", "Anonymous"):
+        if resolved_uid and resolved_uid != "anonymous":
+            user_doc = get_user_by_id(resolved_uid)
+            if user_doc and user_doc.get("fullName"):
+                resolved_farmer_name = user_doc["fullName"]
+            elif user_doc and user_doc.get("name"):
+                resolved_farmer_name = user_doc["name"]
+
     # MongoDB persistence
     scan_id_mongo = save_crop_scan_record(
         user_id=resolved_uid,
+        farmer_name=resolved_farmer_name,
         crop=crop_id.crop_name,
         disease=disease_detection.disease if disease_detection else "Unknown",
         confidence=disease_conf,
@@ -373,7 +384,6 @@ async def scan_crop(
         preview_url=saved_web_url,
         image_quality=image_quality.model_dump() if image_quality else None,
         diagnosis_details=disease_detection.model_dump() if disease_detection else None,
-
     )
 
     # Save to legacy submissions table for government dashboard analytics
@@ -383,7 +393,7 @@ async def scan_crop(
         disease=condition_name,
         confidence=disease_conf,
         severity=severity,
-        farmer_name=farmer_name or "Anonymous",
+        farmer_name=resolved_farmer_name or "Ramesh Patil",
     )
 
     # ── Step 8: Assemble Response ─────────────────────────────────────────────

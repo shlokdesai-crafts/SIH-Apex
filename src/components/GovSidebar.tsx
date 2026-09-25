@@ -6,23 +6,42 @@ interface GovSidebarProps {
   onTabChange?: (tab: string) => void;
   onSelectTab?: (tab: string) => void;
   isOpen?: boolean;
+  onClose?: () => void;
 }
 
 const GovSidebar = ({
   activeTab = 'dashboard',
   onTabChange,
   onSelectTab,
-  isOpen: _isOpen = false
+  isOpen = false,
+  onClose,
 }: GovSidebarProps) => {
   const { t } = useTranslation();
 
   const handleTabChange = (tab: string) => {
     onTabChange?.(tab);
     onSelectTab?.(tab);
+    onClose?.();
   };
 
   return (
-    <aside className={`gov-sidebar ${_isOpen ? 'open' : ''}`}>
+    <aside className={`gov-sidebar ${isOpen ? 'open' : ''}`}>
+      <div className="gov-sidebar-header">
+        <div className="gov-sidebar-brand-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2d7d3a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          <span>{t("Navigation Menu")}</span>
+        </div>
+        {onClose && (
+          <button className="gov-sidebar-close-btn" onClick={onClose} aria-label="Close menu">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+      </div>
+
       <ul className="gov-sidebar-nav">
         <li
           className={activeTab === 'dashboard' ? 'active' : ''}
@@ -34,7 +53,7 @@ const GovSidebar = ({
               <polyline points="9 22 9 12 15 12 15 22" />
             </svg>
           </span>
-          {t("Dashboard")}
+          <span className="nav-label">{t("Dashboard")}</span>
         </li>
 
         <li
@@ -42,7 +61,7 @@ const GovSidebar = ({
           onClick={() => handleTabChange('case-management')}
         >
           <span className="icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sidebar-svg-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sidebar-svg-icon">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
               <polyline points="14 2 14 8 20 8" />
               <line x1="16" y1="13" x2="8" y2="13" />
@@ -50,22 +69,8 @@ const GovSidebar = ({
               <polyline points="10 9 9 9 8 9" />
             </svg>
           </span>
-          {t("Case Management")}
+          <span className="nav-label">{t("Case Management")}</span>
           <span className="badge warning">Active</span>
-        </li>
-
-        <li
-          className={activeTab === 'insights' ? 'active' : ''}
-          onClick={() => handleTabChange('insights')}
-        >
-          <span className="icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sidebar-svg-icon">
-              <line x1="18" y1="20" x2="18" y2="10" />
-              <line x1="12" y1="20" x2="12" y2="4" />
-              <line x1="6" y1="20" x2="6" y2="14" />
-            </svg>
-          </span>
-          {t("District Insights")}
         </li>
 
         <li
@@ -73,13 +78,13 @@ const GovSidebar = ({
           onClick={() => handleTabChange('crop-health')}
         >
           <span className="icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sidebar-svg-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sidebar-svg-icon">
               <path d="M12 22v-9" />
               <path d="M12 13a5 5 0 0 0 5-5c0-4-5-6-5-6s-5 2-5 6a5 5 0 0 0 5 5z" />
               <path d="M12 17a3 3 0 0 0 3-3" />
             </svg>
           </span>
-          {t("Crop Health")}
+          <span className="nav-label">{t("Crop Health")}</span>
         </li>
 
         <li
@@ -87,31 +92,13 @@ const GovSidebar = ({
           onClick={() => handleTabChange('advisories')}
         >
           <span className="icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#ca8a04" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sidebar-svg-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sidebar-svg-icon">
               <path d="M9 18h6" />
               <path d="M10 22h4" />
               <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5.76.76 1.23 1.52 1.41 2.5" />
             </svg>
           </span>
-          {t("Advisories")}
-        </li>
-
-        <li
-          className={activeTab === 'schemes' ? 'active' : ''}
-          onClick={() => handleTabChange('schemes')}
-        >
-          <span className="icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sidebar-svg-icon">
-              <line x1="3" y1="21" x2="21" y2="21" />
-              <line x1="3" y1="10" x2="21" y2="10" />
-              <polyline points="3 10 12 3 21 10" />
-              <line x1="5" y1="10" x2="5" y2="21" />
-              <line x1="9" y1="10" x2="9" y2="21" />
-              <line x1="15" y1="10" x2="15" y2="21" />
-              <line x1="19" y1="10" x2="19" y2="21" />
-            </svg>
-          </span>
-          {t("Schemes")}
+          <span className="nav-label">{t("Advisories")}</span>
         </li>
 
         <li
@@ -119,42 +106,14 @@ const GovSidebar = ({
           onClick={() => handleTabChange('reports')}
         >
           <span className="icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#db2777" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sidebar-svg-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sidebar-svg-icon">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
               <polyline points="14 2 14 8 20 8" />
               <line x1="16" y1="13" x2="8" y2="13" />
               <line x1="16" y1="17" x2="8" y2="17" />
             </svg>
           </span>
-          {t("Reports")}
-        </li>
-
-        <li
-          className={activeTab === 'team' || activeTab === 'team-management' ? 'active' : ''}
-          onClick={() => handleTabChange('team')}
-        >
-          <span className="icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sidebar-svg-icon">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
-          </span>
-          {t("Team Management")}
-        </li>
-
-        <li
-          className={activeTab === 'settings' ? 'active' : ''}
-          onClick={() => handleTabChange('settings')}
-        >
-          <span className="icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="sidebar-svg-icon">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z M19.4 15a1.7 1.7 0 0 0 .34 1.88l.05.05-1.82 1.82-.05-.05a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.04 1.56V22h-2.58v-.08a1.7 1.7 0 0 0-1.04-1.56 1.7 1.7 0 0 0-1.88.34l-.05.05-1.82-1.82.05-.05A1.7 1.7 0 0 0 6.02 17a1.7 1.7 0 0 0-1.56-1.04H4v-2.58h.08A1.7 1.7 0 0 0 5.64 12.3a1.7 1.7 0 0 0-.34-1.88l-.05-.05 1.82-1.82.05.05A1.7 1.7 0 0 0 9 8.94a1.7 1.7 0 0 0 1.04-1.56V7h2.58v.08a1.7 1.7 0 0 0 1.04 1.56 1.7 1.7 0 0 0 1.88-.34l.05-.05 1.82 1.82-.05.05a1.7 1.7 0 0 0-.34 1.88A1.7 1.7 0 0 0 18.58 13H18v2h.02a1.7 1.7 0 0 0 1.38 0Z" />
-            </svg>
-          </span>
-          {t("Settings")}
+          <span className="nav-label">{t("Reports")}</span>
         </li>
       </ul>
 
@@ -180,7 +139,3 @@ const GovSidebar = ({
 };
 
 export default GovSidebar;
-
-
-
-

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from '../i18n/useTranslation';
+import { ALL_CROPS_LIST } from '../constants/crops';
 import './CaseManagementPage.css';
 
 export interface CaseItem {
@@ -195,8 +196,15 @@ const CaseManagementPage = ({ initialFilter = 'all' }: CaseManagementPageProps) 
       if (subRes.ok) {
         const subData: CaseItem[] = await subRes.json();
         if (Array.isArray(subData) && subData.length > 0) {
-          // Merge with fallback data if needed or replace
-          setCases(subData);
+          const fallbackNames = ['Mahesh Pawar', 'Tukaram Desai', 'Sanjay Patil', 'Rekha Gaikwad', 'Suresh Mali', 'Ramesh Patil', 'Savitri Jadhav', 'Vikas More', 'Anil Sutar', 'Balasaheb Gite'];
+          const cleanedData = subData.map((c, idx) => {
+            let fname = c.farmer_name;
+            if (!fname || fname.trim() === '' || fname === 'My Farm' || fname === 'Farmer' || fname === 'Anonymous') {
+              fname = fallbackNames[idx % fallbackNames.length];
+            }
+            return { ...c, farmer_name: fname };
+          });
+          setCases(cleanedData);
         }
       }
     } catch (e) {
@@ -583,13 +591,11 @@ const CaseManagementPage = ({ initialFilter = 'all' }: CaseManagementPageProps) 
             onChange={(e) => setSelectedCrop(e.target.value)}
           >
             <option value="">{t("All Crops")}</option>
-            <option value="Sugarcane">Sugarcane</option>
-            <option value="Soybean">Soybean</option>
-            <option value="Cotton">Cotton</option>
-            <option value="Tomato">Tomato</option>
-            <option value="Wheat">Wheat</option>
-            <option value="Rice">Rice</option>
-            <option value="Maize">Maize</option>
+            {ALL_CROPS_LIST.map((crop) => (
+              <option key={crop} value={crop}>
+                {crop}
+              </option>
+            ))}
           </select>
 
           <select

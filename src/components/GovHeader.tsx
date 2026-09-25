@@ -169,13 +169,20 @@ const GovHeader = ({
         >
           <div className="gov-logo-badge">
             <svg
-              viewBox="0 0 32 32"
+              viewBox="0 0 48 48"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
               className="gov-logo-icon"
             >
               <path
-                d="M16 28V16M16 16C16 10 21 6 27 6C27 12 23 17 16 16ZM16 16C16 10 11 6 5 6C5 12 9 17 16 16Z"
+                d="M24 4L6 12v12c0 11.1 7.68 21.48 18 24 10.32-2.52 18-12.9 18-24V12L24 4z"
+                fill="#22c55e"
+                fillOpacity="0.25"
+                stroke="#86efac"
+                strokeWidth="2"
+              />
+              <path
+                d="M24 38V24M24 24c0-6 5-10 11-10-1 6-5 11-11 10zM24 24c0-6-5-10-11-10 1 6 5 11 11 10z"
                 stroke="#86efac"
                 strokeWidth="2.4"
                 strokeLinecap="round"
@@ -183,12 +190,13 @@ const GovHeader = ({
                 fill="#22c55e"
                 fillOpacity="0.4"
               />
+              <circle cx="24" cy="12" r="2.5" fill="#fbbf24"/>
             </svg>
           </div>
 
           <div className="gov-logo-text">
             <div className="gov-brand-row">
-              <span className="gov-brand-title">CropGuard</span>
+              <span className="gov-brand-title">PikSuraksha</span>
               <span className="gov-brand-pill">Gov Portal</span>
             </div>
             <span className="gov-logo-dept">Maharashtra Dept of Agriculture</span>
@@ -261,14 +269,11 @@ const GovHeader = ({
         </button>
       </nav>
 
-      {/* ── Right: Jurisdiction, Notifications & Profile ── */}
+      {/* ── Right: State Badge, Notifications & Profile ── */}
       <div className="gov-header-right">
-        <div className="gov-region-select" title="Selected Jurisdiction State">
-          <span className="gov-region-flag">🏛️</span>
-          <select defaultValue="Maharashtra">
-            <option value="Maharashtra">{t("Maharashtra")}</option>
-          </select>
-          <span className="gov-select-arrow">▼</span>
+        <div className="gov-state-badge" title="State Jurisdiction: Maharashtra">
+          <span className="gov-state-flag">🏛️</span>
+          <span>{t("Maharashtra")}</span>
         </div>
 
         {/* ── Notifications Icon & Dropdown ── */}

@@ -1,5 +1,6 @@
 import { useTranslation } from '../i18n/useTranslation';
 import { useState, useEffect } from 'react';
+import { ALL_CROPS_LIST } from '../constants/crops';
 import './AIUnidentifiedPage.css';
 
 const AIUnidentifiedPage = () => {
@@ -79,12 +80,11 @@ const AIUnidentifiedPage = () => {
         <input type="text" placeholder={t("Search by farmer name or case ID...")} className="gov-input" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
         <select className="gov-select" value={selectedCrop} onChange={(e) => setSelectedCrop(e.target.value)}>
           <option value="">{t("All Crops")}</option>
-          <option value="Sugarcane">Sugarcane</option>
-          <option value="Soybean">Soybean</option>
-          <option value="Tomato">Tomato</option>
-          <option value="Grapes">Grapes</option>
-          <option value="Cotton">Cotton</option>
-          <option value="Wheat">Wheat</option>
+          {ALL_CROPS_LIST.map((crop) => (
+            <option key={crop} value={crop}>
+              {crop}
+            </option>
+          ))}
         </select>
         <select className="gov-select" value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
           <option value="">{t("All Statuses")}</option>

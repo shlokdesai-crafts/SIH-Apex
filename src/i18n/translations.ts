@@ -14,7 +14,7 @@ export interface TranslationDictionary {
 export const translations: Record<Language, TranslationDictionary> = {
   en: {
     // ─── Header / Nav ──────────────────────────────────────────
-    'header.brand': 'CropGuard',
+    'header.brand': 'PikSuraksha',
     'header.subtitle': 'Healthy Crops. Stronger Maharashtra',
     'nav.home': 'Home',
     'nav.scanCrop': 'Scan Crop',
@@ -49,7 +49,7 @@ export const translations: Record<Language, TranslationDictionary> = {
     'hero.greeting': 'Namaskar,',
     'hero.tagline': 'Your crops. Our AI. A healthier tomorrow.',
     'hero.quote': '"समृद्ध शेती, समृद्ध महाराष्ट्र."',
-    'hero.quoteAuthor': '— CropGuard',
+    'hero.quoteAuthor': '— PikSuraksha',
     'hero.sloganFrom': 'From',
     'hero.sloganOurFields': 'Our Fields',
     'hero.sloganTo': 'to a Healthier',
@@ -174,9 +174,9 @@ export const translations: Record<Language, TranslationDictionary> = {
     'lang.english': 'English',
     'lang.selectLanguage': 'Select Language',
     'auth.loginTitle': 'Welcome Back',
-    'auth.loginSubtitle': 'Sign in to your CropGuard account',
+    'auth.loginSubtitle': 'Sign in to your PikSuraksha account',
     'auth.signupTitle': 'Create Account',
-    'auth.signupSubtitle': 'Join CropGuard and protect your crops',
+    'auth.signupSubtitle': 'Join PikSuraksha and protect your crops',
     'auth.phone': 'Phone Number',
     'auth.phonePlaceholder': 'Enter 10-digit phone number',
     'auth.password': 'Password',
@@ -358,7 +358,7 @@ export const translations: Record<Language, TranslationDictionary> = {
 
   hi: {
     // ─── Header / Nav ──────────────────────────────────────────
-    'header.brand': 'क्रॉपगार्ड',
+    'header.brand': 'पिकसुरक्षा',
     'header.subtitle': 'स्वस्थ फसलें। मजबूत महाराष्ट्र',
     'nav.home': 'होम',
     'nav.scanCrop': 'फसल स्कैन',
@@ -393,7 +393,7 @@ export const translations: Record<Language, TranslationDictionary> = {
     'hero.greeting': 'नमस्कार,',
     'hero.tagline': 'आपकी फसलें। हमारी AI। एक स्वस्थ कल।',
     'hero.quote': '"समृद्ध खेती, समृद्ध महाराष्ट्र।"',
-    'hero.quoteAuthor': '— क्रॉपगार्ड',
+    'hero.quoteAuthor': '— पिकसुरक्षा',
     'hero.sloganFrom': 'हमारे',
     'hero.sloganOurFields': 'खेतों से',
     'hero.sloganTo': 'एक स्वस्थ',
@@ -518,9 +518,9 @@ export const translations: Record<Language, TranslationDictionary> = {
     'lang.english': 'English',
     'lang.selectLanguage': 'भाषा चुनें',
     'auth.loginTitle': 'वापस स्वागत है',
-    'auth.loginSubtitle': 'अपने क्रॉपगार्ड खाते में साइन इन करें',
+    'auth.loginSubtitle': 'अपने पिकसुरक्षा खाते में साइन इन करें',
     'auth.signupTitle': 'खाता बनाएं',
-    'auth.signupSubtitle': 'क्रॉपगार्ड से जुड़ें और अपनी फसलों की रक्षा करें',
+    'auth.signupSubtitle': 'पिकसुरक्षा से जुड़ें और अपनी फसलों की रक्षा करें',
     'auth.phone': 'फ़ोन नंबर',
     'auth.phonePlaceholder': '10 अंकों का फ़ोन नंबर दर्ज करें',
     'auth.password': 'पासवर्ड',
@@ -702,7 +702,7 @@ export const translations: Record<Language, TranslationDictionary> = {
 
   mr: {
     // ─── Header / Nav ──────────────────────────────────────────
-    'header.brand': 'क्रॉपगार्ड',
+    'header.brand': 'पिकसुरक्षा',
     'header.subtitle': 'निरोगी पिके. सशक्त महाराष्ट्र',
     'nav.home': 'मुख्यपृष्ठ',
     'nav.scanCrop': 'पीक स्कॅन',
@@ -737,7 +737,7 @@ export const translations: Record<Language, TranslationDictionary> = {
     'hero.greeting': 'नमस्कार,',
     'hero.tagline': 'तुमची पिके. आमची AI. एक निरोगी उद्या.',
     'hero.quote': '"समृद्ध शेती, समृद्ध महाराष्ट्र."',
-    'hero.quoteAuthor': '— क्रॉपगार्ड',
+    'hero.quoteAuthor': '— पिकसुरक्षा',
     'hero.sloganFrom': 'आमच्या',
     'hero.sloganOurFields': 'शेतांमधून',
     'hero.sloganTo': 'एक निरोगी',
@@ -862,9 +862,9 @@ export const translations: Record<Language, TranslationDictionary> = {
     'lang.english': 'English',
     'lang.selectLanguage': 'भाषा निवडा',
     'auth.loginTitle': 'पुन्हा स्वागत',
-    'auth.loginSubtitle': 'तुमच्या क्रॉपगार्ड खात्यात साइन इन करा',
+    'auth.loginSubtitle': 'तुमच्या पिकसुरक्षा खात्यात साइन इन करा',
     'auth.signupTitle': 'खाते तयार करा',
-    'auth.signupSubtitle': 'क्रॉपगार्डमध्ये सामील व्हा आणि तुमच्या पिकांचे रक्षण करा',
+    'auth.signupSubtitle': 'पिकसुरक्षामध्ये सामील व्हा आणि तुमच्या पिकांचे रक्षण करा',
     'auth.phone': 'फोन नंबर',
     'auth.phonePlaceholder': '10 अंकी फोन नंबर टाका',
     'auth.password': 'पासवर्ड',

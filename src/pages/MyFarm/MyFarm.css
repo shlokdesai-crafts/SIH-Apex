@@ -113,20 +113,11 @@
   width: 100%;
 }
 
-.farm-left-col {
+.farm-bottom-section {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  min-width: 0;
   width: 100%;
-}
-
-.farm-right-col {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  min-width: 0;
-  width: 330px;
 }
 
 /* ── Top Left Farm Profile & Health Card ── */
@@ -403,160 +394,163 @@
   text-decoration: underline;
 }
 
-/* Quick Actions List */
-.quick-actions-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+/* Quick Actions Grid */
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .quick-action-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
+  padding: 12px 14px;
   background: #f8fafc;
   border: 1px solid #f1f5f9;
-  border-radius: 10px;
+  border-radius: 12px;
   text-align: left;
   cursor: pointer;
   transition: all 0.18s ease;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .quick-action-item:hover {
   background: #ffffff;
   border-color: #cbd5e1;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  transform: translateY(-2px);
 }
 
 .qa-left {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .qa-icon-circle {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   flex-shrink: 0;
 }
 
-.qa-icon-circle.leaf {
-  background: #dcfce7;
-  color: #16a34a;
-}
+.qa-icon-circle.cam { background: #e0f2fe; color: #0284c7; }
+.qa-icon-circle.leaf { background: #dcfce7; color: #16a34a; }
+.qa-icon-circle.bulb { background: #fef9c3; color: #d97706; }
+.qa-icon-circle.report { background: #ccfbf1; color: #0d9488; }
+.qa-icon-circle.calendar { background: #ffe4e6; color: #e11d48; }
 
-.qa-icon-circle.bulb {
-  background: #fef3c7;
-  color: #d97706;
-}
-
-.qa-icon-circle.report {
-  background: #ccfbf1;
-  color: #0d9488;
-}
-
-.qa-icon-circle.calendar {
-  background: #d1fae5;
-  color: #059669;
+.qa-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .qa-text strong {
-  display: block;
   font-size: 0.88rem;
+  font-weight: 700;
   color: #0f172a;
-  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .qa-text span {
-  display: block;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .qa-chevron {
+  font-size: 1.1rem;
   color: #94a3b8;
-  font-size: 0.9rem;
+  flex-shrink: 0;
+  margin-left: 6px;
 }
 
-/* Farm Insights List */
-.insights-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+/* Farm Insights Grid */
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 14px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .insight-card-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 10px 12px;
+  padding: 14px 16px;
   background: #f8fafc;
   border: 1px solid #f1f5f9;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
   transition: all 0.18s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .insight-card-item:hover {
   background: #ffffff;
   border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  transform: translateY(-2px);
 }
 
 .insight-card-left {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  flex: 1;
 }
 
 .insight-icon-box {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 1.2rem;
   flex-shrink: 0;
-  margin-top: 2px;
 }
 
-.insight-icon-box.leaf {
-  background: #dcfce7;
-  color: #16a34a;
-}
+.insight-icon-box.leaf { background: #dcfce7; color: #16a34a; }
+.insight-icon-box.alert { background: #fee2e2; color: #dc2626; }
+.insight-icon-box.chart { background: #e0f2fe; color: #0284c7; }
 
-.insight-icon-box.alert {
-  background: #fee2e2;
-  color: #dc2626;
-}
-
-.insight-icon-box.chart {
-  background: #e0f2fe;
-  color: #0284c7;
+.insight-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
 }
 
 .insight-card-text strong {
-  display: block;
-  font-size: 0.84rem;
+  font-size: 0.88rem;
+  font-weight: 700;
   color: #0f172a;
-  font-weight: 600;
   line-height: 1.35;
-  margin-bottom: 2px;
 }
 
 .insight-card-text span {
-  display: block;
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   color: #64748b;
+  line-height: 1.35;
 }
 
 /* ── Middle Section: My Crops ── */
@@ -751,13 +745,15 @@
   color: #ffffff;
 }
 
-/* ── Bottom Section: 3 Columns (Activity, Fields, Priority Actions) ── */
+/* ── Bottom Section: 3 Cards Grid (Activity, Fields, Priority Actions) ── */
+.farm-grid-three-cards,
 .farm-grid-bottom {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 20px;
   width: 100%;
   min-width: 0;
+  box-sizing: border-box;
 }
 
 /* Recent Activity Table */

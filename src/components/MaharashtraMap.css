@@ -126,4 +126,21 @@
   font-weight: 600;
 }
 
+@media (max-width: 600px) {
+  .gov-map-container,
+  .gov-map-container .leaflet-container {
+    height: 300px !important;
+    min-height: 280px !important;
+  }
+  .gov-map-legend {
+    bottom: 8px;
+    right: 8px;
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+  .case-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 

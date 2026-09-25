@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../i18n/useTranslation';
+import { ALL_CROPS_LIST } from '../constants/crops';
 import './GovAdvisoriesPage.css';
 
 export interface GovAdvisoryDirective {
@@ -277,11 +278,11 @@ const GovAdvisoriesPage = () => {
         <div className="advisory-filters-group">
           <select value={selectedCrop} onChange={(e) => setSelectedCrop(e.target.value)}>
             <option value="">🌾 {t("All Crops")}</option>
-            <option value="Sugarcane">Sugarcane</option>
-            <option value="Soybean">Soybean</option>
-            <option value="Cotton">Cotton</option>
-            <option value="Tomato">Tomato</option>
-            <option value="Wheat">Wheat</option>
+            {ALL_CROPS_LIST.map((crop) => (
+              <option key={crop} value={crop}>
+                {crop}
+              </option>
+            ))}
           </select>
 
           <select value={selectedSeverity} onChange={(e) => setSelectedSeverity(e.target.value)}>

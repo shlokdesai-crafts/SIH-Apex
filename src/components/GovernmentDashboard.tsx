@@ -80,11 +80,15 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
       />
 
       <div className="gov-dashboard-main">
+        {sidebarOpen && (
+          <div className="gov-sidebar-overlay" onClick={() => setSidebarOpen(false)} />
+        )}
         <GovSidebar
           activeTab={activeTab}
           onTabChange={handleTabChange}
           onSelectTab={handleTabChange}
           isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
         />
 
         <div className="gov-dashboard-content">

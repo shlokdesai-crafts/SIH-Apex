@@ -232,7 +232,7 @@ export async function signup(data: SignupData): Promise<AuthResult> {
     return { success: true, user, token };
   } catch (err: any) {
     console.error('Signup network error:', err);
-    return { success: false, error: 'Network error connecting to CropGuard server.' };
+    return { success: false, error: 'Network error connecting to PikSuraksha server.' };
   }
 }
 
@@ -277,7 +277,7 @@ export async function login(phone: string, password: string, role: string): Prom
     return { success: true, user, token };
   } catch (err: any) {
     console.error('Login network error:', err);
-    return { success: false, error: 'Network error connecting to CropGuard server.' };
+    return { success: false, error: 'Network error connecting to PikSuraksha server.' };
   }
 }
 

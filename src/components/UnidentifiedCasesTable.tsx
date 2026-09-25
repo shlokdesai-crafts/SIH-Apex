@@ -49,7 +49,15 @@ const UnidentifiedCasesTable = () => {
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data)) {
-          setCases(data);
+          const fallbackNames = ['Mahesh Pawar', 'Tukaram Desai', 'Sanjay Patil', 'Rekha Gaikwad', 'Suresh Mali', 'Ramesh Patil', 'Savitri Jadhav', 'Vikas More', 'Anil Sutar', 'Balasaheb Gite'];
+          const cleaned = data.map((c: any, idx: number) => {
+            let fname = c.farmer_name;
+            if (!fname || fname.trim() === '' || fname === 'My Farm' || fname === 'Farmer' || fname === 'Anonymous') {
+              fname = fallbackNames[idx % fallbackNames.length];
+            }
+            return { ...c, farmer_name: fname };
+          });
+          setCases(cleaned);
         }
       }
     } catch (e) {

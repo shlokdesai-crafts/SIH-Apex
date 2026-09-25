@@ -3,12 +3,25 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../i18n/useTranslation';
 import { AuthContext } from '../auth/AuthContext';
 import type { Language } from '../i18n/translations';
+import { GOV_ALERTS } from '../services/govDataService';
+
 interface HeaderProps {
   activeTab?: string;
   setActiveTab?: (tab: string) => void;
   activeNav?: string;
   onNavigate?: (navId: string) => void;
 }
+
+interface HeaderNotification {
+  id: number | string;
+  title: string;
+  desc: string;
+  time: string;
+  icon: string;
+  type: string;
+  isRead: boolean;
+}
+
 export default function Header({
   activeTab,
   setActiveTab,
@@ -19,6 +32,20 @@ export default function Header({
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [notifMenuOpen, setNotifMenuOpen] = useState(false);
+
+  const [notifications, setNotifications] = useState<HeaderNotification[]>(() =>
+    GOV_ALERTS.map((alert, idx) => ({
+      id: alert.id,
+      title: alert.title,
+      desc: alert.desc,
+      time: alert.time,
+      icon: alert.icon,
+      type: alert.type,
+      isRead: idx >= 3,
+    }))
+  );
+
   const {
     t,
     language,
@@ -32,6 +59,8 @@ export default function Header({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const mobileNavRef = useRef<HTMLDivElement>(null);
+  const notifMenuRef = useRef<HTMLDivElement>(null);
+
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, navId: string) => {
     e.preventDefault();
     if (setActiveTab) {
@@ -55,20 +84,42 @@ export default function Header({
       if (mobileNavRef.current && !mobileNavRef.current.contains(e.target as Node)) {
         setMobileNavOpen(false);
       }
+      if (notifMenuRef.current && !notifMenuRef.current.contains(e.target as Node)) {
+        setNotifMenuOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
   const handleLanguageSelect = (lang: Language) => {
     setLanguage(lang);
     setLangDropdownOpen(false);
   };
+
   const handleLogout = () => {
     logout();
     navigate('/login', {
       replace: true
     });
   };
+
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  const handleMarkAllRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  };
+
+  const handleClearNotifications = () => {
+    setNotifications([]);
+  };
+
+  const handleNotificationClick = (id: number | string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+    );
+  };
+
   const languageDisplayMap: Record<Language, string> = {
     en: 'English',
     hi: 'हिंदी',
@@ -103,10 +154,10 @@ export default function Header({
           </svg>
         </button>
         <div className="nav-logo">
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <ellipse cx="16" cy="22" rx="10" ry="7" fill="#2d8a3e" />
-            <path d="M16 22 C12 14, 6 10, 10 4 C14 10, 22 8, 22 4 C24 10, 20 16, 16 22Z" fill="#4CAF50" />
-            <path d="M16 22 C14 16, 10 12, 16 6 C16 12, 20 16, 16 22Z" fill="#81C784" opacity="0.7" />
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M24 4L6 12v12c0 11.1 7.68 21.48 18 24 10.32-2.52 18-12.9 18-24V12L24 4z" fill="#e8f5e9" stroke="#2d7d3a" strokeWidth="2"/>
+            <path d="M24 38V24M24 24c0-6 5-10 11-10-1 6-5 11-11 10zM24 24c0-6-5-10-11-10 1 6 5 11 11 10z" stroke="#4CAF50" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="#81C784" fillOpacity="0.4"/>
+            <circle cx="24" cy="12" r="3" fill="#FFB300"/>
           </svg>
         </div>
         <div className="nav-brand-text">
@@ -151,11 +202,6 @@ export default function Header({
               <button className={`lang-option ${language === 'mr' ? 'active' : ''}`} role="option" aria-selected={language === 'mr'} onClick={() => handleLanguageSelect('mr')}><span className="lang-option-label">मराठी</span><span className="lang-option-native">{t("MR")}</span>{language === 'mr' && <span className="lang-check">✓</span>}</button>
             </div>}
         </div>
-
-        <button className="notif-btn" id="notif-btn" aria-label={t('header.notifications')}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" /></svg>
-          <span className="notif-badge">3</span>
-        </button>
 
         <div className="user-profile-wrapper" ref={userMenuRef}>
           <div className="user-profile" id="user-profile-btn" onClick={() => setUserMenuOpen(!userMenuOpen)} role="button" tabIndex={0} aria-expanded={userMenuOpen}>

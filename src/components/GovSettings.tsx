@@ -395,7 +395,7 @@ export default function GovSettings() {
           </div>
           <div className="gov-settings-titles">
             <h1>Settings</h1>
-            <p>Manage your CropGuard account, government role, notifications, AI preferences and data access.</p>
+            <p>Manage your PikSuraksha account, government role, notifications, AI preferences and data access.</p>
           </div>
         </div>
       </div>
@@ -949,7 +949,7 @@ export default function GovSettings() {
       {/* ── Government Footer ── */}
       <footer className="gov-footer">
         <div className="gov-footer-left">
-          © 2025 CropGuard | Maharashtra Agriculture Department | Government of Maharashtra
+          © 2025 PikSuraksha | Maharashtra Agriculture Department | Government of Maharashtra
         </div>
 
         <div className="gov-footer-right">

@@ -72,3 +72,13 @@
 .full-width {
   width: 100%;
 }
+
+@media (max-width: 600px) {
+  .ai-unidentified-page {
+    padding: 12px;
+  }
+  .ai-cases-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}

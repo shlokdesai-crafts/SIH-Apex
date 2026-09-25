@@ -1,5 +1,7 @@
-import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo, useContext } from 'react';
 import { useFarm } from '../context/FarmContext';
+import { useTranslation } from '../i18n/useTranslation';
+import { AuthContext } from '../auth/AuthContext';
 import { scanCropImage, getScanHistory, deleteScan, type ScanHistoryItem } from '../services/cropScanApi';
 import { getBrowserPosition, reverseGeocode } from '../services/locationService';
 import TranslatedText from './TranslatedText';
@@ -129,8 +131,9 @@ interface ScanCropProps {
   onNavigateTab?: (tab: string) => void;
 }
 
-export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProps = {}) {
+  const { t } = useTranslation();
   const { farmState, recordScan, scanTarget, clearScanTarget, startAdvisoryForCrop } = useFarm();
+  const { user } = useContext(AuthContext);
 
   // Workflow Step: idle -> preview -> scanning -> result
   const [step, setStep] = useState<Step>('idle');
@@ -609,8 +612,8 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
       const json = await scanCropImage(uploadedFile, {
         latitude: lat,
         longitude: lng,
-        farmerId: farmState?.farmerId || 'default_farmer',
-        farmerName: farmState?.farmDetails?.name || 'Farmer',
+        farmerId: farmState?.farmerId || user?.id || 'default_farmer',
+        farmerName: user?.fullName || (farmState?.farmerName && farmState.farmerName !== 'My Farm' ? farmState.farmerName : undefined),
         crop: selectedCrop,
         fieldId: selectedFieldId || undefined,
         location: farmLocation.trim() || undefined,
@@ -625,7 +628,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
       }
 
       if (json.status === 'unsupported_crop') {
-        setBackendError(json.message || "This crop is not currently supported by the CropGuard recognition model.");
+        setBackendError(json.message || "This crop is not currently supported by the PikSuraksha recognition model.");
         setStep('preview');
         setScanProgress(0);
         setIsSubmitting(false);

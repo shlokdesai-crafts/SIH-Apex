@@ -4,7 +4,7 @@
   align-items: center;
   background-color: #064e3b;
   color: #ffffff;
-  padding: 0 24px;
+  padding: 0 20px;
   height: 64px;
   border-bottom: 1px solid #043e2f;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -12,11 +12,13 @@
   position: relative;
   z-index: 1000;
   width: 100%;
+  gap: 16px;
 }
 
 .gov-header-left {
   display: flex;
   align-items: center;
+  gap: 10px;
   flex-shrink: 0;
 }
 
@@ -28,7 +30,6 @@
   padding: 6px 8px;
   border-radius: 8px;
   cursor: pointer;
-  margin-right: 10px;
   align-items: center;
   justify-content: center;
   transition: background 0.15s ease;
@@ -41,7 +42,7 @@
 .gov-logo-clickable {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   cursor: pointer;
   user-select: none;
   transition: opacity 0.15s ease;
@@ -52,8 +53,8 @@
 }
 
 .gov-logo-badge {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(134, 239, 172, 0.35);
   border-radius: 10px;
@@ -61,11 +62,12 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
 }
 
 .gov-logo-icon {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
 }
 
 .gov-logo-text {
@@ -81,41 +83,42 @@
 }
 
 .gov-brand-title {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 800;
   color: #ffffff;
   letter-spacing: -0.3px;
   line-height: 1.1;
+  white-space: nowrap;
 }
 
 .gov-brand-pill {
   background: #166534;
   color: #86efac;
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
   padding: 1px 6px;
   border-radius: 4px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
   border: 1px solid rgba(134, 239, 172, 0.3);
+  white-space: nowrap;
 }
 
 .gov-logo-dept {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 500;
   color: #a7f3d0;
   margin-top: 1px;
   white-space: nowrap;
 }
 
-/* ── Centered Navigation ── */
+/* ── Navigation Buttons ── */
 .gov-header-nav {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  margin: 0 auto;
-  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .gov-nav-btn {
@@ -127,11 +130,12 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 7px 14px;
+  gap: 6px;
+  padding: 7px 12px;
   border-radius: 8px;
   transition: all 0.18s ease;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .gov-nav-btn:hover {
@@ -148,6 +152,7 @@
 
 .gov-nav-btn svg {
   opacity: 0.9;
+  flex-shrink: 0;
 }
 
 .gov-nav-btn.active svg {
@@ -159,46 +164,28 @@
 .gov-header-right {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+  white-space: nowrap;
   flex-shrink: 0;
 }
 
-.gov-region-select {
+.gov-state-badge {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  padding: 4px 10px;
-  border-radius: 20px;
-}
-
-.gov-region-flag {
-  font-size: 13px;
-}
-
-.gov-region-select select {
-  background: transparent;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(134, 239, 172, 0.35);
   color: #ffffff;
-  border: none;
-  font-size: 12.5px;
+  font-size: 11.5px;
   font-weight: 600;
-  cursor: pointer;
-  outline: none;
-  appearance: none;
-  -webkit-appearance: none;
-  padding-right: 4px;
+  padding: 4px 10px;
+  border-radius: 16px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.gov-region-select select option {
-  color: #0f172a;
-  background: #ffffff;
-}
-
-.gov-select-arrow {
-  color: #a7f3d0;
-  font-size: 9px;
-  pointer-events: none;
+.gov-state-flag {
+  font-size: 12px;
 }
 
 .gov-notifications {
@@ -395,7 +382,7 @@
 .gov-account-btn {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 24px;
@@ -617,10 +604,10 @@
 /* ── Responsive Styling ── */
 @media (max-width: 1100px) {
   .gov-header-nav {
-    gap: 2px;
+    gap: 4px;
   }
   .gov-nav-btn {
-    padding: 6px 10px;
+    padding: 6px 9px;
     font-size: 12px;
   }
 }
@@ -628,7 +615,7 @@
 @media (max-width: 900px) {
   .gov-header {
     padding: 0 14px;
-    gap: 8px;
+    gap: 10px;
   }
   .gov-brand-pill {
     display: none;
@@ -636,19 +623,14 @@
   .gov-logo-dept {
     display: none;
   }
+  .gov-state-badge {
+    padding: 3px 7px;
+    font-size: 10.5px;
+  }
   .gov-nav-btn span {
     font-size: 11.5px;
   }
   .gov-account-text {
-    display: none;
-  }
-  .gov-header-nav {
-    overflow-x: auto;
-    scrollbar-width: none;
-    max-width: 50vw;
-    justify-content: flex-start;
-  }
-  .gov-header-nav::-webkit-scrollbar {
     display: none;
   }
 }
@@ -667,7 +649,7 @@
   .gov-nav-btn {
     padding: 8px;
   }
-  .gov-region-select {
+  .gov-state-badge {
     display: none;
   }
   .gov-notif-dropdown,
@@ -677,4 +659,3 @@
     max-width: 90vw;
   }
 }
-

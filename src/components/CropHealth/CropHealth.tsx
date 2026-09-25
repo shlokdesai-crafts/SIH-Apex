@@ -19,11 +19,39 @@ interface CropTabConfig {
 
 const CROP_TABS: CropTabConfig[] = [
   { id: 'all', label: 'All Crops', icon: '🌿', image: '/images/crop_healthy_leaf.jpg' },
-  { id: 'cotton', label: 'Cotton', icon: '☁️', image: '/images/cotton_crop.jpg' },
-  { id: 'soybean', label: 'Soybean', icon: '🌱', image: '/images/soybean_crop.jpg' },
-  { id: 'onion', label: 'Onion', icon: '🧅', image: '/images/crop_leaf3.jpg' },
+  { id: 'cotton', label: 'Cotton', icon: '☁️', image: '/images/crop_cotton.jpg' },
+  { id: 'soybean', label: 'Soybean', icon: '🌱', image: '/images/crop_soybean.jpg' },
+  { id: 'sugarcane', label: 'Sugarcane', icon: '🌾', image: '/images/crop_sugarcane.jpg' },
+  { id: 'rice', label: 'Rice', icon: '🌾', image: '/images/crop_rice.jpg' },
+  { id: 'wheat', label: 'Wheat', icon: '🌾', image: '/images/crop_wheat.jpg' },
   { id: 'tomato', label: 'Tomato', icon: '🍅', image: '/images/crop_tomato.jpg' },
+  { id: 'chickpea', label: 'Chickpea', icon: '🫛', image: '/images/crop_chickpea.jpg' },
+  { id: 'onion', label: 'Onion', icon: '🧅', image: '/images/crop_leaf3.jpg' },
   { id: 'potato', label: 'Potato', icon: '🥔', image: '/images/crop_leaf2.jpg' },
+  { id: 'maize', label: 'Maize', icon: '🌽', image: '/images/crop_maize.jpg' },
+  { id: 'pigeon_pea', label: 'Pigeon Pea', icon: '🫛', image: '/images/crops/pigeon_pea.png' },
+  { id: 'groundnut', label: 'Groundnut', icon: '🥜', image: '/images/crops/groundnut.png' },
+  { id: 'brinjal', label: 'Brinjal', icon: '🍆', image: '/images/crops/brinjal.png' },
+  { id: 'chili', label: 'Chili', icon: '🌶️', image: '/images/crops/chili.png' },
+  { id: 'cabbage', label: 'Cabbage', icon: '🥬', image: '/images/crops/cabbage.png' },
+  { id: 'cauliflower', label: 'Cauliflower', icon: '🥦', image: '/images/crops/cauliflower.png' },
+  { id: 'okra', label: 'Okra', icon: '🌱', image: '/images/crops/okra.png' },
+  { id: 'mustard', label: 'Mustard', icon: '🌼', image: '/images/crops/mustard.png' },
+  { id: 'sunflower', label: 'Sunflower', icon: '🌻', image: '/images/crops/sunflower.png' },
+  { id: 'banana', label: 'Banana', icon: '🍌', image: '/images/crops/banana.png' },
+  { id: 'mango', label: 'Mango', icon: '🥭', image: '/images/crops/mango.png' },
+  { id: 'cashew', label: 'Cashew', icon: '🥜', image: '/images/crops/cashew.jpg' },
+  { id: 'coffee', label: 'Coffee', icon: '☕', image: '/images/crops/coffee.jpg' },
+  { id: 'cucumber', label: 'Cucumber', icon: '🥒', image: '/images/crops/cucumber.jpg' },
+  { id: 'garlic', label: 'Garlic', icon: '🧄', image: '/images/crops/garlic.jpg' },
+  { id: 'ginger', label: 'Ginger', icon: '🫚', image: '/images/crops/ginger.jpg' },
+  { id: 'grape', label: 'Grape', icon: '🍇', image: '/images/crops/grape.jpg' },
+  { id: 'melon', label: 'Melon', icon: '🍈', image: '/images/crops/melon.jpg' },
+  { id: 'papaya', label: 'Papaya', icon: '🥭', image: '/images/crops/papaya.jpg' },
+  { id: 'bell_pepper', label: 'Bell Pepper', icon: '🫑', image: '/images/crops/chili.png' },
+  { id: 'tea', label: 'Tea', icon: '🍵', image: '/images/crops/tea.jpg' },
+  { id: 'apple', label: 'Apple', icon: '🍎', image: '/images/crops/apple.jpg' },
+  { id: 'orange', label: 'Orange', icon: '🍊', image: '/images/crops/orange.jpg' },
 ];
 
 interface AlertItem {
@@ -893,21 +921,28 @@ export default function CropHealth() {
             </div>
           </div>
 
-          {/* Crop Filter Tabs */}
-          <div className="ch-crop-tabs-bar">
-            {CROP_TABS.map((tab) => {
-              const isActive = selectedCrop === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  className={`ch-crop-tab ${isActive ? 'active' : ''}`}
-                  onClick={() => setSelectedCrop(tab.id)}
-                >
-                  <span>{tab.icon}</span>
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
+          {/* Crop Filter Selector (Single Clean Dropdown - No Scrolling Row) */}
+          <div className="ch-crop-selector-container">
+            <div className="ch-crop-dropdown-wrapper">
+              <label htmlFor="ch-crop-select" className="ch-crop-select-label">
+                <span>🌱 Select Crop:</span>
+              </label>
+              <select
+                id="ch-crop-select"
+                className="ch-crop-select-dropdown"
+                value={selectedCrop}
+                onChange={(e) => setSelectedCrop(e.target.value as any)}
+              >
+                {CROP_TABS.map((tab) => (
+                  <option key={tab.id} value={tab.id}>
+                    {tab.icon} {tab.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="ch-crop-selected-badge">
+              <span>Selected:</span> <strong>{CROP_TABS.find(t => t.id === selectedCrop)?.icon} {CROP_TABS.find(t => t.id === selectedCrop)?.label}</strong>
+            </div>
           </div>
 
           {/* Inside Overview Card: 2-Column Split */}

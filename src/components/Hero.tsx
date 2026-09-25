@@ -29,7 +29,7 @@ export default function Hero() {
       </div>
 
       <div className="hero-center">
-        <img src="images/farmer_hero.jpg.png" alt="Farmer using CropGuard app" className="hero-farmer-img" id="hero-farmer-img" />
+        <img src="images/farmer_hero.jpg.png" alt="Farmer using PikSuraksha app" className="hero-farmer-img" id="hero-farmer-img" />
       </div>
 
       <div className="hero-right">

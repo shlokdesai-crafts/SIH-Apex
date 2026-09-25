@@ -1,5 +1,5 @@
 /* ============================================================
-   CropGuard Dashboard – style.css
+   PikSuraksha Dashboard – style.css
    Pixel-perfect recreation of the reference screenshot
    ============================================================ */
 
@@ -21,31 +21,33 @@ body {
 }
 
 /* ============================================================
-   NAVBAR
+   ROOT HEADER LAYOUT: 3-PART GRID STRUCTURE
    ============================================================ */
 .navbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   background: #ffffff;
-  padding: 0 16px;
-  height: 58px;
+  padding: 0 20px;
+  height: 64px;
   border-bottom: 1px solid #e5ebe0;
   position: sticky;
   top: 0;
   z-index: 100;
-  gap: 8px;
+  column-gap: 12px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* Brand */
+/* 1. BRAND SECTION */
 .nav-brand {
+  grid-column: 1;
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-width: 170px;
+  gap: 10px;
+  white-space: nowrap;
   flex-shrink: 0;
-  margin-right: 4px;
 }
 
 .nav-logo {
@@ -81,33 +83,28 @@ body {
   letter-spacing: 0.1px;
 }
 
-/* Nav links */
+/* 2. NAVIGATION SECTION (Middle column: strictly starts after Brand and before Right Actions) */
 .nav-links {
+  grid-column: 2;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 4px;
-  flex: 1;
-  justify-content: center;
+  white-space: nowrap;
   min-width: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.nav-links::-webkit-scrollbar {
-  display: none;
 }
 
 .nav-link {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 6px 10px;
+  padding: 8px 10px;
   border-radius: 8px;
   text-decoration: none;
   font-size: 13px;
   font-weight: 500;
   color: #555;
-  transition: background 0.12s, color 0.12s;
+  transition: background 0.15s, color 0.15s;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -126,19 +123,15 @@ body {
   flex-shrink: 0;
 }
 
-.more-dots {
-  font-size: 14px;
-  letter-spacing: 1px;
-  line-height: 1;
-}
-
-/* Nav right */
+/* 3. RIGHT ACTIONS SECTION */
 .nav-right {
+  grid-column: 3;
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: flex-end;
+  gap: 12px;
+  white-space: nowrap;
   flex-shrink: 0;
-  margin-left: auto;
 }
 
 /* Language Dropdown */
@@ -292,10 +285,18 @@ body {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 5px;
+  padding: 6px;
+  border-radius: 50%;
   color: #555;
   display: flex;
   align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.notif-btn:hover {
+  background: #f0f4ee;
+  color: #2d7d3a;
 }
 
 .notif-badge {
@@ -313,6 +314,196 @@ body {
   align-items: center;
   justify-content: center;
   line-height: 1;
+}
+
+/* ── Header Notification Wrapper & Dropdown ── */
+.notif-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.header-notif-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 340px;
+  max-width: calc(100vw - 32px);
+  background: #ffffff;
+  border: 1px solid #e0e8dc;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  z-index: 250;
+  overflow: hidden;
+  animation: headerNotifDropdownIn 0.2s ease-out;
+}
+
+@keyframes headerNotifDropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.header-notif-header {
+  padding: 12px 16px;
+  background: #f8faf7;
+  border-bottom: 1px solid #e5ebe0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-notif-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-notif-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a2e1c;
+}
+
+.header-notif-count-badge {
+  font-size: 11px;
+  font-weight: 600;
+  background: #e8f5e9;
+  color: #2d7d3a;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.header-notif-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-notif-action-btn {
+  background: none;
+  border: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: #2d7d3a;
+  cursor: pointer;
+  padding: 3px 8px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.header-notif-action-btn:hover {
+  background: #e8f5e9;
+}
+
+.header-notif-action-btn.clear {
+  color: #777;
+}
+
+.header-notif-action-btn.clear:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.header-notif-list {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.header-notif-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: #888;
+}
+
+.header-notif-empty .empty-icon {
+  font-size: 28px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.header-notif-empty p {
+  font-size: 13px;
+  margin: 0;
+}
+
+.header-notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f4ee;
+  cursor: pointer;
+  transition: background 0.15s;
+  position: relative;
+}
+
+.header-notif-item:last-child {
+  border-bottom: none;
+}
+
+.header-notif-item:hover {
+  background: #f7faf6;
+}
+
+.header-notif-item.unread {
+  background: #f0f7ef;
+}
+
+.header-notif-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.header-notif-icon.high { background: #fee2e2; }
+.header-notif-icon.unident { background: #f3e8ff; }
+.header-notif-icon.medium { background: #fef3c7; }
+.header-notif-icon.low { background: #e0f2fe; }
+
+.header-notif-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.header-notif-item-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a2e1c;
+  line-height: 1.3;
+  margin-bottom: 2px;
+}
+
+.header-notif-item-desc {
+  font-size: 12px;
+  color: #555;
+  line-height: 1.35;
+  margin-bottom: 4px;
+}
+
+.header-notif-item-time {
+  font-size: 10px;
+  color: #888;
+  font-weight: 500;
+}
+
+.header-notif-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e53935;
+  flex-shrink: 0;
+  margin-top: 4px;
 }
 
 .user-profile-wrapper {
@@ -2053,6 +2244,42 @@ body {
 
 /* ── Tablets & Laptops (max-width: 1024px) ── */
 @media (max-width: 1024px) {
+  .navbar {
+    padding: 0 14px;
+    column-gap: 10px;
+  }
+
+  .nav-link {
+    padding: 7px 10px;
+    font-size: 13px;
+    gap: 5px;
+  }
+
+  .nav-links {
+    gap: 4px;
+  }
+
+  .nav-subtitle {
+    display: none;
+  }
+
+  .lang-btn {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  .user-name {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .user-loc {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .hero {
     height: auto;
     min-height: 380px;
@@ -2111,14 +2338,14 @@ body {
   }
 
   .navbar {
+    display: flex;
+    justify-content: space-between;
     padding: 0 10px;
     height: 56px;
     gap: 6px;
   }
 
   .nav-brand {
-    min-width: auto;
-    margin-right: 0;
     gap: 6px;
   }
 
@@ -2342,6 +2569,54 @@ body {
     height: 220px;
     min-height: 200px;
   }
+}
+
+/* ── Universal Responsiveness Safeguards ── */
+html, body {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+img, svg, video, canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+table {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.reports-table-container,
+.case-table-container,
+.gov-table-container,
+.unidentified-table-container,
+.activity-log-table-container,
+.advisory-table-container,
+.district-table-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+}
+
+.modal-backdrop,
+.gov-modal-backdrop,
+.ch-modal-backdrop,
+.modal-overlay {
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.modal-content,
+.gov-modal-content,
+.ch-modal-panel,
+.modal-dialog {
+  max-width: 96vw !important;
+  box-sizing: border-box;
 }
 
 
