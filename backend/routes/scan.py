@@ -44,7 +44,6 @@ from models.response import (
 )
 from ml.inference import predict_crop_disease
 from ml.config import CROP_CONFIGS
-from db import insert_submission, insert_scan_history
 from db_mongo import save_crop_scan_record, verify_auth_token, get_farm_by_user, get_user_by_id
 from data.canonical_mapping import (
     CANONICAL_CROPS,
@@ -321,28 +320,7 @@ async def scan_crop(
     )
     verification = VerificationDetail(**verification_dict)
 
-    # Save to persistent scan_history table (SQLite)
-    insert_scan_history(
-        scan_id=scan_id,
-        crop_name=display_crop,
-        predicted_condition=condition_name,
-        crop_confidence=crop_id.confidence,
-        disease_confidence=disease_conf,
-        farmer_id=farmer_id or "default_farmer",
-        condition_type=condition_type,
-        severity=severity,
-        image_path=saved_web_url,
-        diagnosis_summary=explanation or "",
-        symptoms_json=json.dumps(symptoms),
-        actions_json=json.dumps(actions),
-        prevention_json=json.dumps(prevention),
-        model_name="CropGuard-Hybrid-MobileNetV3-CLIP",
-        model_version="2.4.0",
-        data_source="ICAR + PlantVillage",
-        reference_source=verification.referenceSource,
-        accuracy_score=verification.accuracyPercentage,
-        verification_json=json.dumps(verification_dict),
-    )
+    # (SQLite scan_history logging removed; using MongoDB Atlas save_crop_scan_record)
 
     # Resolve user identity for MongoDB: prioritize explicit user_id, then Authorization header
     resolved_uid = user_id
@@ -377,17 +355,10 @@ async def scan_crop(
         preview_url=saved_web_url,
         image_quality=image_quality.model_dump() if image_quality else None,
         diagnosis_details=disease_detection.model_dump() if disease_detection else None,
+        field_id=clean_field_id,
     )
 
-    # Save to legacy submissions table for government dashboard analytics
-    insert_submission(
-        crop=display_crop,
-        ai_result=condition_name,
-        disease=condition_name,
-        confidence=disease_conf,
-        severity=severity,
-        farmer_name=resolved_farmer_name or "Ramesh Patil",
-    )
+    # (SQLite submissions logging removed; using MongoDB Atlas save_crop_scan_record)
 
     # ── Step 8: Assemble Response ─────────────────────────────────────────────
     if is_uncertain:

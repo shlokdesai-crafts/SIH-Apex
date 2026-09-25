@@ -813,6 +813,7 @@ UNIDENTIFIED_QUERY_OR = [
 ]
 
 def seed_mongo_demo_cases_if_empty():
+    return
     """Seeds initial demo scan records into MongoDB Atlas if crop_scans count is low."""
     db = get_db()
     if db is None:
@@ -993,7 +994,7 @@ def get_dashboard_mongo_stats() -> Dict[str, Any]:
             "crops_analyzed": 0,
         }
     try:
-        seed_mongo_demo_cases_if_empty()
+        # seed_mongo_demo_cases_if_empty() disabled
         total = db.crop_scans.count_documents({})
         resolved = db.crop_scans.count_documents({"status": "Resolved"})
         needs_visit = db.crop_scans.count_documents({"status": {"$in": ["Pending", "Assigned", "Needs Field Visit"]}})
@@ -1080,7 +1081,7 @@ def get_mongo_submissions(limit: int = 100, status_filter: Optional[str] = None)
     if db is None:
         return []
     try:
-        seed_mongo_demo_cases_if_empty()
+        # seed_mongo_demo_cases_if_empty() disabled
         query: Dict[str, Any] = {}
         if status_filter and status_filter.lower() != "all":
             sf = status_filter.lower()
@@ -1205,7 +1206,7 @@ def get_mongo_map_markers(severity_filter: Optional[str] = None) -> List[Dict[st
     }
 
     try:
-        seed_mongo_demo_cases_if_empty()
+        # seed_mongo_demo_cases_if_empty() disabled
         query: Dict[str, Any] = {}
         if severity_filter and severity_filter != "All Cases":
             sf = severity_filter.lower()
@@ -1346,3 +1347,126 @@ def get_mongo_crop_health_summary() -> Dict[str, Any]:
     }
 
 
+
+
+# ── Persistent Scan History MongoDB CRUD ─────────────────────────────────────
+
+def get_mongo_scan_history(farmer_id: Optional[str] = None, field_id: Optional[str] = None, limit: int = 50) -> List[Dict[str, Any]]:
+    """Returns persistent crop scan history from MongoDB Atlas, newest first."""
+    db = get_db()
+    if db is None:
+        return []
+    try:
+        query: Dict[str, Any] = {}
+        if farmer_id and farmer_id != "default_farmer":
+            query["$or"] = [{"userId": farmer_id}, {"farmer_name": farmer_id}]
+        if field_id:
+            query["fieldId"] = field_id
+
+        cursor = db.crop_scans.find(query).sort("scannedAt", DESCENDING).limit(limit)
+        results = []
+        for doc in cursor:
+            scan_id_str = str(doc["_id"])
+            report = db.diagnosis_reports.find_one({"scanId": scan_id_str}) or {}
+
+            raw_scanned = doc.get("scannedAt")
+            created_iso = raw_scanned.isoformat() if isinstance(raw_scanned, datetime) else str(raw_scanned or datetime.now(timezone.utc).isoformat())
+
+            disease_val = doc.get("disease") or doc.get("ai_result") or "Unknown"
+            conf_val = float(doc.get("confidence") or 0.0)
+
+            results.append({
+                "id": scan_id_str,
+                "farmer_id": doc.get("userId") or "default_farmer",
+                "field_id": doc.get("fieldId"),
+                "crop_name": doc.get("crop") or "Unknown",
+                "predicted_condition": disease_val,
+                "condition_type": "healthy" if disease_val.lower() in ("healthy", "healthy plant") else "disease",
+                "crop_confidence": conf_val,
+                "disease_confidence": conf_val,
+                "severity": doc.get("severity") or "Unknown",
+                "image_path": doc.get("previewUrl"),
+                "diagnosis_summary": report.get("explanation") or "",
+                "symptoms": report.get("symptoms", []),
+                "recommendedActions": report.get("recommendedActions") or report.get("recommended_actions", []),
+                "prevention": report.get("prevention", []),
+                "model_name": "CropGuard-Hybrid-MobileNetV3-CLIP",
+                "model_version": "2.4.0",
+                "data_source": "ICAR + PlantVillage",
+                "created_at": created_iso,
+                "updated_at": created_iso,
+            })
+        return results
+    except Exception as exc:
+        logger.error(f"[MongoDB] Error fetching scan history: {exc}")
+        return []
+
+
+def get_mongo_scan_history_by_id(scan_id: str) -> Optional[Dict[str, Any]]:
+    """Retrieves a single complete scan record from MongoDB Atlas by ID."""
+    db = get_db()
+    if db is None:
+        return None
+    try:
+        doc = None
+        if ObjectId.is_valid(scan_id):
+            doc = db.crop_scans.find_one({"$or": [{"_id": ObjectId(scan_id)}, {"_id": scan_id}]})
+        else:
+            doc = db.crop_scans.find_one({"_id": scan_id})
+
+        if not doc:
+            return None
+
+        scan_id_str = str(doc["_id"])
+        report = db.diagnosis_reports.find_one({"scanId": scan_id_str}) or {}
+
+        raw_scanned = doc.get("scannedAt")
+        created_iso = raw_scanned.isoformat() if isinstance(raw_scanned, datetime) else str(raw_scanned or datetime.now(timezone.utc).isoformat())
+
+        disease_val = doc.get("disease") or doc.get("ai_result") or "Unknown"
+        conf_val = float(doc.get("confidence") or 0.0)
+
+        return {
+            "id": scan_id_str,
+            "farmer_id": doc.get("userId") or "default_farmer",
+            "field_id": doc.get("fieldId"),
+            "crop_name": doc.get("crop") or "Unknown",
+            "predicted_condition": disease_val,
+            "condition_type": "healthy" if disease_val.lower() in ("healthy", "healthy plant") else "disease",
+            "crop_confidence": conf_val,
+            "disease_confidence": conf_val,
+            "severity": doc.get("severity") or "Unknown",
+            "image_path": doc.get("previewUrl"),
+            "diagnosis_summary": report.get("explanation") or "",
+            "symptoms": report.get("symptoms", []),
+            "recommendedActions": report.get("recommendedActions") or report.get("recommended_actions", []),
+            "prevention": report.get("prevention", []),
+            "model_name": "CropGuard-Hybrid-MobileNetV3-CLIP",
+            "model_version": "2.4.0",
+            "data_source": "ICAR + PlantVillage",
+            "created_at": created_iso,
+            "updated_at": created_iso,
+        }
+    except Exception as exc:
+        logger.error(f"[MongoDB] Error fetching scan history detail: {exc}")
+        return None
+
+
+def delete_mongo_scan_history(scan_id: str) -> bool:
+    """Deletes a scan record and its associated report from MongoDB Atlas."""
+    db = get_db()
+    if db is None:
+        return False
+    try:
+        query: Dict[str, Any] = {}
+        if ObjectId.is_valid(scan_id):
+            query = {"$or": [{"_id": ObjectId(scan_id)}, {"_id": scan_id}]}
+        else:
+            query = {"_id": scan_id}
+
+        res = db.crop_scans.delete_one(query)
+        db.diagnosis_reports.delete_many({"scanId": scan_id})
+        return res.deleted_count > 0
+    except Exception as exc:
+        logger.error(f"[MongoDB] Error deleting scan history: {exc}")
+        return False

@@ -17,7 +17,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-from db import init_db, DB_PATH
 from db_mongo import get_db
 from routes.scan import router as scan_router
 from routes.gov import router as gov_router
@@ -36,8 +35,6 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialise the SQLite database on startup
-    init_db()
     # Connect and initialise MongoDB
     get_db()
     
@@ -127,7 +124,8 @@ def health():
 def api_health():
     """Detailed health check endpoint listing all 20 supported Maharashtra crops."""
     from data.canonical_mapping import CANONICAL_CROPS, get_display_crop_name
-    db_status = "connected" if os.path.exists(DB_PATH) else "disconnected"
+    mongo_db = get_db()
+    db_status = "connected" if mongo_db is not None else "disconnected"
     return {
         "status": "ok",
         "modelLoaded": True,
