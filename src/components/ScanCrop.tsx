@@ -1,9 +1,10 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo, useContext } from 'react';
 import { useFarm } from '../context/FarmContext';
-import { useTranslation } from '../i18n/useTranslation';
+
 import { AuthContext } from '../auth/AuthContext';
 import { scanCropImage, getScanHistory, deleteScan, type ScanHistoryItem } from '../services/cropScanApi';
 import { getBrowserPosition, reverseGeocode } from '../services/locationService';
+import { uploadCropImage } from '../services/cloudinaryService';
 import TranslatedText from './TranslatedText';
 import './ScanCrop.css';
 
@@ -132,7 +133,7 @@ interface ScanCropProps {
 }
 
 export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProps = {}) {
-  const { t } = useTranslation();
+
   const { farmState, recordScan, scanTarget, clearScanTarget, startAdvisoryForCrop } = useFarm();
   const { user } = useContext(AuthContext);
 
@@ -573,10 +574,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
       return;
     }
 
-    if (!isSelectedCropModelSupported) {
-      setBackendError(`Disease detection model unavailable for '${selectedCrop}'. Automated visual disease detection has not yet been trained for this crop. You can still register and manage ${selectedCrop} in My Farm.`);
-      return;
-    }
+
 
     const parsedArea = parseFloat(cultivatedArea);
     if (!cultivatedArea || isNaN(parsedArea) || parsedArea <= 0) {
@@ -610,6 +608,23 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
         }
       }
 
+      // 1. Upload to Cloudinary
+      let cloudUrl = undefined;
+      let cloudId = undefined;
+      try {
+        const cloudData = await uploadCropImage(uploadedFile);
+        cloudUrl = cloudData.url;
+        cloudId = cloudData.publicId;
+      } catch (err) {
+        console.error('Cloudinary upload failed:', err);
+        setBackendError('Image upload failed. Please try again.');
+        setStep('preview');
+        setScanProgress(0);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 2. Call the AI Inference backend with the original file + Cloudinary URL
       const json = await scanCropImage(uploadedFile, {
         latitude: lat,
         longitude: lng,
@@ -618,6 +633,8 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
         crop: selectedCrop,
         fieldId: selectedFieldId || undefined,
         location: farmLocation.trim() || undefined,
+        cloudinaryUrl: cloudUrl,
+        cloudinaryPublicId: cloudId,
       });
 
       if (json.status === 'invalid' || json.status === 'invalid_image') {

@@ -3,9 +3,9 @@ import './AdvisoryOverview.css';
 import type { ScanResultData } from '../pages/Dashboard';
 import { AuthContext } from '../auth/AuthContext';
 import type { LocationResult } from '../services/locationService';
-import { 
+import {
   ADVISORY_DATA,
-  getDynamicCropAdvisory, 
+  getDynamicCropAdvisory,
   normalizeCropKey,
   type SoilNutrient,
   type NutrientRequirement,
@@ -16,11 +16,11 @@ import {
 import { getOrganicPreparationDetails } from '../utils/organicGuides';
 import { useTranslation } from '../i18n/useTranslation';
 import TranslatedText from './TranslatedText';
-import { 
-  calculateAdvisory, 
-  fetchFarmerAdvisoryContext, 
+import {
+  calculateAdvisory,
+  fetchFarmerAdvisoryContext,
   type ApiAdvisoryCalculationData,
-  type FarmerContextData 
+  type FarmerContextData
 } from '../services/advisoryApi';
 import { useFarm } from '../context/FarmContext';
 
@@ -513,8 +513,8 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
         title: ts.stageName,
         timing: ts.timingWindow,
         badge: ts.badge,
-        details: ts.details + (ts.fertilizersApplied?.length 
-          ? ` (${ts.fertilizersApplied.map(f => `${f.productName}: ${f.dosePerAcreKg} kg/ac`).join(', ')})` 
+        details: ts.details + (ts.fertilizersApplied?.length
+          ? ` (${ts.fertilizersApplied.map(f => `${f.productName}: ${f.dosePerAcreKg} kg/ac`).join(', ')})`
           : ''),
       }));
     }
@@ -578,8 +578,8 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
 
       {/* TOP CONTROLS ROW */}
       <div className="fert-topbar-nav">
-        <button 
-          className="fert-back-btn" 
+        <button
+          className="fert-back-btn"
           onClick={() => {
             if (advisoryTarget) {
               clearAdvisoryTarget();
@@ -612,7 +612,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
           )}
           <span className="badge-location-pill">📍 {displayLocation}</span>
           {onOpenFertilizer && (
-            <button 
+            <button
               className="fert-switch-btn"
               onClick={onOpenFertilizer}
               title="Open full dedicated Fertilizer Recommendation page"
@@ -679,9 +679,9 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
 
               <div className="fert-crop-card-body">
                 <div className="fert-crop-avatar">
-                  <img 
-                    src={crop.image} 
-                    alt={crop.name} 
+                  <img
+                    src={crop.image}
+                    alt={crop.name}
                     className="fert-crop-img"
                     onError={(e) => {
                       (e.target as HTMLElement).style.display = 'none';
@@ -697,8 +697,8 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                       {advisoryTarget?.cultivatedArea
                         ? `${advisoryTarget.cultivatedArea} ${advisoryTarget.areaUnit || 'Acres'}`
                         : advisoryTarget?.areaHa
-                        ? `${advisoryTarget.areaHa} Ha`
-                        : `${farmerContext?.cropCycle?.allocatedAcres ?? crop.acres} Acres`}
+                          ? `${advisoryTarget.areaHa} Ha`
+                          : `${farmerContext?.cropCycle?.allocatedAcres ?? crop.acres} Acres`}
                     </span>
                   </div>
                   <div className="fert-crop-stage">
@@ -712,8 +712,8 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                       {advisoryTarget?.cultivatedArea
                         ? `${advisoryTarget.cultivatedArea} ${advisoryTarget.areaUnit || 'Acres'}`
                         : advisoryTarget?.areaHa
-                        ? `${advisoryTarget.areaHa} Ha`
-                        : `${farmerContext?.cropCycle?.allocatedAcres ?? crop.acres} Acres`}
+                          ? `${advisoryTarget.areaHa} Ha`
+                          : `${farmerContext?.cropCycle?.allocatedAcres ?? crop.acres} Acres`}
                       {advisoryTarget?.variety ? ` • Var: ${advisoryTarget.variety}` : ''}
                       {advisoryTarget?.soilType ? ` • Soil: ${advisoryTarget.soilType}` : ''}
                       {advisoryTarget?.irrigationMethod ? ` • ${advisoryTarget.irrigationMethod}` : ''}
@@ -725,7 +725,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
               </div>
 
               <div className="fert-crop-card-footer">
-                <button 
+                <button
                   className="fert-change-crop-btn"
                   id="btn-change-crop"
                   onClick={() => setShowCropModal(true)}
@@ -818,7 +818,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
             </div>
 
             <div className="advice-focal-actions">
-              <button 
+              <button
                 className="btn-advice-interactive btn-why"
                 id="btn-why-advice"
                 onClick={() => setShowWhyModal(true)}
@@ -831,7 +831,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                 <span>{t('Why This Advice?')}</span>
               </button>
 
-              <button 
+              <button
                 className="btn-advice-interactive btn-plan"
                 id="btn-view-plan"
                 onClick={() => setShowPlanModal(true)}
@@ -861,7 +861,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
         {/* ------------------------------------------------------------
             CARD 1: SOIL NUTRIENT STATUS
             ------------------------------------------------------------ */}
-        <section 
+        <section
           className={`fert-card fert-card-soil ${activeSubTab === 'nutrient-status' ? 'card-highlighted' : ''}`}
           id="section-soil-status"
           aria-labelledby="heading-soil-status"
@@ -871,7 +871,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
               <div className="fert-card-icon soil-icon">🧪</div>
               <h2 className="fert-card-title" id="heading-soil-status">{t('Soil Nutrient Status')}</h2>
             </div>
-            <button 
+            <button
               className="fert-card-link"
               onClick={() => setShowSoilModal(true)}
               id="link-detailed-soil-report"
@@ -900,8 +900,8 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                   {t('Target')}: {activeSoilNutrients.nitrogen.targetVal} {activeSoilNutrients.nitrogen.unit}
                 </div>
                 <div className="nutrient-meter-bar">
-                  <div 
-                    className="nutrient-meter-fill fill-red" 
+                  <div
+                    className="nutrient-meter-fill fill-red"
                     style={{ width: `${Math.min(100, (activeSoilNutrients.nitrogen.currentVal / Math.max(1, activeSoilNutrients.nitrogen.targetVal)) * 100)}%` }}
                   ></div>
                 </div>
@@ -923,8 +923,8 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                   {t('Target')}: {activeSoilNutrients.phosphorus.targetVal} {activeSoilNutrients.phosphorus.unit}
                 </div>
                 <div className="nutrient-meter-bar">
-                  <div 
-                    className="nutrient-meter-fill fill-green" 
+                  <div
+                    className="nutrient-meter-fill fill-green"
                     style={{ width: `${Math.min(100, (activeSoilNutrients.phosphorus.currentVal / Math.max(1, activeSoilNutrients.phosphorus.targetVal)) * 100)}%` }}
                   ></div>
                 </div>
@@ -946,8 +946,8 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                   {t('Target')}: {activeSoilNutrients.potassium.targetVal} {activeSoilNutrients.potassium.unit}
                 </div>
                 <div className="nutrient-meter-bar">
-                  <div 
-                    className="nutrient-meter-fill fill-amber" 
+                  <div
+                    className="nutrient-meter-fill fill-amber"
                     style={{ width: `${Math.min(100, (activeSoilNutrients.potassium.currentVal / Math.max(1, activeSoilNutrients.potassium.targetVal)) * 100)}%` }}
                   ></div>
                 </div>
@@ -957,7 +957,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
             {/* Bottom 3 Metrics Bar: pH, Organic Carbon, Micronutrients */}
             <div className="soil-secondary-bar">
               <div className="secondary-metric-item">
-                <span className="secondary-metric-label">pH</span>
+                <span className="secondary-metric-label">{t('pH')}</span>
                 <div className="secondary-metric-val">
                   <strong>{activeSoilNutrients.ph.value}</strong>
                   <span className="secondary-badge badge-neutral">{t(activeSoilNutrients.ph.label)}</span>
@@ -990,7 +990,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
         {/* ------------------------------------------------------------
             CARD 2: RECOMMENDED FERTILIZER PRODUCTS (RECOMMENDED ACTION)
             ------------------------------------------------------------ */}
-        <section 
+        <section
           className={`fert-card fert-card-products ${activeSubTab === 'recommended-fert' || activeSubTab === 'calculator' ? 'card-highlighted' : ''}`}
           id="section-products"
           aria-labelledby="heading-products"
@@ -1004,7 +1004,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                   <span className="count-dot"></span>
                   <span>{selectedFertilizers.length} of {activeRecommendedProducts.length} {t('Selected for Plan')}</span>
                   {apiCalculation?.costSummary ? (
-                    <span 
+                    <span
                       style={{
                         marginLeft: '8px',
                         fontSize: '11px',
@@ -1023,7 +1023,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                       Est. Total Cost: ₹{apiCalculation.costSummary.totalEstimatedCostInr.toLocaleString()} ({apiCalculation.costSummary.totalBagsCount} bags)
                     </span>
                   ) : isDbLoaded ? (
-                    <span 
+                    <span
                       style={{
                         marginLeft: '8px',
                         fontSize: '10px',
@@ -1046,7 +1046,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
               </div>
             </div>
             <div className="fert-card-header-actions">
-              <button 
+              <button
                 type="button"
                 className="fert-card-calc-btn"
                 onClick={() => setShowCalcModal(true)}
@@ -1056,7 +1056,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                 <span className="calc-btn-icon">🧮</span>
                 <span>{t('Fertilizer Calculator')}</span>
               </button>
-              <button 
+              <button
                 className="fert-card-link"
                 onClick={() => setShowCatalogModal(true)}
                 id="link-view-all-products"
@@ -1086,79 +1086,79 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                   const calculatedBags = Math.ceil(calculatedKg / (prod.packageSizeKg || 50));
 
                   return (
-                    <div 
-                      key={prod.id} 
-                      className={`fert-product-item-card ${isSelected ? 'prod-card-selected' : ''}`} 
+                    <div
+                      key={prod.id}
+                      className={`fert-product-item-card ${isSelected ? 'prod-card-selected' : ''}`}
                       id={`product-${prod.id}`}
                     >
-                    <div className="fert-bag-container">
-                      <div className="fertilizer-bag-graphic" style={{ borderColor: prod.bagColor }}>
-                        <div className="bag-top-crease"></div>
-                        <div className="bag-stripe" style={{ backgroundColor: prod.bagColor }}>
-                          <span className="bag-stripe-text">{prod.name}</span>
-                        </div>
-                        <div className="bag-body-content">
-                          <span className="bag-grade-text">{prod.composition}</span>
-                          <span className="bag-weight-sub">{prod.packageSizeKg || 50} {prod.packageUnit || 'KG'} NET</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="fert-product-info">
-                      <div className="prod-name-row">
-                        <h3 className="fert-prod-title">{prod.name}</h3>
-                        <span className="fert-prod-badge" style={{ color: prod.bagColor, borderColor: `${prod.bagColor}40` }}>
-                          {prod.badge}
-                        </span>
-                      </div>
-                      <div className="fert-prod-formula">{prod.composition}</div>
-                      
-                      <div className="fert-prod-dosage-box">
-                        <div className="dosage-rate-line">
-                          <span className="dosage-label">{t('Recommended Rate:')}</span>
-                          <span className="dosage-num">{prod.ratePerAcre} {prod.unit}</span>
-                        </div>
-
-                        {isSelected && (
-                          <div className="fert-card-calculated-dosage">
-                            <span className="calc-dosage-tag">Total for {fieldSize} {fieldUnit}:</span>
-                            <div className="calc-dosage-result">
-                              <strong className="calc-bold-kg">{calculatedKg} kg</strong>
-                              <span className="calc-bold-bags">({calculatedBags} bag{calculatedBags > 1 ? 's' : ''})</span>
-                            </div>
-                            {prod.price ? (
-                              <div className="calc-cost-estimate" style={{ marginTop: '5px', fontSize: '11px', color: '#1b5e20', fontWeight: 600 }}>
-                                Est. Cost: ₹{(calculatedBags * prod.price).toLocaleString()} (@₹{prod.price}/bag)
-                              </div>
-                            ) : null}
+                      <div className="fert-bag-container">
+                        <div className="fertilizer-bag-graphic" style={{ borderColor: prod.bagColor }}>
+                          <div className="bag-top-crease"></div>
+                          <div className="bag-stripe" style={{ backgroundColor: prod.bagColor }}>
+                            <span className="bag-stripe-text">{t(prod.name)}</span>
                           </div>
-                        )}
+                          <div className="bag-body-content">
+                            <span className="bag-grade-text">{prod.composition}</span>
+                            <span className="bag-weight-sub">{prod.packageSizeKg || 50} {prod.packageUnit || 'KG'} NET</span>
+                          </div>
+                        </div>
                       </div>
 
-                      {/* {t('Select / Add to Plan')} button */}
-                      <button 
-                        type="button"
-                        className={`btn-add-plan ${isSelected ? 'btn-added' : ''}`}
-                        onClick={() => handleToggleFertilizer(prod.id, prod.name)}
-                        id={`btn-select-${prod.id}`}
-                        aria-pressed={isSelected}
-                      >
-                        {isSelected ? (
-                          <>
-                            <span className="check-mark">✓</span>
-                            <span>{t('Selected for Plan')}</span>
-                          </>
-                        ) : (
-                          <>
-                            <span className="plus-sign">+</span>
-                            <span>{t('Select / Add to Plan')}</span>
-                          </>
-                        )}
-                      </button>
+                      <div className="fert-product-info">
+                        <div className="prod-name-row">
+                          <h3 className="fert-prod-title">{t(prod.name)}</h3>
+                          <span className="fert-prod-badge" style={{ color: prod.bagColor, borderColor: `${prod.bagColor}40` }}>
+                            {t(prod.badge)}
+                          </span>
+                        </div>
+                        <div className="fert-prod-formula">{prod.composition}</div>
+
+                        <div className="fert-prod-dosage-box">
+                          <div className="dosage-rate-line">
+                            <span className="dosage-label">{t('Recommended Rate:')}</span>
+                            <span className="dosage-num">{prod.ratePerAcre} {prod.unit}</span>
+                          </div>
+
+                          {isSelected && (
+                            <div className="fert-card-calculated-dosage">
+                              <span className="calc-dosage-tag">{t('TOTAL FOR')} {fieldSize} {fieldUnit}:</span>
+                              <div className="calc-dosage-result">
+                                <strong className="calc-bold-kg">{calculatedKg} kg</strong>
+                                <span className="calc-bold-bags">({calculatedBags} {calculatedBags > 1 ? t('bags') : t('bag')})</span>
+                              </div>
+                              {prod.price ? (
+                                <div className="calc-cost-estimate" style={{ marginTop: '5px', fontSize: '11px', color: '#1b5e20', fontWeight: 600 }}>
+                                  Est. Cost: ₹{(calculatedBags * prod.price).toLocaleString()} (@₹{prod.price}/bag)
+                                </div>
+                              ) : null}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* {t('Select / Add to Plan')} button */}
+                        <button
+                          type="button"
+                          className={`btn-add-plan ${isSelected ? 'btn-added' : ''}`}
+                          onClick={() => handleToggleFertilizer(prod.id, prod.name)}
+                          id={`btn-select-${prod.id}`}
+                          aria-pressed={isSelected}
+                        >
+                          {isSelected ? (
+                            <>
+                              <span className="check-mark">✓</span>
+                              <span>{t('Selected for Plan')}</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="plus-sign">+</span>
+                              <span>{t('Select / Add to Plan')}</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                );
-              }))}
+                  );
+                }))}
             </div>
 
             {/* View More Fertilizers Option */}
@@ -1180,7 +1180,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
         {/* ------------------------------------------------------------
             CARD 3: APPLICATION TIMING & SAFETY TIPS
             ------------------------------------------------------------ */}
-        <section 
+        <section
           className={`fert-card fert-card-timing ${activeSubTab === 'app-guide' ? 'card-highlighted' : ''}`}
           id="section-timing-tips"
           aria-labelledby="heading-timing-tips"
@@ -1202,20 +1202,20 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
               ) : (
                 activeTimingSteps.map((step) => (
                   <div key={step.step} className="timing-step-node">
-                  <div className="timing-step-num-col">
-                    <div className="step-num-circle">{step.step}</div>
-                    {step.step < crop.timingSteps.length && <div className="step-connector-line"></div>}
-                  </div>
-
-                  <div className="timing-step-content">
-                    <div className="step-header-row">
-                      <h3 className="step-title"><TranslatedText text={step.title} /></h3>
-                      <span className="step-timing-badge"><TranslatedText text={step.timing} /></span>
+                    <div className="timing-step-num-col">
+                      <div className="step-num-circle">{step.step}</div>
+                      {step.step < crop.timingSteps.length && <div className="step-connector-line"></div>}
                     </div>
-                    <p className="step-detail-text"><TranslatedText text={step.details} /></p>
+
+                    <div className="timing-step-content">
+                      <div className="step-header-row">
+                        <h3 className="step-title"><TranslatedText text={step.title} /></h3>
+                        <span className="step-timing-badge"><TranslatedText text={step.timing} /></span>
+                      </div>
+                      <p className="step-detail-text"><TranslatedText text={step.details} /></p>
+                    </div>
                   </div>
-                </div>
-              )))}
+                )))}
             </div>
 
             <div className="fert-safety-box">
@@ -1244,8 +1244,8 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
       {/* ============================================================
           COLLAPSIBLE MORE DETAILS DRAWER (Agronomic Deep Dive)
           ============================================================ */}
-      <details 
-        className="fert-more-details-drawer" 
+      <details
+        className="fert-more-details-drawer"
         open={moreDetailsOpen}
         onToggle={(e) => setMoreDetailsOpen(e.currentTarget.open)}
       >
@@ -1261,8 +1261,8 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
           {/* ------------------------------------------------------------
               CARD 2: CROP NUTRIENT REQUIREMENT TABLE
               ------------------------------------------------------------ */}
-          <section 
-            className="fert-card fert-card-requirement" 
+          <section
+            className="fert-card fert-card-requirement"
             id="section-requirements"
             aria-labelledby="heading-requirements"
           >
@@ -1318,8 +1318,8 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
           {/* ------------------------------------------------------------
               CARD A: KEY INSIGHTS
               ------------------------------------------------------------ */}
-          <section 
-            className="fert-card fert-card-insights" 
+          <section
+            className="fert-card fert-card-insights"
             id="section-insights"
             aria-labelledby="heading-insights"
           >
@@ -1362,7 +1362,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
           {/* ------------------------------------------------------------
               SECTION: ORGANIC ALTERNATIVES
               ------------------------------------------------------------ */}
-          <section 
+          <section
             className={`fert-organic-section ${activeSubTab === 'organic-alt' ? 'card-highlighted' : ''}`}
             id="section-organic"
           >
@@ -1387,7 +1387,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                     </div>
                     <h3 className="organic-name">{alt.name}</h3>
                     <p className="organic-benefit">{alt.benefit}</p>
-                    <button 
+                    <button
                       type="button"
                       className="btn-learn-organic"
                       onClick={() => setSelectedOrganicGuide(alt)}
@@ -2429,7 +2429,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
 
             <div className="fert-modal-footer">
               <button className="btn-modal-cancel" onClick={() => setShowSoilModal(false)}>Close</button>
-              <button 
+              <button
                 className="btn-modal-action"
                 onClick={() => {
                   setShowSoilModal(false);
@@ -2477,8 +2477,8 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                       autoFocus
                     />
                     {catalogSearchQuery && (
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         className="catalog-search-clear"
                         onClick={() => setCatalogSearchQuery('')}
                         title="Clear search"
@@ -2565,7 +2565,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
 
                         <div className="catalog-item-right">
                           <span className="catalog-price-est">{displayPrice} / {packageNote} bag ({typeNote})</span>
-                          <button 
+                          <button
                             type="button"
                             className={`btn-add-plan ${isSelected ? 'btn-added' : ''}`}
                             onClick={() => handleToggleFertilizer(prodId, p.name)}
@@ -2653,7 +2653,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                     />
                   </div>
                   <div className="calc-select-box">
-                    <select 
+                    <select
                       className="calc-unit-select"
                       value={fieldUnit}
                       onChange={(e) => setFieldUnit(e.target.value as any)}
@@ -2685,7 +2685,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                           <strong>No fertilizers selected yet</strong>
                           <p>Select recommended fertilizers below to compute field quantities.</p>
                         </div>
-                        <button 
+                        <button
                           type="button"
                           className="btn-select-all-fert"
                           onClick={() => setSelectedFertilizers(activeRecommendedProducts.map((p) => p.id))}
@@ -2757,7 +2757,7 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
 
             <div className="fert-modal-footer">
               <button className="btn-modal-cancel" onClick={() => setShowCalcModal(false)}>Close</button>
-              <button 
+              <button
                 type="button"
                 className="btn-modal-action"
                 onClick={() => {
@@ -2788,9 +2788,9 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
                     <p className="fert-modal-desc">Organic Preparation &amp; Application Protocol • {guide.type}</p>
                   </div>
                 </div>
-                <button 
-                  type="button" 
-                  className="fert-modal-close" 
+                <button
+                  type="button"
+                  className="fert-modal-close"
                   onClick={() => setSelectedOrganicGuide(null)}
                   aria-label="Close guide"
                 >
@@ -2876,15 +2876,15 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
               </div>
 
               <div className="fert-modal-footer">
-                <button 
-                  type="button" 
-                  className="btn-modal-cancel" 
+                <button
+                  type="button"
+                  className="btn-modal-cancel"
                   onClick={() => setSelectedOrganicGuide(null)}
                 >
                   Close
                 </button>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="btn-modal-action"
                   onClick={() => {
                     triggerToast(`✓ Preparation protocol for ${guide.name} reviewed`);

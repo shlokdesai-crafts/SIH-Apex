@@ -45,7 +45,10 @@ PLANT_CROP_KEYWORDS = {
     'garden', 'meadow', 'forest', 'potatoes', 'vine', 'pot', 'flowerpot',
     'rapeseed', 'cotton', 'straw', 'paddy', 'wheat', 'maize', 'rice', 'maze',
     'plantation', 'field', 'pasture', 'grain', 'crop', 'bell pepper', 'thatch',
-    'yellow lady\'s slipper',
+    'yellow lady\'s slipper', 'mango', 'tomato', 'sugarcane', 'soybean', 'chickpea',
+    'grape', 'grapes', 'onion', 'peanut', 'groundnut', 'sorghum', 'pearl millet',
+    'turmeric', 'brinjal', 'eggplant', 'chili', 'chilli', 'pepper', 'okra', 'mustard',
+    'pigeon pea',
     # Field-dwelling flora & canopy co-occurrences (insects, reptiles, small fauna)
     'mantis', 'leaf beetle', 'grasshopper', 'leafhopper', 'cabbage butterfly',
     'ant', 'chameleon', 'lizard', 'snail', 'slug', 'dragonfly', 'admiral',

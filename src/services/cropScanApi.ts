@@ -174,6 +174,8 @@ export async function scanCropImage(
     crop?: string;
     fieldId?: string;
     location?: string;
+    cloudinaryUrl?: string;
+    cloudinaryPublicId?: string;
   }
 ): Promise<ScanResponseData> {
   const form = new FormData();
@@ -191,6 +193,8 @@ export async function scanCropImage(
   } else if (options?.latitude != null && options?.longitude != null) {
     form.append('location', `Lat: ${options.latitude.toFixed(4)}, Lng: ${options.longitude.toFixed(4)}`);
   }
+  if (options?.cloudinaryUrl) form.append('cloudinary_url', options.cloudinaryUrl);
+  if (options?.cloudinaryPublicId) form.append('cloudinary_public_id', options.cloudinaryPublicId);
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s max for neural inference

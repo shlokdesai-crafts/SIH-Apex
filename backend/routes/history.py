@@ -1,145 +1,99 @@
-"""
-backend/routes/history.py
-─────────────────────────
-API endpoints for persistent scan history.
 
-GET    /api/scans/history       - List recent scans, newest first
-GET    /api/scans/history/{id}  - Retrieve a complete scan record
-DELETE /api/scans/history/{id}  - Delete a scan record and its image
-"""
+import logging
+from fastapi import APIRouter, HTTPException, Query, Header
+from typing import Optional
+from db_mongo import get_user_scan_history, verify_auth_token, get_db
+from bson import ObjectId
 
-import json
-import os
-from pathlib import Path
-from typing import List, Optional
-
-from fastapi import APIRouter, HTTPException, Query
-from db import get_scan_history, get_scan_history_by_id, delete_scan_history
-
+logger = logging.getLogger(__name__)
 router = APIRouter()
-
-
-def _format_history_entry(row: dict) -> dict:
-    """Formats a DB scan_history row for the client response."""
-    symptoms = []
-    actions = []
-    prevention = []
-    try:
-        symptoms = json.loads(row.get("symptoms_json") or "[]")
-    except Exception:
-        pass
-    try:
-        actions = json.loads(row.get("actions_json") or "[]")
-    except Exception:
-        pass
-    try:
-        prevention = json.loads(row.get("prevention_json") or "[]")
-    except Exception:
-        pass
-
-    crop_name = row.get("crop_name", "Unknown")
-    condition = row.get("predicted_condition", "Unknown")
-    crop_conf = round(float(row.get("crop_confidence", 0.0)) * 100, 1)
-    disease_conf = round(float(row.get("disease_confidence", 0.0)) * 100, 1)
-
-    is_healthy = condition.lower() in ("healthy", "healthy plant")
-    health_status = "Healthy" if is_healthy else ("Needs expert verification" if condition == "Needs expert verification" else "Affected")
-
-    verification = {}
-    try:
-        verification = json.loads(row.get("verification_json") or "{}")
-    except Exception:
-        pass
-    if not verification:
-        accuracy_val = float(row.get("accuracy_score") or 98.4)
-        is_verified = is_healthy or (disease_conf >= 45.0 and condition != "Needs expert verification")
-        ref_src = row.get("reference_source") or "ICAR & State Agricultural Universities"
-        verification = {
-            "isVerified": is_verified,
-            "accuracyPercentage": accuracy_val,
-            "confidencePercentage": disease_conf if disease_conf > 0 else crop_conf,
-            "reliabilityLevel": "High (Scientifically Verified)" if is_verified else "Review Advised",
-            "referenceSource": ref_src,
-            "referenceProtocol": f"ICAR Standard Protocol #{crop_name[:4].upper()}-MH24",
-            "datasetAttribution": "ICAR National Agronomic Pathology Repository & Multimodal Agricultural Benchmark",
-            "scientificCitation": "ICAR & State Agricultural Universities (SAU) Extension Guidelines",
-        }
-
-    return {
-        "id": row.get("id"),
-        "farmerId": row.get("farmer_id", "default_farmer"),
-        "fieldId": row.get("field_id"),
-        "crop": crop_name,
-        "cropName": crop_name,
-        "condition": condition,
-        "disease": condition,
-        "conditionType": row.get("condition_type", "disease"),
-        "cropConfidence": crop_conf,
-        "diseaseConfidence": disease_conf,
-        "confidence": disease_conf if disease_conf > 0 else crop_conf,
-        "severity": row.get("severity", "Unknown"),
-        "status": health_status,
-        "healthStatus": health_status,
-        "imagePath": row.get("image_path"),
-        "previewUrl": row.get("image_path"),
-        "imageUrl": row.get("image_path"),
-        "diagnosisSummary": row.get("diagnosis_summary", ""),
-        "description": row.get("diagnosis_summary", ""),
-        "symptoms": symptoms,
-        "recommendedActions": actions,
-        "recommended_actions": actions,
-        "prevention": prevention,
-        "modelName": row.get("model_name", "CropGuard-Hybrid-MobileNetV3-CLIP"),
-        "modelVersion": row.get("model_version", "2.4.0"),
-        "dataSource": row.get("data_source", "ICAR + PlantVillage"),
-        "verification": verification,
-        "referenceSource": verification.get("referenceSource", ""),
-        "accuracyPercentage": verification.get("accuracyPercentage", 98.4),
-        "createdAt": row.get("created_at"),
-        "scannedAt": row.get("created_at"),
-        "date": row.get("created_at"),
-    }
-
 
 @router.get("/scans/history", summary="List persistent crop scan history")
 def list_history(
     farmer_id: Optional[str] = Query(default=None, description="Optional farmer ID filter"),
-    field_id: Optional[str] = Query(default=None, description="Optional field ID filter"),
-    limit: int = Query(default=50, ge=1, le=200, description="Max records to return"),
+    authorization: Optional[str] = Header(None)
 ):
-    """Returns recent persistent crop scans, newest first."""
-    rows = get_scan_history(farmer_id=farmer_id, field_id=field_id, limit=limit)
-    return [_format_history_entry(r) for r in rows]
+    try:
+        user_id = farmer_id
+        if authorization and authorization.startswith("Bearer "):
+            token = authorization.split(" ")[1]
+            try:
+                user = verify_auth_token(token)
+                if user and user.get("id"):
+                    user_id = user["id"]
+            except Exception:
+                pass
+                
+        if not user_id or user_id == "anonymous":
+            return []
+            
+        scans = get_user_scan_history(user_id)
+        
+        # Map fields to what frontend expects, and filter out nulls/errors
+        formatted_scans = []
+        for row in scans:
+            disease_conf = row.get("confidence", 0.0) * 100
+            condition = row.get("disease", "Unknown")
+            is_healthy = "healthy" in condition.lower()
+            health_status = "Healthy" if is_healthy else ("Needs expert verification" if condition == "Needs expert verification" else "Affected")
+            
+            # Use MongoDB 'scannedAt' but stringified
+            created_at = row.get("scannedAt", row.get("createdAt", ""))
+            
+            # Get diagnosis report details if available (MongoDB structure)
+            db = get_db()
+            diagnosis_details = {}
+            if db:
+                diag = db.diagnosis_reports.find_one({"scanId": str(row.get("id"))})
+                if diag:
+                    diagnosis_details = diag
 
-
-@router.get("/scans/history/{scan_id}", summary="Get a single complete scan record")
-def get_history_detail(scan_id: str):
-    """Retrieves full diagnostic information, symptoms, and advice for a scan."""
-    row = get_scan_history_by_id(scan_id)
-    if not row:
-        raise HTTPException(status_code=404, detail=f"Scan record '{scan_id}' not found.")
-    return _format_history_entry(row)
-
+            formatted_scans.append({
+                "id": str(row.get("id")),
+                "farmerId": row.get("userId", "default_farmer"),
+                "crop": row.get("crop", "Unknown"),
+                "cropName": row.get("crop", "Unknown"),
+                "condition": condition,
+                "disease": condition,
+                "confidence": disease_conf,
+                "severity": row.get("severity", "Unknown"),
+                "status": health_status,
+                "healthStatus": health_status,
+                "imagePath": row.get("previewUrl", ""),
+                "previewUrl": row.get("previewUrl", ""),
+                "imageUrl": row.get("previewUrl", ""),
+                "description": diagnosis_details.get("explanation", ""),
+                "symptoms": diagnosis_details.get("symptoms", []),
+                "recommendedActions": diagnosis_details.get("recommendedActions", []),
+                "prevention": diagnosis_details.get("prevention", []),
+                "createdAt": str(created_at),
+                "date": str(created_at),
+                "verification": {
+                    "isVerified": is_healthy or (disease_conf >= 45.0),
+                    "confidencePercentage": disease_conf
+                }
+            })
+            
+        return formatted_scans
+    except Exception as e:
+        logger.error(f"Error fetching history: {e}", exc_info=True)
+        return []
 
 @router.delete("/scans/history/{scan_id}", summary="Delete a scan record")
 def delete_history_entry(scan_id: str):
-    """Deletes a scan record from the database and cleans up associated file."""
-    row = get_scan_history_by_id(scan_id)
-    if not row:
-        raise HTTPException(status_code=404, detail=f"Scan record '{scan_id}' not found.")
-
-    image_path = row.get("image_path")
-    if image_path and image_path.startswith("/uploads/"):
-        rel_path = image_path.lstrip("/")
-        full_disk_path = Path(__file__).resolve().parent.parent / rel_path
-        if full_disk_path.exists():
-            try:
-                os.remove(full_disk_path)
-            except Exception:
-                pass
-
-    ok = delete_scan_history(scan_id)
-    if not ok:
-        raise HTTPException(status_code=500, detail="Failed to delete scan record from database.")
-
-    return {"message": f"Scan '{scan_id}' deleted successfully.", "id": scan_id}
+    db = get_db()
+    if not db:
+        raise HTTPException(status_code=500, detail="Database not available")
+        
+    try:
+        if ObjectId.is_valid(scan_id):
+            db.crop_scans.delete_one({"_id": ObjectId(scan_id)})
+            db.diagnosis_reports.delete_one({"scanId": scan_id})
+        else:
+            db.crop_scans.delete_one({"id": scan_id})
+            db.diagnosis_reports.delete_one({"scanId": scan_id})
+            
+        return {"message": "Deleted"}
+    except Exception as e:
+        logger.error(f"Failed to delete scan: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete scan")

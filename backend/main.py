@@ -40,6 +40,18 @@ async def lifespan(app: FastAPI):
     init_db()
     # Connect and initialise MongoDB
     get_db()
+    
+    # Model discovery
+    import logging
+    logger = logging.getLogger("main")
+    from ml.registry import get_model_status
+    status = get_model_status()
+    for crop, info in status.items():
+        if info.get("available"):
+            logger.info(f"[MODEL] {crop.title()} -> {info.get('source')} -> loaded")
+        else:
+            logger.info(f"[MODEL] {crop.title()} -> model unavailable")
+            
     yield
 
 

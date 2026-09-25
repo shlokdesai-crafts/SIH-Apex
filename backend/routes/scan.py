@@ -45,7 +45,7 @@ from models.response import (
 from ml.inference import predict_crop_disease
 from ml.config import CROP_CONFIGS
 from db import insert_submission, insert_scan_history
-from db_mongo import save_crop_scan_record, verify_auth_token, get_farm_by_user
+from db_mongo import save_crop_scan_record, verify_auth_token, get_farm_by_user, get_user_by_id
 from data.canonical_mapping import (
     CANONICAL_CROPS,
     normalize_crop_name,
@@ -93,6 +93,8 @@ async def scan_crop(
     location: Optional[str] = Form(default="Unknown"),
     latitude: Optional[float] = Form(default=None),
     longitude: Optional[float] = Form(default=None),
+    cloudinary_url: Optional[str] = Form(default=None),
+    cloudinary_public_id: Optional[str] = Form(default=None),
     authorization: Optional[str] = Header(None),
 ):
     """
@@ -128,19 +130,7 @@ async def scan_crop(
 
     display_crop = get_display_crop_name(canonical_crop)
 
-    # ── Check Disease Detection Model Availability ─────────────────────────────
-    crop_cfg = CROP_CONFIGS.get(canonical_crop)
-    has_trained_model = bool(
-        crop_cfg
-        and crop_cfg.get("classes")
-        and crop_cfg.get("model_path")
-        and Path(crop_cfg["model_path"]).exists()
-    )
-    if not has_trained_model:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Disease detection model unavailable for crop '{display_crop}'. Automated visual disease detection has not yet been trained for this crop.",
-        )
+
     if clean_field_id and resolved_uid and resolved_uid != "anonymous":
         try:
             user_farm = get_farm_by_user(resolved_uid)
@@ -311,7 +301,10 @@ async def scan_crop(
             health_status = "Healthy" if is_healthy else "Diseased"
 
     # ── Step 6: Safe Image Storage ────────────────────────────────────────────
-    saved_web_url, disk_path = _save_uploaded_image(contents, file.filename)
+    if cloudinary_url:
+        saved_web_url = cloudinary_url
+    else:
+        saved_web_url, _ = _save_uploaded_image(contents, file.filename)
 
     # ── Step 7: Build Authoritative Verification & References ─────────────────
     explanation = disease_detection.explanation if disease_detection else ""
@@ -449,3 +442,8 @@ async def scan_crop(
         advisory=None,
         scan_id=scan_id_mongo,
     )
+
+@router.get("/models/status", summary="Get model availability status")
+async def get_models_status():
+    from ml.registry import get_model_status
+    return get_model_status()

@@ -36,6 +36,7 @@ from ml.config import (
 )
 from ml.model import load_crop_checkpoint
 from ml.advisory import get_disease_advisory
+from ml.registry import get_model_adapter
 
 logger = logging.getLogger(__name__)
 
@@ -582,64 +583,51 @@ def predict_crop_disease(
     confidence_threshold: Optional[float] = None,
 ) -> Dict[str, Any]:
     """
-    Predicts disease for a crop image using CLIP vision-language prompt ensembles
-    with multi-criteria abstain checking and MobileNetV3 fallback.
+    Predicts disease for a crop image using the DiseaseModelAdapter architecture
+    with multi-criteria abstain checking.
     """
     try:
-        crop_cfg = CROP_CONFIGS.get(crop_name)
-        if not crop_cfg or not crop_cfg.get("classes"):
-            raise ValueError(f"Crop '{crop_name}' has no active disease model.")
-
-        classes: List[str] = crop_cfg["classes"]
-        num_classes = len(classes)
-
-        using_default_threshold = confidence_threshold is None
-        base_threshold = crop_cfg.get("confidence_threshold", 0.60) if using_default_threshold else confidence_threshold  # type: ignore[assignment]
-
-        severity_map: Dict[str, str] = crop_cfg.get("severity_map", {})
-        status_map: Dict[str, str] = crop_cfg.get("status_map", {})
+        adapter = get_model_adapter(crop_name)
+        if adapter is None:
+            logger.info(f"[{crop_name}] No disease model available.")
+            return {
+                "crop": crop_name,
+                "disease": "Model unavailable",
+                "confidence": 0.0,
+                "severity": "None",
+                "status": "model_unavailable",
+                "expert_verification_required": True,
+                "message": f"Disease detection model unavailable for crop '{crop_name}'.",
+                "model_source": "none",
+                "model_id": "none"
+            }
 
         img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-
-        model_path = crop_cfg.get("model_path")
-        has_cnn_model = bool(model_path and Path(model_path).exists())
-
-        probs = None
-        # Prioritize validated, fine-tuned MobileNetV3 checkpoints when available (Potato, Grape, Grapes, Onion)
-        if has_cnn_model and (crop_name in ("Potato", "Grape", "Grapes", "Onion") or crop_name not in CROP_DISEASE_PROMPTS):
-            try:
-                model, device = _get_crop_inference_model(crop_name)
-                tensor_img = _inference_transform(img).unsqueeze(0).to(device)  # type: ignore[attr-defined]
-                with torch.no_grad():
-                    outputs = model(tensor_img)
-                    probs = torch.softmax(outputs, dim=1)[0]
-            except Exception as cnn_err:
-                logger.warning(f"Trained CNN checkpoint failed for {crop_name}, attempting fallback: {cnn_err}")
-                probs = None
-
-        # Fall back to zero-shot CLIP classification if prompt ensemble exists and CNN wasn't used/available
-        if probs is None and crop_name in CROP_DISEASE_PROMPTS:
-            try:
-                from services.crop_identification import _get_crop_id_model, _extract_image_features
-                clip_model, processor, _, _ = _get_crop_id_model()
-                text_embeds = _get_clip_disease_embeds(crop_name, classes, clip_model, processor)
-
-                inputs = processor(images=img, return_tensors="pt")
-                with torch.no_grad():
-                    img_feat = _extract_image_features(clip_model, inputs)
-                    sims = (img_feat @ text_embeds.T)[0]
-                    # Temperature scaled probabilities
-                    probs = (sims * 35.0).softmax(dim=0)
-            except Exception as clip_err:
-                logger.warning(f"CLIP disease classification unavailable, using CNN fallback: {clip_err}")
-                probs = None
-
-        if probs is None and has_cnn_model:
-            model, device = _get_crop_inference_model(crop_name)
-            tensor_img = _inference_transform(img).unsqueeze(0).to(device)  # type: ignore[attr-defined]
-            with torch.no_grad():
-                outputs = model(tensor_img)
-                probs = torch.softmax(outputs, dim=1)[0]
+        classes, probs = adapter.predict(img)
+        num_classes = len(classes)
+        
+        # Get crop config for thresholds and maps
+        # Note: Some HF models might not have local configs, so we use defaults
+        from ml.registry import get_normalized_crop_name
+        norm = get_normalized_crop_name(crop_name)
+        
+        local_cfg = None
+        for key, cfg in CROP_CONFIGS.items():
+            if get_normalized_crop_name(key) == norm:
+                local_cfg = cfg
+                break
+                
+        base_threshold = 0.60
+        severity_map = {}
+        status_map = {}
+        if local_cfg:
+            base_threshold = local_cfg.get("confidence_threshold", 0.60)
+            severity_map = local_cfg.get("severity_map", {})
+            status_map = local_cfg.get("status_map", {})
+            
+        using_default_threshold = confidence_threshold is None
+        if not using_default_threshold:
+            base_threshold = confidence_threshold
 
         top_prob_t, top_idx_t = torch.max(probs, dim=0)
         top_prob_raw = float(top_prob_t.item())
@@ -660,9 +648,9 @@ def predict_crop_disease(
             })
 
         # Apply Healthy relaxation only for the default threshold
-        threshold = base_threshold  # type: ignore[assignment]
-        if using_default_threshold and predicted_class == "Healthy":
-            threshold = base_threshold * _HEALTHY_THRESHOLD_MULTIPLIER  # type: ignore[assignment]
+        threshold = base_threshold
+        if using_default_threshold and "healthy" in predicted_class.lower():
+            threshold = base_threshold * _HEALTHY_THRESHOLD_MULTIPLIER
 
         logger.info(
             f"[{crop_name}] Prediction: {predicted_class} "
@@ -679,6 +667,8 @@ def predict_crop_disease(
             num_classes=num_classes,
         )
 
+        metadata = adapter.get_model_metadata()
+
         if abstain_reason:
             logger.info(f"[{crop_name}] Abstaining — {abstain_reason}")
             advisory = get_disease_advisory(crop_name, "Needs expert verification")
@@ -687,19 +677,22 @@ def predict_crop_disease(
                 "disease": "Needs expert verification",
                 "confidence": top_confidence,
                 "severity": "None",
-                "status": "Needs expert verification",
-                "explanation": advisory["explanation"],
-                "symptoms": advisory["symptoms"],
-                "recommended_actions": advisory["recommended_actions"],
-                "prevention": advisory["prevention"],
+                "status": "uncertain",
+                "explanation": advisory.get("explanation", ""),
+                "symptoms": advisory.get("symptoms", []),
+                "recommended_actions": advisory.get("recommended_actions", []),
+                "prevention": advisory.get("prevention", []),
                 "expert_verification_required": True,
                 "abstain_reason": abstain_reason,
                 "top_predictions": top_predictions,
+                "model_source": metadata.get("source"),
+                "model_id": metadata.get("model_path") or metadata.get("repo_id"),
+                "message": "Low confidence or ambiguous prediction."
             }
 
         # ── Accepted prediction ───────────────────────────────────────────────
-        severity = severity_map.get(predicted_class, "Moderate")
-        status = status_map.get(predicted_class, "Diseased")
+        severity = severity_map.get(predicted_class, "Moderate") if "healthy" not in predicted_class.lower() else "None"
+        status = status_map.get(predicted_class, "Diseased") if "healthy" not in predicted_class.lower() else "Healthy"
         advisory = get_disease_advisory(crop_name, predicted_class)
 
         return {
@@ -708,13 +701,16 @@ def predict_crop_disease(
             "confidence": top_confidence,
             "severity": severity,
             "status": status,
-            "explanation": advisory["explanation"],
-            "symptoms": advisory["symptoms"],
-            "recommended_actions": advisory["recommended_actions"],
-            "prevention": advisory["prevention"],
+            "explanation": advisory.get("explanation", ""),
+            "symptoms": advisory.get("symptoms", []),
+            "recommended_actions": advisory.get("recommended_actions", []),
+            "prevention": advisory.get("prevention", []),
             "expert_verification_required": False,
             "abstain_reason": None,
             "top_predictions": top_predictions,
+            "model_source": metadata.get("source"),
+            "model_id": metadata.get("model_path") or metadata.get("repo_id"),
+            "message": "Prediction successful."
         }
 
     except Exception as exc:
@@ -725,15 +721,17 @@ def predict_crop_disease(
             "disease": "Needs expert verification",
             "confidence": 0.0,
             "severity": "None",
-            "status": "Needs expert verification",
-            "explanation": advisory["explanation"],
-            "symptoms": advisory["symptoms"],
-            "recommended_actions": advisory["recommended_actions"],
-            "prevention": advisory["prevention"],
+            "status": "uncertain",
+            "explanation": advisory.get("explanation", ""),
+            "symptoms": advisory.get("symptoms", []),
+            "recommended_actions": advisory.get("recommended_actions", []),
+            "prevention": advisory.get("prevention", []),
             "expert_verification_required": True,
             "abstain_reason": f"Internal error: {exc}",
+            "model_source": "none",
+            "model_id": "none",
+            "message": "Error during prediction."
         }
-
 
 def predict_sugarcane_disease(
     image_bytes: bytes,
