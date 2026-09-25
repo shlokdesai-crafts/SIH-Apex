@@ -131,6 +131,7 @@ interface ScanCropProps {
   onNavigateTab?: (tab: string) => void;
 }
 
+export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProps = {}) {
   const { t } = useTranslation();
   const { farmState, recordScan, scanTarget, clearScanTarget, startAdvisoryForCrop } = useFarm();
   const { user } = useContext(AuthContext);
