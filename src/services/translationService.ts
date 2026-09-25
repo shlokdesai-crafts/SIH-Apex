@@ -8,8 +8,8 @@
 // In-memory cache: "lang:text" -> translated text
 const translationCache = new Map<string, string>();
 
-// Base API URL (assumes backend is on localhost:8000 in dev, or same domain in prod)
-const API_BASE_URL = 'http://localhost:8000/api';
+// Base API URL (proxied via Vite /api in dev, or relative in prod)
+const API_BASE_URL = '/api';
 
 // Load cache from localStorage on init
 function loadCacheFromStorage(): void {

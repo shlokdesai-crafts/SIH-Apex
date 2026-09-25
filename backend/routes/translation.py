@@ -43,10 +43,10 @@ def translate_text(text: str, src: str, tgt: str) -> str:
     if src_code == tgt_code:
         return text
         
-    token = os.getenv("HF_TOKEN")
+    token = os.getenv("MULTILINGUAL_API") or os.getenv("HF_TOKEN") or os.getenv("VITE_MULTILINGUAL_API") or os.getenv("VITE_HF_TOKEN")
     if not token:
-        print("HF_TOKEN is missing")
-        raise HTTPException(status_code=500, detail="HF_TOKEN is not configured on the server.")
+        print("Neither MULTILINGUAL_API nor HF_TOKEN is configured in environment.")
+        return text
         
     headers = {
         "Authorization": f"Bearer {token}",

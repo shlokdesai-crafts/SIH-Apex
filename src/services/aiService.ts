@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { HfInference } from '@huggingface/inference';
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const HF_TOKEN = import.meta.env.VITE_HF_TOKEN;
+const HF_TOKEN = import.meta.env.VITE_HF_TOKEN || import.meta.env.VITE_MULTILINGUAL_API;
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY || '');
 const hf = new HfInference(HF_TOKEN || '');
