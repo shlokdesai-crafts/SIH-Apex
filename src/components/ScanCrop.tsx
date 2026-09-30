@@ -4,7 +4,6 @@ import { useFarm } from '../context/FarmContext';
 import { AuthContext } from '../auth/AuthContext';
 import { scanCropImage, getScanHistory, deleteScan, type ScanHistoryItem } from '../services/cropScanApi';
 import { getBrowserPosition, reverseGeocode } from '../services/locationService';
-import { uploadCropImage } from '../services/cloudinaryService';
 import TranslatedText from './TranslatedText';
 import { useTranslation } from '../i18n/useTranslation';
 import './ScanCrop.css';
@@ -610,23 +609,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
         }
       }
 
-      // 1. Upload to Cloudinary
-      let cloudUrl = undefined;
-      let cloudId = undefined;
-      try {
-        const cloudData = await uploadCropImage(uploadedFile);
-        cloudUrl = cloudData.url;
-        cloudId = cloudData.publicId;
-      } catch (err) {
-        console.error('Cloudinary upload failed:', err);
-        setBackendError('Image upload failed. Please try again.');
-        setStep('preview');
-        setScanProgress(0);
-        setIsSubmitting(false);
-        return;
-      }
-
-      // 2. Call the AI Inference backend with the original file + Cloudinary URL
+      // 1. Call the AI Inference backend with the original file
       const json = await scanCropImage(uploadedFile, {
         latitude: lat,
         longitude: lng,
@@ -634,9 +617,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
         farmerName: user?.fullName || ((farmState as any)?.farmerName && (farmState as any).farmerName !== 'My Farm' ? (farmState as any).farmerName : undefined),
         crop: selectedCrop,
         fieldId: selectedFieldId || undefined,
-        location: farmLocation.trim() || undefined,
-        cloudinaryUrl: cloudUrl,
-        cloudinaryPublicId: cloudId,
+        location: farmLocation.trim() || undefined
       });
 
       if (json.status === 'invalid' || json.status === 'invalid_image') {
@@ -1568,8 +1549,12 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                         }}
                         title="Click to view full diagnosis details"
                       >
-                        {record.previewUrl ? (
-                          <img src={record.previewUrl} alt={record.crop} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px', marginRight: '16px' }} />
+                        {record.previewUrl && !record.previewUrl.startsWith('broken:') ? (
+                          <img src={record.previewUrl} alt={record.crop} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px', marginRight: '16px' }} onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            record.previewUrl = 'broken:' + record.previewUrl;
+                          }} />
                         ) : (
                           <div style={{ width: '50px', height: '50px', background: '#e0e0e0', borderRadius: '6px', marginRight: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>🌱</div>
                         )}

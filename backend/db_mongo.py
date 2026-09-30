@@ -408,6 +408,9 @@ def create_initial_farm(user_id: str, farmer_name: str, location: str) -> Dict[s
     return farm_doc
 
 
+import os
+from pathlib import Path
+
 def get_farm_by_user(user_id: str) -> Optional[Dict[str, Any]]:
     """Retrieves user's farm state from MongoDB."""
     db = get_db()
@@ -421,6 +424,18 @@ def get_farm_by_user(user_id: str) -> Optional[Dict[str, Any]]:
             if user:
                 return create_initial_farm(user_id, user.get("fullName", "Farmer"), user.get("location", ""))
             return None
+        
+        # Verify local images exist for embedded scans
+        if "scans" in doc and isinstance(doc["scans"], list):
+            for scan in doc["scans"]:
+                preview = scan.get("previewUrl")
+                if preview and preview.startswith("/uploads/"):
+                    rel_path = preview.lstrip("/")
+                    full_disk_path = Path(__file__).resolve().parent / rel_path
+                    if not full_disk_path.exists():
+                        scan["previewUrl"] = None
+                        scan["imagePath"] = None
+                        
         return serialize_doc(doc)
     except Exception as exc:
         logger.error(f"Error getting farm: {exc}")
@@ -491,7 +506,7 @@ def save_crop_scan_record(
 
     clean_farmer_name = farmer_name
     if not clean_farmer_name or clean_farmer_name in ("My Farm", "Farmer", "Anonymous"):
-        if user_id and user_id != "anonymous":
+        if user_id and user_id != "anonymous" and db is not None:
             try:
                 user_doc = None
                 if ObjectId.is_valid(user_id):
@@ -813,11 +828,11 @@ UNIDENTIFIED_QUERY_OR = [
 ]
 
 def seed_mongo_demo_cases_if_empty():
-    return
     """Seeds initial demo scan records into MongoDB Atlas if crop_scans count is low."""
     db = get_db()
     if db is None:
         return
+    assert db is not None
     try:
         if db.crop_scans.count_documents({}) >= 5:
             return

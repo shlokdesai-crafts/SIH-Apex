@@ -1159,8 +1159,13 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
                       .map((s) => (
                         <div key={s.id} className="field-scan-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            {s.previewUrl ? (
-                              <img src={s.previewUrl} alt={s.crop} style={{ width: '44px', height: '44px', borderRadius: '6px', objectFit: 'cover' }} />
+                            {s.previewUrl && !s.previewUrl.startsWith('broken:') ? (
+                              <img src={s.previewUrl} alt={s.crop} style={{ width: '44px', height: '44px', borderRadius: '6px', objectFit: 'cover' }} onError={(e) => {
+                                // Prevent infinite loops and mark as broken
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                s.previewUrl = 'broken:' + s.previewUrl;
+                              }} />
                             ) : (
                               <span style={{ fontSize: '1.4rem' }}>🌿</span>
                             )}

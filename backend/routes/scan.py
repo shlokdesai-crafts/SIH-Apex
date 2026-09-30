@@ -60,11 +60,36 @@ UPLOAD_DIR = Path(__file__).resolve().parent.parent / "uploads" / "scan_history"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 
+import requests
+import os
+
 def _save_uploaded_image(contents: bytes, original_filename: Optional[str]) -> tuple[str, str]:
     """
-    Saves the image safely with a unique filename and validated extension.
-    Returns (relative_web_url, disk_filepath).
+    Uploads the image to Cloudinary using the unauthenticated upload preset API.
+    Returns (secure_url, public_id).
+    Falls back to local storage if Cloudinary is not configured.
     """
+    cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME") or os.getenv("VITE_CLOUDINARY_CLOUD_NAME")
+    upload_preset = os.getenv("CLOUDINARY_UPLOAD_PRESET") or os.getenv("VITE_CLOUDINARY_UPLOAD_PRESET")
+    
+    if cloud_name and upload_preset:
+        try:
+            # Replicating the frontend's upload logic
+            url = f"https://api.cloudinary.com/v1_1/{cloud_name}/image/upload"
+            files = {'file': (original_filename or 'upload.jpg', contents, 'image/jpeg')}
+            data = {'upload_preset': upload_preset}
+            
+            response = requests.post(url, files=files, data=data)
+            if response.status_code == 200:
+                resp_json = response.json()
+                return resp_json.get("secure_url", ""), resp_json.get("public_id", "")
+            else:
+                logger.error(f"[SCAN] Cloudinary upload failed: {response.text}")
+        except Exception as exc:
+            logger.error(f"[SCAN] Cloudinary upload exception: {exc}")
+            
+    # Fallback to local storage if Cloudinary fails or is not configured
+    logger.warning("[SCAN] Falling back to local image storage")
     ext = ".jpg"
     if original_filename:
         suffix = Path(original_filename).suffix.lower()
@@ -76,9 +101,10 @@ def _save_uploaded_image(contents: bytes, original_filename: Optional[str]) -> t
     disk_path = UPLOAD_DIR / unique_name
     with open(disk_path, "wb") as f:
         f.write(contents)
+    
+    return f"/uploads/scan_history/{unique_name}", str(disk_path)
 
-    web_url = f"/uploads/scan_history/{unique_name}"
-    return web_url, str(disk_path)
+
 
 
 @router.post("/scan", response_model=ScanResponse, summary="Validate and analyse a crop image")
@@ -92,327 +118,338 @@ async def scan_crop(
     location: Optional[str] = Form(default="Unknown"),
     latitude: Optional[float] = Form(default=None),
     longitude: Optional[float] = Form(default=None),
-    cloudinary_url: Optional[str] = Form(default=None),
-    cloudinary_public_id: Optional[str] = Form(default=None),
     authorization: Optional[str] = Header(None),
 ):
     """
     Multi-Crop identification and disease diagnostic pipeline with persistent scan history.
     """
-    now_iso = datetime.now(timezone.utc).isoformat()
-    scan_id = f"scan_{int(datetime.now(timezone.utc).timestamp())}_{uuid.uuid4().hex[:6]}"
-
-    # Clean field_id if provided
-    clean_field_id: Optional[str] = field_id.strip() if (field_id and field_id.strip()) else None
-
-    # Resolve user identity: prioritize explicit user_id, then Authorization token
-    resolved_uid = user_id
-    if (not resolved_uid or resolved_uid == "anonymous") and authorization:
-        token = authorization.replace("Bearer ", "").strip()
-        payload = verify_auth_token(token)
-        if payload and payload.get("uid"):
-            resolved_uid = payload["uid"]
-
-    # ── Mandatory Crop Selection Validation ───────────────────────────────────
-    if not crop or not crop.strip():
-        raise HTTPException(
-            status_code=400,
-            detail="Crop selection is mandatory. Please select a valid crop before scanning.",
-        )
-
-    canonical_crop = normalize_crop_name(crop.strip())
-    if not canonical_crop or canonical_crop not in CANONICAL_CROPS:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Unsupported crop '{crop}'. Please select a valid supported crop.",
-        )
-
-    display_crop = get_display_crop_name(canonical_crop)
-
-
-    if clean_field_id and resolved_uid and resolved_uid != "anonymous":
-        try:
-            user_farm = get_farm_by_user(resolved_uid)
-            if user_farm and user_farm.get("fields"):
-                matched_field = next(
-                    (f for f in user_farm["fields"] if f.get("id") == clean_field_id),
-                    None
-                )
-                if matched_field:
-                    field_crop_canon = normalize_crop_name(matched_field.get("crop"))
-                    if field_crop_canon and field_crop_canon != canonical_crop:
-                        raise HTTPException(
-                            status_code=400,
-                            detail=(
-                                f"Field '{matched_field.get('name', clean_field_id)}' is registered for "
-                                f"'{matched_field.get('crop')}', but selected scan crop is '{display_crop}'. "
-                                f"Please select the matching field or crop."
-                            ),
-                        )
-        except HTTPException:
-            raise
-        except Exception as exc:
-            logger.warning(f"Field validation lookup encountered error: {exc}")
-
-    # ── Step 1: upload validation ─────────────────────────────────────────────
-    val_errors, val_warnings, contents = await validate_upload(file)
-
-    if val_errors and not contents:
-        return ScanResponse(
-            scanId=scan_id,
-            status="invalid_image",
-            message=val_errors[0],
-            timestamp=now_iso,
-            validation=ValidationResult(
-                passed=False, errors=val_errors, warnings=val_warnings
-            ),
-        )
-
-    # ── Step 2: image quality analysis ───────────────────────────────────────
-    qual_metrics = analyze_quality(contents) if contents else {}
-    qual_errs = quality_errors(qual_metrics) if qual_metrics else []
-
-    all_errors = val_errors + qual_errs
-    size_mb = round(len(contents) / (1024 * 1024), 3) if contents else 0.0
-
-    image_quality: ImageQuality | None = None
-    if qual_metrics and not qual_metrics.get("decode_error"):
-        image_quality = ImageQuality(
-            brightness_score=qual_metrics["brightness_score"],
-            blur_score=qual_metrics["blur_score"],
-            resolution=qual_metrics["resolution"],
-            file_size_mb=size_mb,
-            is_bright_enough=qual_metrics["is_bright_enough"],
-            is_sharp_enough=qual_metrics["is_sharp_enough"],
-        )
-
-    if all_errors:
-        return ScanResponse(
-            scanId=scan_id,
-            status="invalid_image",
-            message=all_errors[0],
-            timestamp=now_iso,
-            validation=ValidationResult(
-                passed=False,
-                errors=all_errors,
-                warnings=val_warnings,
-            ),
-            image_quality=image_quality,
-            crop_analysis=None,
-        )
-
-    # ── Step 3: Phase 2 Crop/Plant Relevance Validation ───────────────────────
-    crop_analysis: CropAnalysis = validate_crop_relevance(contents)
-
-    if not crop_analysis.is_relevant:
-        rejection_msg = "This image does not appear to contain a crop or plant. Please upload a clear plant image."
-        all_errors.append(rejection_msg)
-        return ScanResponse(
-            scanId=scan_id,
-            status="invalid_image",
-            message=rejection_msg,
-            timestamp=now_iso,
-            validation=ValidationResult(
-                passed=False,
-                errors=all_errors,
-                warnings=val_warnings,
-            ),
-            image_quality=image_quality,
-            crop_analysis=crop_analysis,
-        )
-
-    # ── Step 4: Phase 3A Real Crop Species Identification ──────────────────────
-    crop_id: CropIdentification = identify_crop(contents)
-    crop_analysis.crop_identification = crop_id
-
-    if not crop_id.is_identified:
-        unsupported_msg = crop_id.message or "This crop is not currently supported by the CropGuard recognition model."
-        all_errors.append(unsupported_msg)
-        return ScanResponse(
-            scanId=scan_id,
-            status="unsupported_crop",
-            message=unsupported_msg,
-            timestamp=now_iso,
-            validation=ValidationResult(
-                passed=False,
-                errors=all_errors,
-                warnings=val_warnings,
-            ),
-            image_quality=image_quality,
-            crop_analysis=crop_analysis,
-        )
-
-    # Normalise canonical and display crop names (prioritising validated selected crop)
-    if not canonical_crop:
-        canonical_crop = normalize_crop_name(crop_id.crop_name) or crop_id.crop_name
-        display_crop = get_display_crop_name(canonical_crop)
-    crop_id.crop_name = display_crop
-    crop_conf_pct = round(crop_id.confidence * 100, 1)
-
-    # ── Step 5: Phase 3B Real Crop Disease Detection ──────────────────────────
-    disease_detection: DiseaseDetectionResult | None = None
-    severity: str = "Unknown"
-    top_predictions: List[PredictionCandidate] = []
-    condition_name = "Healthy Plant"
-    condition_type = "healthy"
-    health_status = "Healthy"
-
-    crop_cfg = CROP_CONFIGS.get(canonical_crop)
-    is_uncertain = False
-    abstain_msg = None
-
-    if crop_cfg and crop_cfg.get("classes"):
-        disease_res = predict_crop_disease(canonical_crop, contents)
-        raw_top_preds = disease_res.get("top_predictions", [])
-        for tp in raw_top_preds:
-            top_predictions.append(
-                PredictionCandidate(
-                    crop=display_crop,
-                    condition=tp.get("condition", "Unknown"),
-                    confidence=tp.get("confidence", 0.0),
-                    probability=tp.get("probability", 0.0),
-                )
+    logger.info("[SCAN] request received")
+    try:
+        now_iso = datetime.now(timezone.utc).isoformat()
+        scan_id = f"scan_{int(datetime.now(timezone.utc).timestamp())}_{uuid.uuid4().hex[:6]}"
+    
+        # Clean field_id if provided
+        clean_field_id: Optional[str] = field_id.strip() if (field_id and field_id.strip()) else None
+    
+        # Resolve user identity: prioritize explicit user_id, then Authorization token
+        resolved_uid = user_id
+        if (not resolved_uid or resolved_uid == "anonymous") and authorization:
+            token = authorization.replace("Bearer ", "").strip()
+            payload = verify_auth_token(token)
+            if payload and payload.get("uid"):
+                resolved_uid = payload["uid"]
+    
+        # ── Mandatory Crop Selection Validation ───────────────────────────────────
+        if not crop or not crop.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="Crop selection is mandatory. Please select a valid crop before scanning.",
             )
-
-        disease_detection = DiseaseDetectionResult(
-            crop=display_crop,
-            disease=disease_res.get("disease", "Unknown"),
-            confidence=disease_res.get("confidence", 0.0),
-            severity=disease_res.get("severity", "Unknown"),
-            status=disease_res.get("status", "Healthy"),
-            explanation=disease_res.get("explanation"),
-            symptoms=disease_res.get("symptoms", []),
-            recommended_actions=disease_res.get("recommended_actions", []),
-            prevention=disease_res.get("prevention", []),
-            expert_verification_required=disease_res.get("expert_verification_required", False),
-            abstain_reason=disease_res.get("abstain_reason"),
-        )
-        severity = disease_detection.severity
-        condition_name = disease_detection.disease
-        condition_type = get_condition_type(condition_name)
-        is_healthy = condition_name in ("Healthy", "Healthy Plant")
-
-        if disease_detection.expert_verification_required:
-            is_uncertain = True
-            abstain_msg = "We couldn't identify this condition confidently. Please upload another clear photo of the affected leaf or plant."
-            health_status = "Needs expert verification"
-        else:
-            health_status = "Healthy" if is_healthy else "Diseased"
-
-    # ── Step 6: Safe Image Storage ────────────────────────────────────────────
-    if cloudinary_url:
-        saved_web_url = cloudinary_url
-    else:
+    
+        canonical_crop = normalize_crop_name(crop.strip())
+        if not canonical_crop or canonical_crop not in CANONICAL_CROPS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unsupported crop '{crop}'. Please select a valid supported crop.",
+            )
+    
+        display_crop = get_display_crop_name(canonical_crop)
+    
+    
+        if clean_field_id and resolved_uid and resolved_uid != "anonymous":
+            try:
+                user_farm = get_farm_by_user(resolved_uid)
+                if user_farm and user_farm.get("fields"):
+                    matched_field = next(
+                        (f for f in user_farm["fields"] if f.get("id") == clean_field_id),
+                        None
+                    )
+                    if matched_field:
+                        field_crop_canon = normalize_crop_name(matched_field.get("crop"))
+                        if field_crop_canon and field_crop_canon != canonical_crop:
+                            raise HTTPException(
+                                status_code=400,
+                                detail=(
+                                    f"Field '{matched_field.get('name', clean_field_id)}' is registered for "
+                                    f"'{matched_field.get('crop')}', but selected scan crop is '{display_crop}'. "
+                                    f"Please select the matching field or crop."
+                                ),
+                            )
+            except HTTPException:
+                raise
+            except Exception as exc:
+                logger.warning(f"Field validation lookup encountered error: {exc}")
+    
+        # ── Step 1: upload validation ─────────────────────────────────────────────
+        val_errors, val_warnings, contents = await validate_upload(file)
+    
+        if val_errors and not contents:
+            return ScanResponse(
+                scanId=scan_id,
+                status="invalid_image",
+                message=val_errors[0],
+                timestamp=now_iso,
+                validation=ValidationResult(
+                    passed=False, errors=val_errors, warnings=val_warnings
+                ),
+            )
+    
+        # ── Step 2: image quality analysis ───────────────────────────────────────
+        qual_metrics = analyze_quality(contents) if contents else {}
+        qual_errs = quality_errors(qual_metrics) if qual_metrics else []
+    
+        all_errors = val_errors + qual_errs
+        size_mb = round(len(contents) / (1024 * 1024), 3) if contents else 0.0
+    
+        image_quality: ImageQuality | None = None
+        if qual_metrics and not qual_metrics.get("decode_error"):
+            image_quality = ImageQuality(
+                brightness_score=qual_metrics["brightness_score"],
+                blur_score=qual_metrics["blur_score"],
+                resolution=qual_metrics["resolution"],
+                file_size_mb=size_mb,
+                is_bright_enough=qual_metrics["is_bright_enough"],
+                is_sharp_enough=qual_metrics["is_sharp_enough"],
+            )
+    
+        if all_errors:
+            return ScanResponse(
+                scanId=scan_id,
+                status="invalid_image",
+                message=all_errors[0],
+                timestamp=now_iso,
+                validation=ValidationResult(
+                    passed=False,
+                    errors=all_errors,
+                    warnings=val_warnings,
+                ),
+                image_quality=image_quality,
+                crop_analysis=None,
+            )
+        
+        logger.info("[SCAN] image saved/validated")
+    
+        # ── Step 3: Phase 2 Crop/Plant Relevance Validation ───────────────────────
+        crop_analysis: CropAnalysis = validate_crop_relevance(contents)
+    
+        if not crop_analysis.is_relevant:
+            rejection_msg = "This image does not appear to contain a crop or plant. Please upload a clear plant image."
+            all_errors.append(rejection_msg)
+            return ScanResponse(
+                scanId=scan_id,
+                status="invalid_image",
+                message=rejection_msg,
+                timestamp=now_iso,
+                validation=ValidationResult(
+                    passed=False,
+                    errors=all_errors,
+                    warnings=val_warnings,
+                ),
+                image_quality=image_quality,
+                crop_analysis=crop_analysis,
+            )
+    
+        # ── Step 4: Phase 3A Real Crop Species Identification ──────────────────────
+        crop_id: CropIdentification = identify_crop(contents)
+        crop_analysis.crop_identification = crop_id
+    
+        if not crop_id.is_identified:
+            unsupported_msg = crop_id.message or "This crop is not currently supported by the CropGuard recognition model."
+            all_errors.append(unsupported_msg)
+            return ScanResponse(
+                scanId=scan_id,
+                status="unsupported_crop",
+                message=unsupported_msg,
+                timestamp=now_iso,
+                validation=ValidationResult(
+                    passed=False,
+                    errors=all_errors,
+                    warnings=val_warnings,
+                ),
+                image_quality=image_quality,
+                crop_analysis=crop_analysis,
+            )
+    
+        # Normalise canonical and display crop names (prioritising validated selected crop)
+        if not canonical_crop:
+            canonical_crop = normalize_crop_name(crop_id.crop_name) or crop_id.crop_name
+            display_crop = get_display_crop_name(canonical_crop)
+        crop_id.crop_name = display_crop
+        crop_conf_pct = round(crop_id.confidence * 100, 1)
+    
+        # ── Step 5: Phase 3B Real Crop Disease Detection ──────────────────────────
+        logger.info("[SCAN] ML inference started")
+        disease_detection: DiseaseDetectionResult | None = None
+        severity: str = "Unknown"
+        top_predictions: List[PredictionCandidate] = []
+        condition_name = "Healthy Plant"
+        condition_type = "healthy"
+        health_status = "Healthy"
+    
+        crop_cfg = CROP_CONFIGS.get(canonical_crop)
+        is_uncertain = False
+        abstain_msg = None
+    
+        if crop_cfg and crop_cfg.get("classes"):
+            disease_res = predict_crop_disease(canonical_crop, contents)
+            raw_top_preds = disease_res.get("top_predictions", [])
+            for tp in raw_top_preds:
+                top_predictions.append(
+                    PredictionCandidate(
+                        crop=display_crop,
+                        condition=tp.get("condition", "Unknown"),
+                        confidence=tp.get("confidence", 0.0),
+                        probability=tp.get("probability", 0.0),
+                    )
+                )
+    
+            disease_detection = DiseaseDetectionResult(
+                crop=display_crop,
+                disease=disease_res.get("disease", "Unknown"),
+                confidence=disease_res.get("confidence", 0.0),
+                severity=disease_res.get("severity", "Unknown"),
+                status=disease_res.get("status", "Healthy"),
+                explanation=disease_res.get("explanation"),
+                symptoms=disease_res.get("symptoms", []),
+                recommended_actions=disease_res.get("recommended_actions", []),
+                prevention=disease_res.get("prevention", []),
+                expert_verification_required=disease_res.get("expert_verification_required", False),
+                abstain_reason=disease_res.get("abstain_reason"),
+            )
+            severity = disease_detection.severity
+            condition_name = disease_detection.disease
+            condition_type = get_condition_type(condition_name)
+            is_healthy = condition_name in ("Healthy", "Healthy Plant")
+    
+            if disease_detection.expert_verification_required:
+                is_uncertain = True
+                abstain_msg = "We couldn't identify this condition confidently. Please upload another clear photo of the affected leaf or plant."
+                health_status = "Needs expert verification"
+            else:
+                health_status = "Healthy" if is_healthy else "Diseased"
+        logger.info("[SCAN] ML inference completed")
+    
+        # ── Step 6: Safe Image Storage ────────────────────────────────────────────
+        logger.info("[SCAN] Cloudinary upload started")
         saved_web_url, _ = _save_uploaded_image(contents, file.filename)
-
-    # ── Step 7: Build Authoritative Verification & References ─────────────────
-    explanation = disease_detection.explanation if disease_detection else ""
-    symptoms = disease_detection.symptoms if disease_detection else []
-    actions = disease_detection.recommended_actions if disease_detection else []
-    prevention = disease_detection.prevention if disease_detection else []
-    disease_conf = disease_detection.confidence if disease_detection else 0.0
-
-    verification_dict = get_crop_verification_metadata(
-        canonical_crop=canonical_crop,
-        condition_name=condition_name,
-        crop_conf=crop_id.confidence,
-        disease_conf=disease_conf,
-    )
-    verification = VerificationDetail(**verification_dict)
-
-    # (SQLite scan_history logging removed; using MongoDB Atlas save_crop_scan_record)
-
-    # Resolve user identity for MongoDB: prioritize explicit user_id, then Authorization header
-    resolved_uid = user_id
-    if (not resolved_uid or resolved_uid == "anonymous") and authorization:
-        token = authorization.replace("Bearer ", "").strip()
-        payload = verify_auth_token(token)
-        if payload and payload.get("uid"):
-            resolved_uid = payload["uid"]
-
-    # Resolve actual farmer name (never use 'My Farm' or 'Farmer')
-    resolved_farmer_name = farmer_name
-    if not resolved_farmer_name or resolved_farmer_name in ("My Farm", "Farmer", "Anonymous"):
-        if resolved_uid and resolved_uid != "anonymous":
-            user_doc = get_user_by_id(resolved_uid)
-            if user_doc and user_doc.get("fullName"):
-                resolved_farmer_name = user_doc["fullName"]
-            elif user_doc and user_doc.get("name"):
-                resolved_farmer_name = user_doc["name"]
-
-    # MongoDB persistence
-    scan_id_mongo = save_crop_scan_record(
-        user_id=resolved_uid,
-        farmer_name=resolved_farmer_name,
-        crop=crop_id.crop_name,
-        disease=disease_detection.disease if disease_detection else "Unknown",
-        confidence=disease_conf,
-        severity=severity or "None",
-        status="valid",
-        location=location or "Unknown",
-        latitude=latitude,
-        longitude=longitude,
-        preview_url=saved_web_url,
-        image_quality=image_quality.model_dump() if image_quality else None,
-        diagnosis_details=disease_detection.model_dump() if disease_detection else None,
-        field_id=clean_field_id,
-    )
-
-    # (SQLite submissions logging removed; using MongoDB Atlas save_crop_scan_record)
-
-    # ── Step 8: Assemble Response ─────────────────────────────────────────────
-    if is_uncertain:
-        primary_msg = abstain_msg or "Diagnosis uncertain. Please upload another clear photo."
-        resp_status = "uncertain"
-    else:
-        disease_conf_pct = round(disease_conf * 100, 1)
-        primary_msg = (
-            f"Crop identified as {display_crop} ({crop_conf_pct}% confidence). "
-            f"Disease: {condition_name} ({disease_conf_pct}% confidence)."
+        logger.info("[SCAN] Cloudinary upload completed")
+    
+        # ── Step 7: Build Authoritative Verification & References ─────────────────
+        explanation = disease_detection.explanation if disease_detection else ""
+        symptoms = disease_detection.symptoms if disease_detection else []
+        actions = disease_detection.recommended_actions if disease_detection else []
+        prevention = disease_detection.prevention if disease_detection else []
+        disease_conf = disease_detection.confidence if disease_detection else 0.0
+    
+        verification_dict = get_crop_verification_metadata(
+            canonical_crop=canonical_crop,
+            condition_name=condition_name,
+            crop_conf=crop_id.confidence,
+            disease_conf=disease_conf,
         )
-        resp_status = "valid"  # maintains existing frontend checking json.status === 'valid'
-
-    return ScanResponse(
-        scanId=scan_id,
-        status=resp_status,
-        message=primary_msg,
-        timestamp=now_iso,
-        imageUrl=saved_web_url,
-        crop=CropDetail(name=display_crop, confidence=crop_id.confidence),
-        diagnosis=DiagnosisDetail(
-            condition=condition_name,
-            type=condition_type,
-            healthStatus=health_status,
+        verification = VerificationDetail(**verification_dict)
+    
+        # (SQLite scan_history logging removed; using MongoDB Atlas save_crop_scan_record)
+    
+        # Resolve user identity for MongoDB: prioritize explicit user_id, then Authorization header
+        resolved_uid = user_id
+        if (not resolved_uid or resolved_uid == "anonymous") and authorization:
+            token = authorization.replace("Bearer ", "").strip()
+            payload = verify_auth_token(token)
+            if payload and payload.get("uid"):
+                resolved_uid = payload["uid"]
+    
+        # Resolve actual farmer name (never use 'My Farm' or 'Farmer')
+        resolved_farmer_name = farmer_name
+        if not resolved_farmer_name or resolved_farmer_name in ("My Farm", "Farmer", "Anonymous"):
+            if resolved_uid and resolved_uid != "anonymous":
+                user_doc = get_user_by_id(resolved_uid)
+                if user_doc and user_doc.get("fullName"):
+                    resolved_farmer_name = user_doc["fullName"]
+                elif user_doc and user_doc.get("name"):
+                    resolved_farmer_name = user_doc["name"]
+    
+        # MongoDB persistence
+        logger.info("[SCAN] MongoDB save started")
+        scan_id_mongo = save_crop_scan_record(
+            user_id=resolved_uid,
+            farmer_name=resolved_farmer_name,
+            crop=crop_id.crop_name,
+            disease=disease_detection.disease if disease_detection else "Unknown",
             confidence=disease_conf,
+            severity=severity or "None",
+            status="valid",
+            location=location or "Unknown",
+            latitude=latitude,
+            longitude=longitude,
+            preview_url=saved_web_url,
+            image_quality=image_quality.model_dump() if image_quality else None,
+            diagnosis_details=disease_detection.model_dump() if disease_detection else None,
+            field_id=clean_field_id,
+        )
+        logger.info("[SCAN] MongoDB save completed")
+    
+        # (SQLite submissions logging removed; using MongoDB Atlas save_crop_scan_record)
+    
+        # ── Step 8: Assemble Response ─────────────────────────────────────────────
+        if is_uncertain:
+            primary_msg = abstain_msg or "Diagnosis uncertain. Please upload another clear photo."
+            resp_status = "uncertain"
+        else:
+            disease_conf_pct = round(disease_conf * 100, 1)
+            primary_msg = (
+                f"Crop identified as {display_crop} ({crop_conf_pct}% confidence). "
+                f"Disease: {condition_name} ({disease_conf_pct}% confidence)."
+            )
+            resp_status = "valid"  # maintains existing frontend checking json.status === 'valid'
+    
+        response = ScanResponse(
+            scanId=scan_id,
+            status=resp_status,
+            message=primary_msg,
+            timestamp=now_iso,
+            imageUrl=saved_web_url,
+            crop=CropDetail(name=display_crop, confidence=crop_id.confidence),
+            diagnosis=DiagnosisDetail(
+                condition=condition_name,
+                type=condition_type,
+                healthStatus=health_status,
+                confidence=disease_conf,
+                severity=severity,
+            ),
+            topPredictions=top_predictions,
+            analysis=AnalysisDetail(
+                summary=explanation or primary_msg,
+                symptoms=symptoms,
+                recommendedActions=actions,
+                prevention=prevention,
+                pesticideNote="Use only registered crop-protection products according to the label and local agricultural guidance.",
+            ),
+            metadata=ModelMetadata(
+                model="CropGuard-Hybrid-MobileNetV3-CLIP",
+                modelVersion="2.4.0",
+                datasetSources=["ICAR", "PlantVillage"],
+            ),
+            verification=verification,
+            validation=ValidationResult(
+                passed=True,
+                errors=[],
+                warnings=val_warnings,
+            ),
+            image_quality=image_quality,
+            crop_analysis=crop_analysis,
+            disease_detection=disease_detection,
             severity=severity,
-        ),
-        topPredictions=top_predictions,
-        analysis=AnalysisDetail(
-            summary=explanation or primary_msg,
-            symptoms=symptoms,
-            recommendedActions=actions,
-            prevention=prevention,
-            pesticideNote="Use only registered crop-protection products according to the label and local agricultural guidance.",
-        ),
-        metadata=ModelMetadata(
-            model="CropGuard-Hybrid-MobileNetV3-CLIP",
-            modelVersion="2.4.0",
-            datasetSources=["ICAR", "PlantVillage"],
-        ),
-        verification=verification,
-        validation=ValidationResult(
-            passed=True,
-            errors=[],
-            warnings=val_warnings,
-        ),
-        image_quality=image_quality,
-        crop_analysis=crop_analysis,
-        disease_detection=disease_detection,
-        severity=severity,
-        risk_score=None,
-        advisory=None,
-        scan_id=scan_id_mongo,
-    )
+            risk_score=None,
+            advisory=None,
+            scan_id=scan_id_mongo,
+        )
+        logger.info("[SCAN] response returned")
+        return response
+    except Exception as e:
+        import traceback
+        logger.error(f"[SCAN] FATAL ERROR: {str(e)}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.get("/models/status", summary="Get model availability status")
 async def get_models_status():

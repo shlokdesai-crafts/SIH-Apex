@@ -37,6 +37,11 @@ CROP_MODEL_REGISTRY = {
         "provider": "huggingface",
         "repo_id": "Arko007/nfnet-f1-plant-disease",
         "model_type": "image-classification"
+    },
+    "maize": {
+        "provider": "huggingface",
+        "repo_id": "linkanjarad/mobilenet_v2_plant_disease",
+        "model_type": "image-classification"
     }
 }
 
@@ -84,7 +89,7 @@ def get_model_adapter(crop_name: str) -> Optional[DiseaseModelAdapter]:
     # 1. Local Model
     if local_cfg and local_cfg.get("model_path") and local_cfg["model_path"].exists():
         adapter = LocalTorchModelAdapter(
-            crop_name=local_cfg_key,
+            crop_name=local_cfg_key or crop_name,
             model_path=local_cfg["model_path"],
             classes=local_cfg["classes"]
         )

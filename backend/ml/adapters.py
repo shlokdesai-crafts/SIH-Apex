@@ -72,6 +72,7 @@ class LocalTorchModelAdapter(DiseaseModelAdapter):
             image = image.convert("RGB")
         tensor = _inference_transform(image).unsqueeze(0).to(self.device)
         with torch.no_grad():
+            assert self.model is not None
             outputs = self.model(tensor)
             probs = torch.softmax(outputs, dim=1).squeeze(0).cpu()
         return self.classes, probs
@@ -122,8 +123,10 @@ class HuggingFaceImageClassifierAdapter(DiseaseModelAdapter):
         if image.mode != "RGB":
             image = image.convert("RGB")
             
+        assert self.feature_extractor is not None
         inputs = self.feature_extractor(images=image, return_tensors="pt").to(self.device)
         with torch.no_grad():
+            assert self.model is not None
             outputs = self.model(**inputs)
             logits = outputs.logits
             probs = torch.softmax(logits, dim=1).squeeze(0).cpu()

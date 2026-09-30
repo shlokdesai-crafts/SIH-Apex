@@ -85,6 +85,17 @@ def _format_history_entry(row: dict) -> dict:
 
     scanned_at = row.get("created_at") or row.get("scannedAt")
 
+    image_path_raw = row.get("image_path") or row.get("previewUrl", "")
+    
+    # Check if file exists for local uploads
+    if image_path_raw and image_path_raw.startswith("/uploads/"):
+        rel_path = image_path_raw.lstrip("/")  # becomes 'uploads/scan_history/...'
+        full_disk_path = Path(__file__).resolve().parent.parent / rel_path
+        if not full_disk_path.exists():
+            image_path_raw = None
+            
+    print(f"[HISTORY] Returning image URL: {image_path_raw} for scan {row.get('id')}")
+
     return {
         "id": str(row.get("id")),
         "farmerId": row.get("farmer_id") or row.get("userId") or "default_farmer",
@@ -100,9 +111,9 @@ def _format_history_entry(row: dict) -> dict:
         "severity": row.get("severity", "Unknown"),
         "status": health_status,
         "healthStatus": health_status,
-        "imagePath": row.get("image_path") or row.get("previewUrl", ""),
-        "previewUrl": row.get("image_path") or row.get("previewUrl", ""),
-        "imageUrl": row.get("image_path") or row.get("previewUrl", ""),
+        "imagePath": image_path_raw,
+        "previewUrl": image_path_raw,
+        "imageUrl": image_path_raw,
         "diagnosisSummary": row.get("diagnosis_summary") or row.get("explanation") or "",
         "description": row.get("diagnosis_summary") or row.get("explanation") or "",
         "symptoms": symptoms,

@@ -115,6 +115,8 @@ app.include_router(translation_router, prefix="/api", tags=["Translation"])
 
 
 # ── Health endpoints ──────────────────────────────────────────────────────────
+app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
+
 @app.get("/", tags=["Health"])
 def root():
     return {
