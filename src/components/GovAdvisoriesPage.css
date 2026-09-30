@@ -109,7 +109,7 @@
   border-radius: 10px;
   padding: 8px 14px;
   flex: 1;
-  min-width: 320px;
+  min-width: 200px;
 }
 
 .advisory-search-box input {

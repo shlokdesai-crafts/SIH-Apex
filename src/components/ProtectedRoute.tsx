@@ -30,8 +30,9 @@ export default function ProtectedRoute({
 
   // Check role authorization if restricted
   if (allowedRoles && allowedRoles.length > 0) {
-    const currentRole = user?.role || 'farmer';
-    if (!allowedRoles.includes(currentRole)) {
+    const currentRole = (user?.role || 'farmer').toLowerCase();
+    const normalizedAllowed = allowedRoles.map(r => r.toLowerCase());
+    if (!normalizedAllowed.includes(currentRole)) {
       // Role not authorized – redirect to permitted home
       return <Navigate to="/" replace />;
     }

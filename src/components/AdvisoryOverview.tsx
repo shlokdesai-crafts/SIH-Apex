@@ -154,8 +154,9 @@ export default function AdvisoryOverview({ scanResult, locationData, onBack, onO
     if (user?.location) {
       return user.location;
     }
-    if ((farmerContext?.farm as any)?.location) {
-      return (farmerContext?.farm as any).location;
+    const farmLoc = (farmerContext?.farm as any)?.location;
+    if (farmLoc) {
+      return farmLoc;
     }
     if (farmerContext?.farmer?.district) {
       return `${farmerContext.farmer.district}, ${farmerContext.farmer.state || 'Maharashtra'}`;

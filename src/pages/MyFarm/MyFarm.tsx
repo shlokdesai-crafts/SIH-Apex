@@ -51,30 +51,8 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
     { id: 'off_3', name: 'Vikram Joshi', role: 'Field Inspector' },
   ];
 
-  if (isLoading || !farmState) {
-    return (
-      <div className="my-farm-container" style={{ padding: '60px', textAlign: 'center' }}>
-        <h2>Loading farm telemetry...</h2>
-      </div>
-    );
-  }
-
-  const {
-    farmDetails,
-    crops,
-    fields,
-    activities,
-    priorityActions,
-    farmInsights,
-    overallHealthScore,
-    lastUpdated,
-  } = farmState;
-
-  // Genuine Scanned Crops logic: A crop appears in the scanned-crops section ONLY when backed by at least one persisted scan
-  const hasScans = Boolean(farmState.scans && farmState.scans.length > 0);
-
   const scannedCrops: FarmCrop[] = useMemo(() => {
-    if (!farmState.scans || farmState.scans.length === 0) return [];
+    if (!farmState || !farmState.scans || farmState.scans.length === 0) return [];
 
     const scansByCropKey = new Map<string, typeof farmState.scans>();
     farmState.scans.forEach((scan) => {
@@ -89,7 +67,7 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
     const processedKeys = new Set<string>();
 
     // First include existing crops that have scans
-    (crops || []).forEach((c) => {
+    (farmState.crops || []).forEach((c) => {
       const cKey = getCanonicalCropKey(c.id || c.name);
       if (scansByCropKey.has(cKey)) {
         processedKeys.add(cKey);
@@ -131,7 +109,28 @@ export default function MyFarm({ onNavigateTab }: MyFarmProps = {}) {
     });
 
     return result;
-  }, [farmState.scans, crops]);
+  }, [farmState]);
+
+  if (isLoading || !farmState) {
+    return (
+      <div className="my-farm-container" style={{ padding: '60px', textAlign: 'center' }}>
+        <h2>Loading farm telemetry...</h2>
+      </div>
+    );
+  }
+
+  const {
+    farmDetails,
+    crops,
+    fields,
+    activities,
+    priorityActions,
+    farmInsights,
+    overallHealthScore,
+    lastUpdated,
+  } = farmState;
+
+  const hasScans = Boolean(farmState.scans && farmState.scans.length > 0);
 
   // Health classification: assessed only when genuine scans exist
   const healthClass = !hasScans

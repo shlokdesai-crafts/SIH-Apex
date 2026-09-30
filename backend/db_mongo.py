@@ -268,8 +268,8 @@ def create_user(
         return False, None, str(exc)
 
 
-def authenticate_user(phone: str, password: str) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
-    """Authenticates user with phone and password."""
+def authenticate_user(phone: str, password: str, expected_role: Optional[str] = None) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """Authenticates user with phone, password, and optional expected role validation."""
     db = get_db()
     if db is None:
         return False, None, "Database unavailable"
@@ -277,10 +277,16 @@ def authenticate_user(phone: str, password: str) -> Tuple[bool, Optional[Dict[st
     phone = phone.strip()
     user = db.users.find_one({"phone": phone})
     if not user:
-        return False, None, "Account not found. Please sign up."
+        return False, None, "No account found for this mobile number."
 
     if not verify_password(password, user.get("passwordHash", "")):
         return False, None, "Incorrect password."
+
+    user_role = (user.get("role") or "Farmer").lower()
+    if expected_role:
+        req_role = expected_role.lower()
+        if user_role != req_role:
+            return False, None, "No account found for this mobile number."
 
     user_id = str(user["_id"])
     token = create_auth_token(user_id, phone, user.get("role", "Farmer"))

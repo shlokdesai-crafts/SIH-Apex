@@ -617,16 +617,16 @@ const CaseManagementPage = ({ initialFilter = 'all' }: CaseManagementPageProps) 
           <table className="case-table">
             <thead>
               <tr>
-                <th>#ID</th>
-                <th>{t("Farmer Name")}</th>
-                <th>{t("Location")}</th>
-                <th>{t("Crop")}</th>
-                <th>{t("AI Diagnosis & Confidence")}</th>
-                <th>{t("Priority")}</th>
-                <th>{t("Date Filed")}</th>
-                <th>{t("Status")}</th>
-                <th>{t("Assigned Officer")}</th>
-                <th style={{ textAlign: 'right' }}>{t("Actions")}</th>
+                <th className="col-id">#ID</th>
+                <th className="col-farmer">{t("Farmer Name")}</th>
+                <th className="col-location">{t("Location")}</th>
+                <th className="col-crop">{t("Crop")}</th>
+                <th className="col-diagnosis">{t("AI Diagnosis & Confidence")}</th>
+                <th className="col-priority">{t("Priority")}</th>
+                <th className="col-date">{t("Date Filed")}</th>
+                <th className="col-status">{t("Status")}</th>
+                <th className="col-officer">{t("Assigned Officer")}</th>
+                <th className="col-actions">{t("Actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -645,13 +645,13 @@ const CaseManagementPage = ({ initialFilter = 'all' }: CaseManagementPageProps) 
               ) : (
                 filteredCases.map((c) => (
                   <tr key={c.id} className="case-row" onClick={() => setSelectedCase(c)}>
-                    <td className="case-id-cell" data-label="ID">{formatCaseId(c.id)}</td>
-                    <td className="case-farmer-name" data-label={t("Farmer Name")}>{c.farmer_name}</td>
-                    <td data-label={t("Location")}>{c.location}</td>
-                    <td className="case-crop-cell" data-label={t("Crop")}>
+                    <td className="case-id-cell col-id" data-label="ID">{formatCaseId(c.id)}</td>
+                    <td className="case-farmer-name col-farmer" data-label={t("Farmer Name")}>{c.farmer_name}</td>
+                    <td className="col-location" data-label={t("Location")}>{c.location}</td>
+                    <td className="case-crop-cell col-crop" data-label={t("Crop")}>
                       <span className="crop-tag">🍃 {c.crop}</span>
                     </td>
-                    <td data-label={t("AI Diagnosis")}>
+                    <td className="col-diagnosis" data-label={t("AI Diagnosis")}>
                       <div className="ai-diagnosis-cell">
                         <span className="disease-title">{c.disease || c.ai_result}</span>
                         {c.confidence !== null && c.confidence !== undefined && (
@@ -661,17 +661,17 @@ const CaseManagementPage = ({ initialFilter = 'all' }: CaseManagementPageProps) 
                         )}
                       </div>
                     </td>
-                    <td data-label={t("Priority")}>{getPriorityBadge(c.priority, c.severity)}</td>
-                    <td className="case-date-cell" data-label={t("Date Filed")}>{formatDate(c.created_at)}</td>
-                    <td data-label={t("Status")}>{getStatusBadge(c.status)}</td>
-                    <td data-label={t("Assigned Officer")}>
+                    <td className="col-priority" data-label={t("Priority")}>{getPriorityBadge(c.priority, c.severity)}</td>
+                    <td className="case-date-cell col-date" data-label={t("Date Filed")}>{formatDate(c.created_at)}</td>
+                    <td className="col-status" data-label={t("Status")}>{getStatusBadge(c.status)}</td>
+                    <td className="col-officer" data-label={t("Assigned Officer")}>
                       {c.assigned_officer ? (
                         <span className="officer-assigned-tag">👤 {c.assigned_officer}</span>
                       ) : (
                         <span className="officer-unassigned-tag">{t("Unassigned")}</span>
                       )}
                     </td>
-                    <td data-label={t("Actions")} style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
+                    <td className="col-actions" data-label={t("Actions")} onClick={(e) => e.stopPropagation()}>
                       <div className="action-buttons-group">
                         {c.status === 'Unidentified' ? (
                           <button

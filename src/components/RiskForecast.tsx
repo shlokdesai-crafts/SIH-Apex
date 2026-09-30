@@ -156,6 +156,24 @@ export default function RiskForecast({
     detectedDisease: (scanResult?.disease && scanResult.disease !== 'Healthy' && scanResult.disease !== 'healthy plant') ? scanResult.disease : undefined
   });
 
+  // Helper to check if scan has no disease / is healthy / none
+  const isNoDisease = !scanResult?.disease || 
+    scanResult.disease.toLowerCase() === 'none' || 
+    scanResult.disease.toLowerCase() === 'healthy' || 
+    scanResult.disease.toLowerCase() === 'healthy plant';
+
+  const overallRiskDisplay = scanResult 
+    ? (isNoDisease ? 'Low' : scanResult.severity) 
+    : currentData.overallRisk;
+
+  const overallRiskClass = scanResult 
+    ? (isNoDisease ? 'low' : scanResult.severity === 'High' ? 'high' : scanResult.severity === 'Moderate' ? 'mod' : 'low') 
+    : currentData.riskClass;
+
+  const overallRiskDesc = scanResult 
+    ? (isNoDisease ? 'No major issues detected in recent scan' : `${scanResult.disease} detected in recent scan`) 
+    : currentData.riskDesc;
+
   return <div className="risk-forecast-container">
       {/* Top Header Section */}
       <div className="rf-header">
@@ -282,19 +300,21 @@ export default function RiskForecast({
           </div>
           <div className="rf-overall-risk-content">
             <div className="rf-overall-icon">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="#ffa000">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill={overallRiskClass === 'high' ? '#d32f2f' : overallRiskClass === 'mod' ? '#ffa000' : '#4caf50'}>
                 <path d="M12 2L1 21h22M12 6l7.53 13H4.47M11 10v4h2v-4m-2 6v2h2v-2"></path>
               </svg>
             </div>
             <div className="rf-overall-info">
               <div className="rf-risk-level">
-                <span className={`rf-risk-text ${scanResult ? scanResult.severity === 'High' ? 'high' : scanResult.severity === 'Moderate' ? 'mod' : 'low' : currentData.riskClass}`}>
-                  {scanResult ? scanResult.severity : currentData.overallRisk}
+                <span className={`rf-risk-text ${overallRiskClass}`}>
+                  {overallRiskDisplay}
                 </span>
-                <span className="rf-risk-trend">{currentData.trend}</span>
+                <span className={`rf-risk-trend ${isNoDisease ? 'low-trend' : ''}`}>
+                  {isNoDisease ? '↓' : currentData.trend}
+                </span>
               </div>
               <p className="rf-risk-desc">
-                {scanResult ? `${scanResult.disease === 'Healthy' ? 'No major issues' : scanResult.disease} detected in recent scan` : currentData.riskDesc}
+                {overallRiskDesc}
               </p>
             </div>
           </div>
@@ -303,7 +323,7 @@ export default function RiskForecast({
             <div className="rf-progress-bar">
               <div className="rf-progress-fill" style={{
               width: `${scanResult ? scanResult.score : currentData.confidence}%`,
-              backgroundColor: '#4caf50'
+              backgroundColor: overallRiskClass === 'high' ? '#ef5350' : overallRiskClass === 'mod' ? '#ffca28' : '#4caf50'
             }}></div>
             </div>
           </div>
@@ -374,7 +394,7 @@ export default function RiskForecast({
           </div>
           <div className="rf-issue-list">
             {/* Dynamic Issue from Scan */}
-            {scanResult && scanResult.disease && scanResult.disease.toLowerCase() !== 'healthy plant' ? <div className="rf-issue-item">
+            {scanResult && !isNoDisease ? <div className="rf-issue-item">
                 <div className="rf-issue-name">
                   <div className="bug-icon">⚠️</div>
                   <span>{scanResult.disease}</span>
@@ -384,12 +404,13 @@ export default function RiskForecast({
                 width: scanResult.severity === 'High' ? '90%' : scanResult.severity === 'Moderate' ? '60%' : '30%'
               }}></div></div>
               </div> : <div style={{
-            padding: '20px',
+            padding: '20px 10px',
             textAlign: 'center',
-            color: '#666',
-            fontSize: '14px'
+            color: '#2e7d32',
+            fontSize: '14px',
+            fontWeight: 500
           }}>
-                {scanResult && scanResult.disease.toLowerCase() === 'healthy plant' ? 'Your scanned crop is completely healthy!' : 'Scan a crop to see potential issues.'}
+                {scanResult ? 'Your scanned crop is completely healthy!' : 'Scan a crop to see potential issues.'}
               </div>}
           </div>
         </div>

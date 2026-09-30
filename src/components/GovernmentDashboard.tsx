@@ -46,7 +46,7 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
       setActiveTab('reports');
     } else if (location.pathname === '/settings') {
       setActiveTab('settings');
-    } else if (location.pathname === '/' || location.pathname === '/dashboard') {
+    } else if (location.pathname === '/' || location.pathname === '/dashboard' || location.pathname === '/government') {
       setActiveTab('dashboard');
     }
   }, [location.pathname]);
@@ -66,7 +66,7 @@ const GovernmentDashboard = ({ initialTab = 'dashboard' }: GovernmentDashboardPr
     } else if (tab === 'settings') {
       navigate('/settings');
     } else {
-      navigate('/');
+      navigate('/government');
     }
   };
 

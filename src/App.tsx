@@ -76,7 +76,7 @@ function AppRoutes() {
       <Route
         path="/*"
         element={
-          user?.role === 'government' ? (
+          user?.role?.toLowerCase() === 'government' ? (
             <GovernmentDashboard initialTab="dashboard" />
           ) : (
             <ProtectedRoute>

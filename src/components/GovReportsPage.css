@@ -622,6 +622,64 @@
   }
 }
 
+@media (max-width: 768px) {
+  .reports-table-card,
+  .reports-table-container {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .reports-table,
+  .reports-table tbody,
+  .reports-table tr,
+  .reports-table td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .reports-table thead {
+    display: none;
+  }
+
+  .reports-table tbody tr {
+    margin-bottom: 12px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 14px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  }
+
+  .reports-table td {
+    padding: 6px 0;
+    border-bottom: 1px dashed #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    text-align: right;
+    word-break: break-word;
+  }
+
+  .reports-table td:last-child {
+    border-bottom: none;
+  }
+
+  .reports-table td[data-label]::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: #64748b;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    text-align: left;
+    margin-right: 10px;
+    flex-shrink: 0;
+  }
+}
+
 @media (max-width: 600px) {
   .gov-reports-page {
     padding: 10px 8px;
@@ -686,13 +744,6 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
-  }
-  .reports-table-container {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    box-sizing: border-box;
   }
 }
 

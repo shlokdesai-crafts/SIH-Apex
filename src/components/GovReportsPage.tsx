@@ -545,33 +545,33 @@ const GovReportsPage = () => {
               ) : (
                 filteredCases.map((c) => (
                   <tr key={c.id}>
-                    <td className="case-id-code">#{c.id.substring(c.id.length - 6).toUpperCase()}</td>
-                    <td className="farmer-cell">
+                    <td className="case-id-code" data-label={t("Case ID")}>#{c.id.substring(c.id.length - 6).toUpperCase()}</td>
+                    <td className="farmer-cell" data-label={t("Farmer Name")}>
                       <span className="farmer-name-text">{c.farmer_name}</span>
                     </td>
-                    <td className="district-cell">📍 {c.location}</td>
-                    <td className="crop-cell">🌾 {c.crop}</td>
-                    <td className="diag-cell">
+                    <td className="district-cell" data-label={t("District")}>📍 {c.location}</td>
+                    <td className="crop-cell" data-label={t("Crop Species")}>🌾 {c.crop}</td>
+                    <td className="diag-cell" data-label={t("AI Diagnosis")}>
                       <strong>{c.disease || c.ai_result}</strong>
                     </td>
-                    <td>
+                    <td data-label={t("Severity")}>
                       <span className={`severity-badge sev-${(c.severity || 'Medium').toLowerCase()}`}>
                         {c.severity || 'Medium'}
                       </span>
                     </td>
-                    <td>
+                    <td data-label={t("Status")}>
                       <span className={`status-pill pill-${c.status.toLowerCase().replace(/\s+/g, '-')}`}>
                         {c.status}
                       </span>
                     </td>
-                    <td className="officer-cell">
+                    <td className="officer-cell" data-label={t("Assigned Officer")}>
                       {c.assigned_officer ? (
                         <span className="officer-name">👤 {c.assigned_officer}</span>
                       ) : (
                         <span className="officer-unassigned">{t("Unassigned")}</span>
                       )}
                     </td>
-                    <td className="notes-cell">
+                    <td className="notes-cell" data-label={t("Resolution Notes")}>
                       {c.resolution_notes ? (
                         <span className="notes-text">"{c.resolution_notes}"</span>
                       ) : (

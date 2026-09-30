@@ -255,11 +255,26 @@ export async function login(phone: string, password: string, role: string): Prom
 
     const json = await res.json();
     if (!res.ok || !json.success) {
-      return { success: false, error: json.detail || json.message || 'Invalid phone or password' };
+      return {
+        success: false,
+        error: json.detail || json.message || 'No account found for this mobile number.',
+      };
     }
 
     const user: UserPublic = json.user;
     const token: string = json.token;
+
+    // Validate that returned account role matches requested account type
+    if (role) {
+      const userRole = (user.role || 'farmer').toLowerCase();
+      const reqRole = role.toLowerCase();
+      if (userRole !== reqRole) {
+        return {
+          success: false,
+          error: 'No account found for this mobile number.',
+        };
+      }
+    }
 
     setAuthToken(token);
     localStorage.setItem(SESSION_KEY, JSON.stringify(user));
@@ -279,6 +294,51 @@ export async function login(phone: string, password: string, role: string): Prom
     console.error('Login network error:', err);
     return { success: false, error: 'Network error connecting to PikSuraksha server.' };
   }
+}
+
+export async function demoLogin(role: string): Promise<AuthResult> {
+  const roleClean = role?.toLowerCase() === 'government' ? 'Government' : 'Farmer';
+  try {
+    const res = await fetch('/api/auth/demo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: roleClean }),
+    });
+
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && json.user) {
+        setAuthToken(json.token);
+        localStorage.setItem(SESSION_KEY, JSON.stringify(json.user));
+        return { success: true, user: json.user, token: json.token };
+      }
+    }
+  } catch (e) {
+    console.warn('Backend demo endpoint unreachable, using secure local session:', e);
+  }
+
+  const phone = roleClean === 'Government' ? '9999988888' : '9876543210';
+  const fullName = roleClean === 'Government' ? 'Dr. Sunita Deshmukh (Gov Officer)' : 'Ramesh Patil (Demo Farmer)';
+  const location = roleClean === 'Government' ? 'Pune, Maharashtra' : 'Nashik, Maharashtra';
+  const district = roleClean === 'Government' ? 'Pune' : 'Nashik';
+  const email = roleClean === 'Government' ? 'officer.demo@piksuraksha.gov.in' : 'farmer.demo@piksuraksha.in';
+
+  const user: UserPublic = {
+    id: roleClean === 'Government' ? 'demo_gov_officer' : 'demo_farmer',
+    fullName,
+    phone,
+    location,
+    district,
+    language: 'en',
+    role: roleClean,
+    email,
+    createdAt: new Date().toISOString(),
+  };
+
+  const token = `demo_token_${roleClean.toLowerCase()}_${Date.now()}`;
+  setAuthToken(token);
+  localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+  return { success: true, user, token };
 }
 
 export async function fetchCurrentProfile(): Promise<UserPublic | null> {

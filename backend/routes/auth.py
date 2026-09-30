@@ -14,7 +14,10 @@ from db_mongo import (
     get_user_by_id,
     update_user_profile,
     verify_auth_token,
+    get_db,
+    create_auth_token,
 )
+from datetime import datetime, timezone
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -34,6 +37,10 @@ class LoginRequest(BaseModel):
     phone: str
     password: str
     role: Optional[str] = "Farmer"
+
+
+class DemoLoginRequest(BaseModel):
+    role: str = "Farmer"
 
 
 class ProfileUpdateRequest(BaseModel):
@@ -74,10 +81,70 @@ def signup(req: SignupRequest):
 
 @router.post("/login")
 def login(req: LoginRequest):
-    success, data, err = authenticate_user(phone=req.phone, password=req.password)
+    success, data, err = authenticate_user(phone=req.phone, password=req.password, expected_role=req.role)
     if not success or not data:
-        raise HTTPException(status_code=401, detail=err or "Invalid phone or password")
+        raise HTTPException(status_code=401, detail=err or "No account found for this mobile number.")
     return {"success": True, "user": data["user"], "token": data["token"]}
+
+
+@router.post("/demo")
+def demo_login(req: DemoLoginRequest):
+    role_clean = "Government" if (req.role or "").lower() == "government" else "Farmer"
+    phone = "9999988888" if role_clean == "Government" else "9876543210"
+    full_name = "Dr. Sunita Deshmukh (Gov Officer)" if role_clean == "Government" else "Ramesh Patil (Demo Farmer)"
+    location = "Pune, Maharashtra" if role_clean == "Government" else "Nashik, Maharashtra"
+    district = "Pune" if role_clean == "Government" else "Nashik"
+    email = "officer.demo@piksuraksha.gov.in" if role_clean == "Government" else "farmer.demo@piksuraksha.in"
+
+    db = get_db()
+    if db is not None:
+        user = db.users.find_one({"phone": phone})
+        if not user:
+            success, data, err = create_user(
+                phone=phone,
+                full_name=full_name,
+                password="DemoSecureKey2026!",
+                location=location,
+                language="en",
+                role=role_clean,
+                email=email,
+                district=district,
+            )
+            if success and data:
+                return {"success": True, "user": data["user"], "token": data["token"]}
+        else:
+            user_id = str(user["_id"])
+            token = create_auth_token(user_id, phone, user.get("role", role_clean))
+            user_public = {
+                "id": user_id,
+                "phone": user["phone"],
+                "fullName": user.get("fullName", full_name),
+                "location": user.get("location", location),
+                "district": user.get("district", district),
+                "language": user.get("language", "en"),
+                "role": user.get("role", role_clean),
+                "email": user.get("email", email),
+                "createdAt": user.get("createdAt", datetime.now(timezone.utc)).isoformat()
+                if isinstance(user.get("createdAt"), datetime)
+                else str(user.get("createdAt", "")),
+            }
+            return {"success": True, "user": user_public, "token": token}
+
+    # Fallback if DB offline
+    fallback_id = "demo_gov_id" if role_clean == "Government" else "demo_farmer_id"
+    user_public = {
+        "id": fallback_id,
+        "phone": phone,
+        "fullName": full_name,
+        "location": location,
+        "district": district,
+        "language": "en",
+        "role": role_clean,
+        "email": email,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+    }
+    token = create_auth_token(fallback_id, phone, role_clean)
+    return {"success": True, "user": user_public, "token": token}
 
 
 @router.get("/me")

@@ -2,6 +2,7 @@ import { createContext, useState, useCallback, useEffect, type ReactNode } from 
 import {
   login as authLogin,
   signup as authSignup,
+  demoLogin as authDemoLogin,
   logout as authLogout,
   getCurrentUser,
   updateStoredUser,
@@ -15,6 +16,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (phone: string, password: string, role: string) => Promise<AuthResult>;
+  demoLogin: (role: string) => Promise<AuthResult>;
   signup: (data: SignupData) => Promise<AuthResult>;
   logout: () => void;
   updateUser: (updates: Partial<UserPublic>) => void;
@@ -25,6 +27,7 @@ export const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   isLoading: true,
   login: async () => ({ success: false, error: 'Not initialized' }),
+  demoLogin: async () => ({ success: false, error: 'Not initialized' }),
   signup: async () => ({ success: false, error: 'Not initialized' }),
   logout: () => {},
   updateUser: () => {},
@@ -49,6 +52,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = useCallback(async (phone: string, password: string, role: string): Promise<AuthResult> => {
     const result = await authLogin(phone, password, role);
+    if (result.success && result.user) {
+      setUser(result.user);
+    }
+    return result;
+  }, []);
+
+  const demoLogin = useCallback(async (role: string): Promise<AuthResult> => {
+    const result = await authDemoLogin(role);
     if (result.success && result.user) {
       setUser(result.user);
     }
@@ -84,6 +95,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         isAuthenticated: user !== null,
         isLoading,
         login,
+        demoLogin,
         signup,
         logout,
         updateUser,

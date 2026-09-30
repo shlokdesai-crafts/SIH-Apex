@@ -80,7 +80,11 @@ export default function SignupPage() {
     });
 
     if (result.success) {
-      navigate('/', { replace: true });
+      if (role.toLowerCase() === 'government') {
+        navigate('/government', { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
     } else {
       setError(result.error || t('auth.signupFailed'));
       setShake(true);

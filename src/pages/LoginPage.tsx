@@ -4,7 +4,7 @@ import { AuthContext } from '../auth/AuthContext';
 import { useTranslation } from '../i18n/useTranslation';
 
 export default function LoginPage() {
-  const { login } = useContext(AuthContext);
+  const { login, demoLogin } = useContext(AuthContext);
   const { t, language, setLanguage } = useTranslation();
   const navigate = useNavigate();
 
@@ -23,8 +23,13 @@ export default function LoginPage() {
 
     const result = await login(phone, password, role);
 
-    if (result.success) {
-      navigate('/', { replace: true });
+    if (result.success && result.user) {
+      const userRole = (result.user.role || role || '').toLowerCase();
+      if (userRole === 'government' || role === 'government') {
+        navigate('/government', { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
     } else {
       setError(result.error || t('auth.loginFailed'));
       setShake(true);
@@ -33,15 +38,31 @@ export default function LoginPage() {
     setIsSubmitting(false);
   };
 
+  const handleDemoLogin = async (demoRole: 'farmer' | 'government') => {
+    setError('');
+    setIsSubmitting(true);
+    const result = await demoLogin(demoRole);
+    if (result.success) {
+      if (demoRole === 'government') {
+        navigate('/government', { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
+    } else {
+      setError(result.error || 'Demo login failed');
+      setShake(true);
+      setTimeout(() => setShake(false), 600);
+    }
+    setIsSubmitting(false);
+  };
+
   return (
     <div className="auth-page">
-      {/* Animated background leaves */}
+      {/* Background container */}
       <div className="auth-bg-leaves">
-        <div className="auth-leaf leaf-1">🌿</div>
-        <div className="auth-leaf leaf-2">🍃</div>
-        <div className="auth-leaf leaf-3">🌱</div>
-        <div className="auth-leaf leaf-4">🌿</div>
-        <div className="auth-leaf leaf-5">🍃</div>
+        <div className="auth-leaf leaf-1"></div>
+        <div className="auth-leaf leaf-2"></div>
+        <div className="auth-leaf leaf-3"></div>
       </div>
 
       <div className={`auth-card ${shake ? 'shake' : ''}`}>
@@ -60,6 +81,116 @@ export default function LoginPage() {
 
         <h2 className="auth-title">{t('auth.loginTitle')}</h2>
         <p className="auth-subtitle">{t('auth.loginSubtitle')}</p>
+
+        {/* Demo Access Section */}
+        <div className="demo-access-card" style={{
+          background: '#f8fafc',
+          border: '1px solid #e2e8f0',
+          borderRadius: '10px',
+          padding: '12px 14px',
+          marginBottom: '20px',
+          textAlign: 'left'
+        }}>
+          <div style={{
+            fontSize: '11px',
+            fontWeight: 700,
+            color: '#475569',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            marginBottom: '10px'
+          }}>
+            Demo Access
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('farmer')}
+              disabled={isSubmitting}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                justifyContent: 'center',
+                padding: '10px 12px',
+                background: '#ffffff',
+                border: '1px solid #cbd5e1',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                textAlign: 'left',
+                width: '100%',
+                boxSizing: 'border-box'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = '#16a34a';
+                e.currentTarget.style.background = '#f0fdf4';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = '#cbd5e1';
+                e.currentTarget.style.background = '#ffffff';
+              }}
+            >
+              <span style={{ fontWeight: 700, fontSize: '13px', color: '#15803d', marginBottom: '2px' }}>
+                Farmer Portal
+              </span>
+              <span style={{ fontSize: '11px', color: '#64748b' }}>
+                Access Farmer Dashboard
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('government')}
+              disabled={isSubmitting}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                justifyContent: 'center',
+                padding: '10px 12px',
+                background: '#ffffff',
+                border: '1px solid #cbd5e1',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                textAlign: 'left',
+                width: '100%',
+                boxSizing: 'border-box'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = '#2563eb';
+                e.currentTarget.style.background = '#eff6ff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = '#cbd5e1';
+                e.currentTarget.style.background = '#ffffff';
+              }}
+            >
+              <span style={{ fontWeight: 700, fontSize: '13px', color: '#1d4ed8', marginBottom: '2px' }}>
+                Government Portal
+              </span>
+              <span style={{ fontSize: '11px', color: '#64748b' }}>
+                Access Government Dashboard
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          margin: '16px 0 20px 0',
+          color: '#9ca3af',
+          fontSize: '11px',
+          fontWeight: 600,
+          letterSpacing: '0.3px'
+        }}>
+          <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }}></div>
+          <span>OR SIGN IN WITH PHONE</span>
+          <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }}></div>
+        </div>
 
         {error && (
           <div className="auth-error" role="alert">
