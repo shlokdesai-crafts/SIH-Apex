@@ -56,11 +56,16 @@ def load_crop_checkpoint(filepath: Path, num_classes: int, device: Optional[torc
     if device is None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = create_crop_model(num_classes=num_classes, pretrained=False)
-    if not filepath.exists():
-        raise FileNotFoundError(f"No checkpoint found at {filepath}")
+    state_dict = torch.load(filepath, map_location=device)
+    if "classifier.3.weight" in state_dict:
+        ckpt_classes = state_dict["classifier.3.weight"].shape[0]
+        if ckpt_classes != num_classes:
+            raise ValueError(
+                f"Checkpoint class count ({ckpt_classes}) does not match configured num_classes ({num_classes}) for {filepath}"
+            )
 
-    # Provenance verification check (Requirement 21)
+    model = create_crop_model(num_classes=num_classes, pretrained=False)
+
     metadata_path = filepath.with_suffix(".metadata.json")
     is_verified_real = False
     if metadata_path.exists():
@@ -78,7 +83,6 @@ def load_crop_checkpoint(filepath: Path, num_classes: int, device: Optional[torc
             f"Only models trained on genuine agricultural datasets should be deployed."
         )
 
-    state_dict = torch.load(filepath, map_location=device)
     model.load_state_dict(state_dict)
     model.to(device)
     model.eval()

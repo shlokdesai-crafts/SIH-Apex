@@ -18,6 +18,7 @@ SAVED_MODELS_DIR.mkdir(parents=True, exist_ok=True)
 IMAGE_SIZE = (224, 224)
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
+ACTIVE_LOCAL_CROPS = ["Cotton", "Sugarcane", "Wheat"]
 
 # ── Multi-Crop Registry ───────────────────────────────────────────────────────
 CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
@@ -29,6 +30,7 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
             "Mosaic",
             "Yellow Disease"
         ],
+        "is_active_local_model": True,
         "model_path": SAVED_MODELS_DIR / "sugarcane_mobilenetv3.pth",
         "data_dir": BASE_DIR / "data" / "sugarcane",
         "confidence_threshold": 0.60,
@@ -109,11 +111,12 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
             "Powdery Mildew",
             "Septoria"
         ],
+        "is_active_local_model": True,
         "model_path": SAVED_MODELS_DIR / "wheat_mobilenetv3.pth",
         "data_dir": BASE_DIR / "data" / "wheat",
-        "dataset_source": "Unverified / Awaiting Real Multi-Class Dataset",
+        "dataset_source": "Kaggle - vasserhessein/wheat-disease-dataset-small",
         "dataset_source_path": "",
-        "verified_real": False,
+        "verified_real": True,
         "source_mapping": {},
         "confidence_threshold": 0.60,
         "severity_map": {
@@ -174,6 +177,7 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
             "Fusarium Wilt",
             "Target Spot"
         ],
+        "is_active_local_model": True,
         "model_path": SAVED_MODELS_DIR / "cotton_mobilenetv3.pth",
         "data_dir": BASE_DIR / "data" / "cotton",
         "dataset_source": "Unverified / Awaiting Real Multi-Class Dataset",
