@@ -155,6 +155,12 @@ async def scan_crop(
     
         display_crop = get_display_crop_name(canonical_crop)
     
+        from ml.registry import get_model_adapter
+        if get_model_adapter(canonical_crop) is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Disease detection model unavailable for crop '{crop}'.",
+            )
     
         if clean_field_id and resolved_uid and resolved_uid != "anonymous":
             try:
@@ -281,6 +287,11 @@ async def scan_crop(
     
         if crop_cfg and crop_cfg.get("classes"):
             disease_res = predict_crop_disease(canonical_crop, contents)
+            if disease_res.get("status") == "model_unavailable":
+                raise HTTPException(
+                    status_code=400,
+                    detail=disease_res.get("message") or f"Disease detection model unavailable for crop '{display_crop}'.",
+                )
             raw_top_preds = disease_res.get("top_predictions", [])
             for tp in raw_top_preds:
                 top_predictions.append(
@@ -308,7 +319,7 @@ async def scan_crop(
             severity = disease_detection.severity
             condition_name = disease_detection.disease
             condition_type = get_condition_type(condition_name)
-            is_healthy = condition_name in ("Healthy", "Healthy Plant")
+            is_healthy = condition_name in ("Healthy", "Healthy Plant") or "healthy" in condition_name.lower()
     
             if disease_detection.expert_verification_required:
                 is_uncertain = True

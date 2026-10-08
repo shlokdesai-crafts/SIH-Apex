@@ -460,6 +460,35 @@ class TestCropRouting(unittest.TestCase):
         self.assertIsNotNone(data.get("disease_detection"))
         self.assertEqual(data["disease_detection"]["crop"], "Onion")
 
+    def test_scan_api_turmeric_integrated(self):
+        """Test POST /api/scan integration for newly integrated Turmeric EfficientNet-B0 crop."""
+        rice_file = self.images_dir / "crop_rice.jpg"
+        with open(rice_file, "rb") as f:
+            img_bytes = f.read()
+
+        response = self.client.post(
+            "/api/scan",
+            files={"file": ("crop_rice.jpg", img_bytes, "image/jpeg")},
+            data={"crop": "Turmeric"}
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn(data["status"], ["valid", "uncertain"])
+        self.assertIsNotNone(data.get("disease_detection"))
+        self.assertEqual(data["disease_detection"]["crop"], "Turmeric (Halad)")
+
+    def test_turmeric_crop_inference(self):
+        """Test Turmeric disease inference and advisory payload."""
+        rice_file = self.images_dir / "crop_rice.jpg"
+        with open(rice_file, "rb") as f:
+            img_bytes = f.read()
+
+        res = predict_crop_disease("Turmeric", img_bytes)
+        self.assertEqual(res["crop"], "Turmeric")
+        self.assertIn("disease", res)
+        self.assertIn("confidence", res)
+        self.assertIn("explanation", res)
+
 
 if __name__ == "__main__":
     unittest.main()

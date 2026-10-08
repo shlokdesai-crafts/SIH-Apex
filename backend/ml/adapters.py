@@ -51,10 +51,11 @@ class DiseaseModelAdapter(abc.ABC):
         pass
 
 class LocalTorchModelAdapter(DiseaseModelAdapter):
-    def __init__(self, crop_name: str, model_path: Path, classes: List[str]):
+    def __init__(self, crop_name: str, model_path: Path, classes: List[str], architecture: Optional[str] = None):
         self.crop_name = crop_name
         self.model_path = model_path
         self.classes = classes
+        self.architecture = architecture
         self.model = None
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -63,7 +64,12 @@ class LocalTorchModelAdapter(DiseaseModelAdapter):
             if not self.model_path.exists():
                 raise FileNotFoundError(f"Local model not found at {self.model_path}")
             logger.info(f"Loading local {self.crop_name} model from {self.model_path}...")
-            self.model = load_crop_checkpoint(self.model_path, num_classes=len(self.classes), device=self.device)
+            self.model = load_crop_checkpoint(
+                self.model_path,
+                num_classes=len(self.classes),
+                device=self.device,
+                architecture=self.architecture,
+            )
             self.model.eval()
 
     def predict(self, image: Image.Image) -> Tuple[List[str], torch.Tensor]:
@@ -86,7 +92,8 @@ class LocalTorchModelAdapter(DiseaseModelAdapter):
     def get_model_metadata(self) -> Dict[str, Any]:
         return {
             "source": "local",
-            "model_path": str(self.model_path)
+            "model_path": str(self.model_path),
+            "architecture": getattr(self.model, "architecture", self.architecture or "mobilenet_v3_large") if self.model else (self.architecture or "mobilenet_v3_large"),
         }
 
 class HuggingFaceImageClassifierAdapter(DiseaseModelAdapter):

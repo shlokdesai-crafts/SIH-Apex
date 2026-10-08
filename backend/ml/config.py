@@ -18,7 +18,7 @@ SAVED_MODELS_DIR.mkdir(parents=True, exist_ok=True)
 IMAGE_SIZE = (224, 224)
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
-ACTIVE_LOCAL_CROPS = ["Cotton", "Sugarcane", "Wheat"]
+ACTIVE_LOCAL_CROPS = ["Cotton", "Sugarcane", "Wheat", "Turmeric"]
 
 # ── Multi-Crop Registry ───────────────────────────────────────────────────────
 CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
@@ -79,7 +79,9 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
         "classes": [
             "Healthy",
             "Bacterial Leaf Blight",
-            "Brown Spot"
+            "Blast",
+            "Brown Spot",
+            "Tungro",
         ],
         "model_path": SAVED_MODELS_DIR / "rice_mobilenetv3.pth",
         "data_dir": BASE_DIR / "data" / "rice",
@@ -89,18 +91,24 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
         "source_mapping": {
             "Healthy": "ICAR Rice/Healthy (48 verified images)",
             "Bacterial Leaf Blight": "ICAR Rice/Disease/01_Bacterial_leaf_blight (46 verified images)",
+            "Blast": "ICAR Rice/Disease/Blast",
             "Brown Spot": "ICAR Rice/Disease/02_Brown_spot (50 verified images)",
+            "Tungro": "ICAR Rice/Disease/Tungro",
         },
         "confidence_threshold": 0.60,
         "severity_map": {
             "Healthy": "None",
             "Bacterial Leaf Blight": "Severe",
+            "Blast": "Severe",
             "Brown Spot": "Moderate",
+            "Tungro": "Severe",
         },
         "status_map": {
             "Healthy": "Healthy",
             "Bacterial Leaf Blight": "Diseased",
+            "Blast": "Diseased",
             "Brown Spot": "Diseased",
+            "Tungro": "Diseased",
         },
     },
     "Wheat": {
@@ -495,23 +503,33 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
         },
     },
     "Turmeric": {
-        "classes": ["Healthy", "Rhizome Rot", "Leaf Spot", "Leaf Blotch", "Fusarium Wilt"],
-        "model_path": SAVED_MODELS_DIR / "turmeric_mobilenetv3.pth",
+        "classes": [
+            "Dry Leaf",
+            "Healthy Leaf",
+            "Leaf Blotch",
+            "Rhizome Disease Root",
+            "Rhizome Healthy Root"
+        ],
+        "is_active_local_model": True,
+        "model_path": SAVED_MODELS_DIR / "turmeric_efficientnet_b0.pth",
+        "architecture": "EfficientNet-B0",
         "data_dir": BASE_DIR / "data" / "turmeric",
+        "dataset_source": "Project-AgML Turmeric Leaf & Rhizome Disease Dataset",
+        "verified_real": True,
         "confidence_threshold": 0.60,
         "severity_map": {
-            "Healthy": "None",
-            "Rhizome Rot": "Severe",
-            "Leaf Spot": "Moderate",
+            "Dry Leaf": "Moderate",
+            "Healthy Leaf": "None",
             "Leaf Blotch": "Moderate",
-            "Fusarium Wilt": "Severe",
+            "Rhizome Disease Root": "Severe",
+            "Rhizome Healthy Root": "None",
         },
         "status_map": {
-            "Healthy": "Healthy",
-            "Rhizome Rot": "Diseased",
-            "Leaf Spot": "Diseased",
+            "Dry Leaf": "Diseased",
+            "Healthy Leaf": "Healthy",
             "Leaf Blotch": "Diseased",
-            "Fusarium Wilt": "Diseased",
+            "Rhizome Disease Root": "Diseased",
+            "Rhizome Healthy Root": "Healthy",
         },
     },
 }

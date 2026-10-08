@@ -22,11 +22,11 @@ from ml.inference import predict_crop_disease
 class TestModelLoadingConfiguration(unittest.TestCase):
 
     def test_active_local_crops_constant(self):
-        """Cotton, Sugarcane, and Wheat should be listed in ACTIVE_LOCAL_CROPS."""
-        self.assertEqual(sorted(ACTIVE_LOCAL_CROPS), ["Cotton", "Sugarcane", "Wheat"])
+        """Cotton, Sugarcane, Wheat, and Turmeric should be listed in ACTIVE_LOCAL_CROPS."""
+        self.assertEqual(sorted(ACTIVE_LOCAL_CROPS), ["Cotton", "Sugarcane", "Turmeric", "Wheat"])
 
     def test_crop_configs_activity_flags(self):
-        """Cotton, Sugarcane, and Wheat must be marked active; all other crops must be marked inactive."""
+        """Cotton, Sugarcane, Wheat, and Turmeric must be marked active; all other crops must be marked inactive."""
         active_crops = []
         inactive_crops = []
         for crop, cfg in CROP_CONFIGS.items():
@@ -40,7 +40,8 @@ class TestModelLoadingConfiguration(unittest.TestCase):
         self.assertIn("Cotton", active_crops)
         self.assertIn("Sugarcane", active_crops)
         self.assertIn("Wheat", active_crops)
-        self.assertEqual(len(active_crops), 3)
+        self.assertIn("Turmeric", active_crops)
+        self.assertEqual(len(active_crops), 4)
         
         # Verify inactive crops exist and have preserved class lists
         for crop in ["Chickpea", "Maize", "Rice", "Soybean", "Tomato", "Onion", "Potato", "Grapes"]:
@@ -48,11 +49,11 @@ class TestModelLoadingConfiguration(unittest.TestCase):
             self.assertGreater(len(CROP_CONFIGS[crop]["classes"]), 0)
 
     def test_model_status_registry(self):
-        """get_model_status() must report local active for Cotton/Sugarcane/Wheat and unavailable for others."""
+        """get_model_status() must report local active for Cotton/Sugarcane/Wheat/Turmeric and unavailable for others."""
         status = get_model_status()
         
         # Active local models
-        for active_crop in ["cotton", "sugarcane", "wheat"]:
+        for active_crop in ["cotton", "sugarcane", "wheat", "turmeric"]:
             self.assertTrue(status[active_crop]["available"])
             self.assertEqual(status[active_crop]["source"], "local")
             self.assertEqual(status[active_crop]["status"], "active")
@@ -65,10 +66,11 @@ class TestModelLoadingConfiguration(unittest.TestCase):
             self.assertEqual(status[crop_key]["status"], "unavailable")
 
     def test_get_model_adapter_returns_only_active_models(self):
-        """get_model_adapter() must return an adapter for Cotton/Sugarcane/Wheat and None for others."""
+        """get_model_adapter() must return an adapter for Cotton/Sugarcane/Wheat/Turmeric and None for others."""
         self.assertIsNotNone(get_model_adapter("Cotton"))
         self.assertIsNotNone(get_model_adapter("Sugarcane"))
         self.assertIsNotNone(get_model_adapter("Wheat"))
+        self.assertIsNotNone(get_model_adapter("Turmeric"))
 
         for crop in ["Chickpea", "Maize", "Rice", "Soybean", "Tomato", "Onion", "Potato", "Grapes"]:
             adapter = get_model_adapter(crop)
@@ -122,6 +124,17 @@ class TestModelLoadingConfiguration(unittest.TestCase):
 
         res = predict_crop_disease("Wheat", img_bytes)
         self.assertEqual(res["crop"], "Wheat")
+        self.assertNotEqual(res["status"], "model_unavailable")
+
+    def test_active_turmeric_prediction(self):
+        """Active Turmeric model must predict without error."""
+        img = Image.new("RGB", (224, 224), color=(50, 100, 50))
+        buf = io.BytesIO()
+        img.save(buf, format="JPEG")
+        img_bytes = buf.getvalue()
+
+        res = predict_crop_disease("Turmeric", img_bytes)
+        self.assertEqual(res["crop"], "Turmeric")
         self.assertNotEqual(res["status"], "model_unavailable")
 
 

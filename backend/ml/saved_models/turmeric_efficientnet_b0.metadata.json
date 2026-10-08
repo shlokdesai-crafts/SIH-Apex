@@ -1,0 +1,26 @@
+{
+  "model": "EfficientNet-B0",
+  "architecture": "EfficientNet-B0",
+  "crop": "Turmeric",
+  "verified_real_dataset": true,
+  "dataset_source": "Project-AgML Turmeric Leaf & Rhizome Disease Dataset",
+  "classes": [
+    "Dry Leaf",
+    "Healthy Leaf",
+    "Leaf Blotch",
+    "Rhizome Disease Root",
+    "Rhizome Healthy Root"
+  ],
+  "total_unique_images": 1062,
+  "train_images": 717,
+  "validation_images": 193,
+  "test_images": 152,
+  "evaluation_metrics": {
+    "test_accuracy": 0.9737,
+    "macro_f1": 0.9705
+  },
+  "notes": [
+    "One exact duplicate image was excluded from the dataset prior to training (1,062 unique images total).",
+    "The dataset split used filename-defined groups; these groups should NOT be described as independently verified physical specimens."
+  ]
+}
