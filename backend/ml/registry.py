@@ -91,7 +91,8 @@ def get_model_adapter(crop_name: str) -> Optional[DiseaseModelAdapter]:
         adapter = LocalTorchModelAdapter(
             crop_name=local_cfg_key or crop_name,
             model_path=local_cfg["model_path"],
-            classes=local_cfg["classes"]
+            classes=local_cfg["classes"],
+            architecture=local_cfg.get("architecture")
         )
         _model_adapters[normalized] = adapter
         return adapter

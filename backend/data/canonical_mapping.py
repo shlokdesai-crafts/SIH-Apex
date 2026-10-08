@@ -408,6 +408,10 @@ MAHARASHTRA_CROP_METADATA: Dict[str, Dict[str, Any]] = {
 CONDITION_TYPES: Dict[str, str] = {
     "Healthy": "healthy",
     "Healthy Plant": "healthy",
+    "Healthy Leaf": "healthy",
+    "Rhizome Healthy Root": "healthy",
+    "Dry Leaf": "disease",
+    "Rhizome Disease Root": "disease",
     # Pests
     "Fall Armyworm": "pest",
     "Aphid Infestation": "pest",

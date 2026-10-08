@@ -123,6 +123,7 @@ class TestScanAPIIntegration(unittest.TestCase):
         response = client.post(
             "/api/scan",
             files={"file": (img_path.name, img_bytes, "image/jpeg")},
+            data={"crop": "Sugarcane"},
         )
 
         self.assertEqual(response.status_code, 200)

@@ -86,7 +86,12 @@ def _get_crop_inference_model(crop_name: str) -> Tuple[torch.nn.Module, torch.de
 
         if model_path.exists():
             logger.info(f"Loading {crop_name} disease model from {model_path}…")
-            model = load_crop_checkpoint(model_path, num_classes=len(classes), device=_device)
+            model = load_crop_checkpoint(
+                model_path,
+                num_classes=len(classes),
+                device=_device,
+                architecture=crop_cfg.get("architecture"),
+            )
             _models_cache[crop_name] = model
         else:
             logger.warning(
@@ -142,7 +147,7 @@ def _abstain_reason(
 
     # If Healthy is the leading class with a decisive margin (>= 10%) over any disease,
     # accept the healthy diagnosis and avoid false uncertainty alarm.
-    if predicted_class == "Healthy" and top2_margin >= 0.10:
+    if ("healthy" in predicted_class.lower()) and top2_margin >= 0.10:
         return None
 
     entropy = _compute_entropy(probs)
@@ -529,21 +534,25 @@ CROP_DISEASE_PROMPTS: Dict[str, Dict[str, List[str]]] = {
         ],
     },
     "Turmeric": {
-        "Healthy": [
-            "a photo of clean broad lush green turmeric halad leaves and healthy underground rhizomes",
-            "healthy turmeric crop foliage in agricultural field",
+        "Dry Leaf": [
+            "a photo of dry withered brown scorched desiccated turmeric foliage",
+            "turmeric leaf with dry brown necrotic lamina",
         ],
-        "Rhizome Rot": [
-            "turmeric plant with yellowing leaves and water-soaked rotting soft pseudostem collar pulling out easily",
-        ],
-        "Leaf Spot": [
-            "turmeric leaf with elliptical brown spots with grayish white centers and yellow chlorotic halos",
+        "Healthy Leaf": [
+            "a photo of clean broad lush green healthy turmeric halad foliage",
+            "vibrant fresh green turmeric leaf without disease",
         ],
         "Leaf Blotch": [
             "turmeric leaf with reddish brown to dark brown blotches in rows along veins",
+            "turmeric foliage showing leaf blotch fungal lesions",
         ],
-        "Fusarium Wilt": [
-            "turmeric plant showing gradual leaf yellowing, drooping, and vascular wilting",
+        "Rhizome Disease Root": [
+            "diseased rotting turmeric rhizome and roots with soft decay and foul odor",
+            "turmeric rhizome suffering from fungal root rot disease",
+        ],
+        "Rhizome Healthy Root": [
+            "clean healthy plump turmeric rhizome root with bright orange yellow core",
+            "fresh healthy underground turmeric root and rhizome",
         ],
     },
 }

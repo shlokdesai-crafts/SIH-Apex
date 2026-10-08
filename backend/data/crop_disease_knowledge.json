@@ -1694,6 +1694,111 @@
       "source": "ICAR - IISR & MPKV Rahuri",
       "sourceType": "ICAR",
       "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Dry Leaf": {
+      "explanation": "Turmeric Dry Leaf condition involves premature foliar desiccation, scorched lamina, or advanced necrotic drying of foliage.",
+      "symptoms": [
+        "Brown, dry papery leaf blade starting from tips and leaf margins",
+        "Extensive foliar scorching and premature senescence",
+        "Loss of green chlorophyll lamina causing reduced photosynthetic capacity"
+      ],
+      "culturalActions": [
+        "Remove severely dried and withered foliage to prevent pest harboring and field fire hazard",
+        "Inspect soil moisture and root zone to verify if moisture deficit or salinity is causing desiccation",
+        "Ensure adequate mulch with green leaves or sugarcane trash to retain bed moisture"
+      ],
+      "prevention": [
+        "Maintain scheduled light frequent irrigations during dry hot periods",
+        "Provide adequate potassium nutrition to improve plant moisture retention and osmotic balance",
+        "Ensure field drainage so root asphyxiation does not induce foliar drying"
+      ],
+      "source": "ICAR - Indian Institute of Spices Research (IISR) & VNMKV Parbhani",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Healthy Leaf": {
+      "explanation": "Healthy Turmeric foliage (Halad - Salem/Pratibha) displays lush, broad vibrant green leaf blades with long petioles, erect pseudostems, and vigorous disease-free growth.",
+      "symptoms": [
+        "Broad, vibrant emerald green leaf lamina without chlorotic halos, blotches, or necrotic spots",
+        "Intact leaf margins and erect sturdy petioles",
+        "Vigorous photosynthetic canopy with healthy leaf emergence"
+      ],
+      "culturalActions": [
+        "Maintain raised bed earthing-up and deep furrows for proper drainage",
+        "Apply well-decomposed farmyard manure (FYM) and neem cake at scheduled intervals",
+        "Carry out periodic scouting of foliage during high humidity monsoon months"
+      ],
+      "prevention": [
+        "Select disease-free seed rhizomes from certified seed sources",
+        "Practice 2 to 3-year crop rotation with leguminous or cereal crops",
+        "Maintain balanced fertilization based on soil health card recommendations"
+      ],
+      "source": "ICAR - Indian Institute of Spices Research (IISR) & VNMKV Parbhani",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Leaf Blotch": {
+      "explanation": "Turmeric Leaf Blotch (Taphrina maculans) is characterized by small, distinct, reddish-brown to dark brown blotches appearing abundantly on upper leaf surfaces along veins.",
+      "symptoms": [
+        "Small, oblong reddish-brown to dirty yellow spots appearing in rows along veins on upper leaf surface",
+        "Blotches coalesce to form large irregular necrotic patches",
+        "Severely attacked leaves turn yellow and dry up prematurely"
+      ],
+      "culturalActions": [
+        "Collect and burn infected dried leaves after harvest to destroy overwintering fungal asci",
+        "Regulate overhead shade in intercropped orchards to enhance airflow and leaf drying",
+        "Avoid overhead sprinkler irrigation during late afternoon"
+      ],
+      "prevention": [
+        "Foliar spray with Copper Oxychloride (0.25%) or Mancozeb (0.2%) at earliest symptom onset",
+        "Dip planting rhizomes in bio-fungicide Trichoderma formulation before planting",
+        "Maintain wide spacing to allow adequate ventilation within the crop canopy"
+      ],
+      "source": "ICAR - IISR Kozhikode & VNMKV Parbhani",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Rhizome Disease Root": {
+      "explanation": "Rhizome Disease Root in Turmeric refers to fungal subterranean infection (Pythium aphanidermatum, Fusarium solani, or Rhizoctonia) causing basal collar decay, soft rotting of finger rhizomes, and root breakdown.",
+      "symptoms": [
+        "Water-soaked decaying feeder roots and soft rotting underground finger rhizomes",
+        "Yellowing of lower leaves progressing upwards along leaf margins",
+        "Basal pseudostem collar becomes soft and pulls out easily from the decaying subterranean root clump"
+      ],
+      "culturalActions": [
+        "Immediately rogue out and destroy severely rotting clumps and adjacent contaminated soil",
+        "Ensure rapid surface drainage; water stagnation even for 24 hours induces rapid decay",
+        "Avoid mechanical injury to roots and rhizomes during intercultural operations and weeding"
+      ],
+      "prevention": [
+        "Treat seed rhizomes before planting with Metalaxyl-Mancozeb (2g/L) or Trichoderma viride",
+        "Soil drench affected bed patches and adjacent rows with Copper Oxychloride (3g/L)",
+        "Enrich farmyard manure with Trichoderma harzianum and apply during bed preparation"
+      ],
+      "source": "ICAR - IISR Kozhikode & VNMKV Parbhani",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
+    },
+    "Rhizome Healthy Root": {
+      "explanation": "Healthy subterranean Turmeric root and rhizome systems exhibit firm, plump mother and finger rhizomes with intact epidermis, vigorous tan/white feeder roots, and deep golden-yellow core.",
+      "symptoms": [
+        "Firm, plump mother and finger rhizomes free of soft water-soaked lesions or foul odor",
+        "Vigorous, well-distributed feeder roots anchoring the plant firmly",
+        "Intact epidermal skin with characteristic golden-yellow or orange internal core"
+      ],
+      "culturalActions": [
+        "Perform periodic earthing-up to keep developing rhizomes well-covered with soil",
+        "Maintain uniform soil moisture using drip or furrow irrigation without waterlogging",
+        "Harvest carefully at complete leaf senescence to avoid rhizome skin abrasions"
+      ],
+      "prevention": [
+        "Use certified disease-free seed rhizomes from healthy mother plots",
+        "Treat seed rhizomes with biological Trichoderma viride dip prior to planting",
+        "Follow 2-3 year crop rotation with non-host crops such as maize or sugarcane"
+      ],
+      "source": "ICAR - Indian Institute of Spices Research (IISR) & VNMKV Parbhani",
+      "sourceType": "ICAR",
+      "pesticideNote": "Use only registered crop-protection products according to the label and local agricultural extension guidance."
     }
   },
   "Potato": {
