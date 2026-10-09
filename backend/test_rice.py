@@ -22,15 +22,17 @@ from test_helpers import CropDiseaseTestBase
 class TestRiceArchitecture(unittest.TestCase):
 
     def test_model_output_shape(self):
-        """MobileNetV3 should output (batch, 3) for 3 real Rice classes."""
+        """MobileNetV3 should output (batch, 5) for 5 real Rice classes."""
         classes = CROP_CONFIGS["Rice"]["classes"]
-        self.assertEqual(len(classes), 3)
+        self.assertEqual(len(classes), 5)
         self.assertIn("Healthy", classes)
         self.assertIn("Bacterial Leaf Blight", classes)
+        self.assertIn("Blast", classes)
         self.assertIn("Brown Spot", classes)
-        model = create_crop_model(num_classes=3, pretrained=False)
+        self.assertIn("Tungro", classes)
+        model = create_crop_model(num_classes=5, pretrained=False)
         out = model(torch.randn(2, 3, 224, 224))
-        self.assertEqual(out.shape, (2, 3))
+        self.assertEqual(out.shape, (2, 5))
 
 
 class TestRiceDiseaseInference(CropDiseaseTestBase):

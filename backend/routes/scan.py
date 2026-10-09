@@ -256,30 +256,38 @@ async def scan_crop(
             )
     
         # ── Step 4: Phase 3A Real Crop Species Identification ──────────────────────
-        crop_id: CropIdentification = identify_crop(contents)
-        crop_analysis.crop_identification = crop_id
-    
-        if not crop_id.is_identified:
-            unsupported_msg = crop_id.message or "This crop is not currently supported by the CropGuard recognition model."
-            all_errors.append(unsupported_msg)
-            return ScanResponse(
-                scanId=scan_id,
-                status="unsupported_crop",
-                message=unsupported_msg,
-                timestamp=now_iso,
-                validation=ValidationResult(
-                    passed=False,
-                    errors=all_errors,
-                    warnings=val_warnings,
-                ),
-                image_quality=image_quality,
-                crop_analysis=crop_analysis,
+        if canonical_crop:
+            crop_id = CropIdentification(
+                crop_name=display_crop,
+                confidence=1.0,
+                is_identified=True,
+                message=None,
             )
-    
-        # Normalise canonical and display crop names (prioritising validated selected crop)
-        if not canonical_crop:
+            crop_analysis.crop_identification = crop_id
+        else:
+            crop_id = identify_crop(contents)
+            crop_analysis.crop_identification = crop_id
+
+            if not crop_id.is_identified:
+                unsupported_msg = crop_id.message or "This crop is not currently supported by the CropGuard recognition model."
+                all_errors.append(unsupported_msg)
+                return ScanResponse(
+                    scanId=scan_id,
+                    status="unsupported_crop",
+                    message=unsupported_msg,
+                    timestamp=now_iso,
+                    validation=ValidationResult(
+                        passed=False,
+                        errors=all_errors,
+                        warnings=val_warnings,
+                    ),
+                    image_quality=image_quality,
+                    crop_analysis=crop_analysis,
+                )
+
             canonical_crop = normalize_crop_name(crop_id.crop_name) or crop_id.crop_name
             display_crop = get_display_crop_name(canonical_crop)
+
         crop_id.crop_name = display_crop
         crop_conf_pct = round(crop_id.confidence * 100, 1)
     

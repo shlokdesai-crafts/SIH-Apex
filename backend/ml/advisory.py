@@ -687,6 +687,98 @@ ADVISORY_DATABASE: Dict[str, Dict[str, Dict[str, Any]]] = {
                 "Maintain optimal sowing density to discourage aphid landing"
             ]
         }
+    },
+    "Turmeric": {
+        "Healthy Leaf": {
+            "explanation": "The turmeric plant exhibits lush, broad oblong green foliage with prominent parallel venation, sturdy pseudostem, and no visual symptoms of foliar blotch, spot, or nutrient deficiency.",
+            "symptoms": [
+                "Large, oblong emerald-green leaf blades with intact margins",
+                "Sturdy upright pseudostem and vigorous tiller emergence",
+                "Clean central midrib free of lesions or necrotic spots"
+            ],
+            "recommended_actions": [
+                "Maintain optimal soil moisture and scheduled fertigation during vegetative and tillering stages",
+                "Perform light earthing-up around plant bases to support rhizome bulking",
+                "Conduct regular field scouting to monitor canopy health"
+            ],
+            "prevention": [
+                "Plant certified disease-free, high-curcumin rhizome seed setts",
+                "Maintain broad raised bed planting with adequate drainage",
+                "Follow recommended 2-3 year crop rotation with pulses or cereals"
+            ]
+        },
+        "Dry Leaf": {
+            "explanation": "Dry Leaf in turmeric is caused by severe moisture deficit or foliar desiccation, leading to lamina withering, necrotic leaf margins, and reduced photosynthetic capacity.",
+            "symptoms": [
+                "Scorched, dry brown lamina starting from leaf margins and tips",
+                "Brittle, rolled inward leaves with necrotic patches",
+                "Premature senescence of lower canopy foliage"
+            ],
+            "recommended_actions": [
+                "Provide regular scheduled irrigation to maintain root zone moisture and avoid dry spells",
+                "Apply organic mulch (straw or farmyard manure) across planting beds to conserve soil moisture",
+                "Remove severely dried leaves to prevent secondary fungal colonization"
+            ],
+            "prevention": [
+                "Use drip irrigation or raised bed furrow systems for consistent moisture delivery",
+                "Maintain adequate shade or intercrop with pigeon pea where intense sun occurs",
+                "Apply balanced organic compost to improve soil moisture retention capacity"
+            ]
+        },
+        "Leaf Blotch": {
+            "explanation": "Turmeric Leaf Blotch (Taphrina maculans) is a destructive foliar disease producing small, oval or rectangular reddish-brown to dark brown spots in rows along veins on both leaf surfaces.",
+            "symptoms": [
+                "Small, oval to rectangular dirty yellow spots turning reddish-brown to dark brown",
+                "Lesions arranged in rows parallel to the veins on both leaf surfaces",
+                "Upper leaf surface showing blister-like raised blotches leading to premature leaf drying"
+            ],
+            "recommended_actions": [
+                "Collect and burn severely affected leaves to reduce inoculum load in the field",
+                "Avoid overhead sprinkler irrigation which splashes fungal spores across foliage",
+                "Ensure field drainage to eliminate standing water during rainy periods"
+            ],
+            "prevention": [
+                "Treat seed rhizomes before planting with biological Trichoderma or hot water protocol",
+                "Spray preventive bio-formulations or recommended copper-based bactericides/fungicides at first symptom appearance",
+                "Adopt crop rotation with non-host crops to break pathogen survival in soil"
+            ]
+        },
+        "Rhizome Disease Root": {
+            "explanation": "Turmeric Rhizome Rot (Pythium aphanidermatum / Fusarium oxysporum) is a devastating soil-borne disease causing soft, water-soaked rotting of underground rhizomes and roots with yellowing foliage.",
+            "symptoms": [
+                "Water-soaked brown soft rotting of underground rhizomes and basal pseudostem",
+                "Progressive yellowing starting from lower leaf tips and margins spreading upwards",
+                "Easily detachable pseudostem from rotting rhizome base with foul odor"
+            ],
+            "recommended_actions": [
+                "Immediately uproot and destroy severely infected clumps along with surrounding soil",
+                "Improve field drainage immediately by digging deep drainage channels between raised beds",
+                "Drench affected plant basins and surrounding rows with Trichoderma harzianum"
+            ],
+            "prevention": [
+                "Select healthy, certified seed rhizomes free of rot and treat with bioagents before planting",
+                "Plant on raised ridges or broad beds to ensure excellent soil aeration and avoid water stagnation",
+                "Practice 3-year crop rotation avoiding ginger, banana, or solanaceous crops"
+            ]
+        },
+        "Rhizome Healthy Root": {
+            "explanation": "The turmeric rhizome and root system is healthy, firm, and well-developed with characteristic golden-yellow interior, vibrant finger rhizomes, and intact root nodes.",
+            "symptoms": [
+                "Plump, firm rhizome fingers with bright yellow-orange core",
+                "Dense, white healthy feeder root system without discoloration",
+                "Clean skin surface free of soft rot, browning, or nematode galls"
+            ],
+            "recommended_actions": [
+                "Continue optimal irrigation scheduling until 10-15 days before harvest",
+                "Earthing up soil around rhizomes to prevent greening from sun exposure",
+                "Apply balanced organic manures (FYM / Vermicompost) during bulking phase"
+            ],
+            "prevention": [
+                "Maintain good drainage to prevent waterlogging around rhizomes",
+                "Store seed rhizomes in clean, well-aerated pits or sheds",
+                "Practice crop rotation with green manure crops like sunn hemp"
+            ]
+        }
     }
 }
 

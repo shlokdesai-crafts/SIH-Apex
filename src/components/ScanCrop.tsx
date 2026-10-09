@@ -28,33 +28,37 @@ export const ACTIVE_MODEL_CROPS = new Set([
   'Soybean',
   'Sugarcane',
   'Tomato',
+  'Turmeric',
   'Wheat',
 ]);
 
-// ── Curated Crop Catalogue (Exactly 20 Maharashtra-Relevant Crops) ───────────
-export const POPULAR_CROPS: CropItem[] = [
-  // 12 Preserved Popular Crops
-  { name: 'Cotton',               img: '/images/crop_cotton.jpg',      isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Soybean',              img: '/images/crop_soybean.jpg',     isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Sugarcane',            img: '/images/crop_sugarcane.jpg',   isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Rice',                 img: '/images/crop_rice.jpg',        isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Wheat',                img: '/images/crop_wheat.jpg',       isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Tomato',               img: '/images/crop_tomato.jpg',      isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Chickpea (Chana)',     img: '/images/crop_chickpea.jpg',    isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Onion',                img: '/images/onion_crop.jpg',       isModelSupported: false, sourceDataset: 'baseline' },
-  { name: 'Potato',               img: '/images/potato_crop.jpg',      isModelSupported: true,  sourceDataset: 'plantvillage' },
-  { name: 'Maize',                img: '/images/crop_maize.jpg',       isModelSupported: true,  sourceDataset: 'baseline' },
-  { name: 'Banana',               img: '/images/crops/banana.png',     isModelSupported: false, sourceDataset: 'sage' },
-  { name: 'Mango',                img: '/images/crops/mango.png',      isModelSupported: false, sourceDataset: 'sage' },
+import { getCropFallbackEmoji, getCropImageUrl } from '../constants/crops';
 
-  // 8 Additional Maharashtra Crops
+// ── Curated Crop Catalogue (Exactly 21 Maharashtra-Relevant Crops) ───────────
+export const POPULAR_CROPS: CropItem[] = [
+  // Primary Trained Crops
+  { name: 'Cotton',               img: '/images/crops/cotton.png',       isModelSupported: true,  sourceDataset: 'baseline' },
+  { name: 'Soybean',              img: '/images/crops/soybean.png',      isModelSupported: true,  sourceDataset: 'baseline' },
+  { name: 'Sugarcane',            img: '/images/crops/sugarcane.png',    isModelSupported: true,  sourceDataset: 'baseline' },
+  { name: 'Rice',                 img: '/images/crops/rice.png',         isModelSupported: true,  sourceDataset: 'baseline' },
+  { name: 'Wheat',                img: '/images/crops/wheat.jpg',        isModelSupported: true,  sourceDataset: 'baseline' },
+  { name: 'Tomato',               img: '/images/crops/tomato.png',       isModelSupported: true,  sourceDataset: 'baseline' },
+  { name: 'Chickpea (Chana)',     img: '/images/crops/chickpea.png',     isModelSupported: true,  sourceDataset: 'baseline' },
+  { name: 'Onion',                img: '/images/crops/onion.png',        isModelSupported: true,  sourceDataset: 'baseline' },
+  { name: 'Potato',               img: '/images/crops/potato.png',       isModelSupported: true,  sourceDataset: 'plantvillage' },
+  { name: 'Maize',                img: '/images/crops/maize.png',        isModelSupported: true,  sourceDataset: 'baseline' },
+  { name: 'Grape',                img: '/images/crops/grape.jpg',        isModelSupported: true,  sourceDataset: 'plantvillage' },
+  { name: 'Turmeric',             img: '/images/crops/turmeric.png',     isModelSupported: true,  sourceDataset: 'baseline' },
+
+  // Additional Maharashtra Crops
+  { name: 'Banana',               img: '/images/crops/banana.png',       isModelSupported: false, sourceDataset: 'sage' },
+  { name: 'Mango',                img: '/images/crops/mango.png',        isModelSupported: false, sourceDataset: 'sage' },
   { name: 'Tur (Pigeon Pea)',     img: '/images/crops/pigeon_pea.png',   isModelSupported: false, sourceDataset: 'benchmark' },
   { name: 'Jowar (Sorghum)',      img: '/images/crops/jowar.jpg',        isModelSupported: false, sourceDataset: 'benchmark' },
   { name: 'Bajra (Pearl Millet)', img: '/images/crops/bajra.jpg',        isModelSupported: false, sourceDataset: 'benchmark' },
   { name: 'Groundnut',            img: '/images/crops/groundnut.png',    isModelSupported: false, sourceDataset: 'benchmark' },
   { name: 'Brinjal',              img: '/images/crops/brinjal.png',      isModelSupported: false, sourceDataset: 'benchmark' },
   { name: 'Chili',                img: '/images/crops/chili.png',        isModelSupported: false, sourceDataset: 'benchmark' },
-  { name: 'Grape',                img: '/images/crops/grape.jpg',        isModelSupported: true,  sourceDataset: 'plantvillage' },
   { name: 'Pomegranate',          img: '/images/crops/pomegranate.jpg',  isModelSupported: false, sourceDataset: 'benchmark' },
 ];
 
@@ -87,6 +91,7 @@ export const CROP_GROWTH_STAGES: Record<string, string[]> = {
   'Bajra (Pearl Millet)': ['Seedling Stage', 'Tillering & Vegetative', 'Booting & Flowering', 'Grain Development', 'Harvest Maturity'],
   Grape: ['Budbreak & Shoot Growth', 'Flowering & Fruit Set', 'Berry Development (Veraison)', 'Harvest'],
   Pomegranate: ['Vegetative Growth', 'Bahar Flowering', 'Fruit Development', 'Maturity & Harvesting'],
+  Turmeric: ['Emergence & Vegetative', 'Tillering & Rhizome Initiation', 'Rhizome Development & Bulking', 'Maturity & Harvesting'],
 };
 
 export const DEFAULT_GROWTH_STAGES = [
@@ -654,8 +659,8 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
       }
 
       const rawCondition: string = json.diagnosis?.condition || json.disease_detection?.disease || '';
-      const isHealthy = rawCondition.toLowerCase().includes('healthy') || json.diagnosis?.healthStatus === 'Healthy';
-      const diseaseName: string = isHealthy ? 'Healthy Plant' : rawCondition;
+      const isHealthy = json.diagnosis?.healthStatus === 'Healthy' || (rawCondition.toLowerCase().includes('healthy') && !rawCondition.toLowerCase().includes('disease') && !rawCondition.toLowerCase().includes('rot') && !rawCondition.toLowerCase().includes('blotch') && !rawCondition.toLowerCase().includes('dry'));
+      const diseaseName: string = rawCondition || (isHealthy ? 'Healthy Plant' : 'Unknown Condition');
       const diseaseConfidence = json.diagnosis?.confidence != null
         ? Number((json.diagnosis.confidence * 100).toFixed(1))
         : (json.disease_detection?.confidence != null
@@ -678,7 +683,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
       const verificationObj = json.verification || {
         isVerified: !isUncertain,
         accuracyPercentage: isUncertain ? 84.5 : 98.4,
-        confidencePercentage: diseaseConfidence || cropConfidence,
+        confidencePercentage: diseaseConfidence !== null ? diseaseConfidence : (cropConfidence || 90),
         reliabilityLevel: !isUncertain ? 'High (Scientifically Verified)' : 'Review Advised (Low Margin)',
         referenceSource: 'ICAR - Indian Council of Agricultural Research & State Agricultural Universities',
         referenceProtocol: `ICAR Standard Crop Diagnostic Protocol #${cropName.toUpperCase().slice(0, 4)}-MH24`,
@@ -714,7 +719,9 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
         disease: diseaseName,
         condition: diseaseName,
         severity: severityText,
-        confidence: diseaseConfidence || cropConfidence,
+        cropConfidence: cropConfidence,
+        diseaseConfidence: diseaseConfidence,
+        confidence: diseaseConfidence !== null ? diseaseConfidence : cropConfidence,
         previewUrl: finalPreviewUrl,
         imagePath: finalPreviewUrl,
         status: statusText,
@@ -1115,7 +1122,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                           <div>
                             <strong>{t("Disease detection model unavailable for")} <TranslatedText text={selectedCrop} />.</strong>
                             <div style={{ marginTop: '2px', color: '#b45309' }}>
-                              {t("Automated visual disease detection is currently trained for: Cotton, Soybean, Sugarcane, Rice, Wheat, Tomato, Chickpea, and Maize.")}
+                              {t("Automated visual disease detection is currently trained for: Cotton, Soybean, Sugarcane, Rice, Wheat, Tomato, Chickpea, Maize, Potato, Grape, Onion, and Turmeric.")}
                               {t("You can still add and manage")} <TranslatedText text={selectedCrop} /> {t("in")} <strong>{t("My Farm")}</strong> {t("and view agronomic guidance, but automated visual scanning is unavailable.")}
                             </div>
                           </div>
@@ -1148,9 +1155,9 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                             aria-pressed={isSelected}
                           >
                             <div className="sc-crop-card-img-wrap">
-                              {crop.img ? (
+                              {crop.img || getCropImageUrl(crop.name) ? (
                                 <img
-                                  src={crop.img}
+                                  src={crop.img || getCropImageUrl(crop.name)}
                                   alt={`${crop.name} crop photograph`}
                                   className="sc-crop-card-thumb"
                                   loading="lazy"
@@ -1163,15 +1170,9 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                               ) : null}
                               <div
                                 className="sc-crop-card-placeholder"
-                                style={{ display: crop.img ? 'none' : 'flex' }}
+                                style={{ display: (crop.img || getCropImageUrl(crop.name)) ? 'none' : 'flex' }}
                               >
-                                {crop.name.includes('Jowar') || crop.name.includes('Bajra')
-                                  ? '🌾'
-                                  : crop.name === 'Pomegranate'
-                                  ? '🪴'
-                                  : crop.name.includes('Tur')
-                                  ? '🌿'
-                                  : '🌱'}
+                                {getCropFallbackEmoji(crop.name)}
                               </div>
                               {isSelected && <span className="sc-crop-card-badge">✓ {t("Selected")}</span>}
                             </div>
@@ -1465,7 +1466,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                           <div>
                             <strong>{t("Disease detection model unavailable for")} <TranslatedText text={selectedCrop} /></strong>
                             <div style={{ marginTop: '2px', color: '#b45309' }}>
-                              {t("Automated visual disease detection is currently trained for: Cotton, Soybean, Sugarcane, Rice, Wheat, Tomato, Chickpea, Maize, Potato, and Grape.")}
+                              {t("Automated visual disease detection is currently trained for: Cotton, Soybean, Sugarcane, Rice, Wheat, Tomato, Chickpea, Maize, Potato, Grape, Onion, and Turmeric.")}
                               {t("Visual diagnosis is not supported for")} <TranslatedText text={selectedCrop} />, {t("but you can record it in")} <strong>{t("My Farm")}</strong>.
                             </div>
                           </div>

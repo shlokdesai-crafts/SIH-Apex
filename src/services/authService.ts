@@ -207,9 +207,16 @@ export async function signup(data: SignupData): Promise<AuthResult> {
       }),
     });
 
-    const json = await res.json();
-    if (!res.ok || !json.success) {
-      return { success: false, error: json.detail || json.message || 'Registration failed' };
+    let json: any = null;
+    try {
+      json = await res.json();
+    } catch {
+      json = null;
+    }
+
+    if (!res.ok || !json?.success) {
+      const errMsg = json?.detail || json?.message || (res.status === 502 ? 'Backend server unreachable (502 Bad Gateway).' : 'Registration failed');
+      return { success: false, error: errMsg };
     }
 
     const user: UserPublic = json.user;
@@ -231,8 +238,8 @@ export async function signup(data: SignupData): Promise<AuthResult> {
 
     return { success: true, user, token };
   } catch (err: any) {
-    console.error('Signup network error:', err);
-    return { success: false, error: 'Network error connecting to PikSuraksha server.' };
+    console.warn('Signup network request failed:', err?.message || err);
+    return { success: false, error: 'Network error connecting to CropGuard server. Please try again or use Demo Login.' };
   }
 }
 
@@ -253,11 +260,22 @@ export async function login(phone: string, password: string, role: string): Prom
       }),
     });
 
-    const json = await res.json();
-    if (!res.ok || !json.success) {
+    let json: any = null;
+    try {
+      json = await res.json();
+    } catch {
+      json = null;
+    }
+
+    if (!res.ok || !json?.success) {
+      const defaultErr = res.status === 502
+        ? 'Backend server unreachable (502 Bad Gateway). Please start the backend or use Demo Login.'
+        : res.status === 401
+        ? 'Incorrect password or account not found.'
+        : 'No account found for this mobile number.';
       return {
         success: false,
-        error: json.detail || json.message || 'No account found for this mobile number.',
+        error: json?.detail || json?.message || defaultErr,
       };
     }
 
@@ -291,8 +309,8 @@ export async function login(phone: string, password: string, role: string): Prom
 
     return { success: true, user, token };
   } catch (err: any) {
-    console.error('Login network error:', err);
-    return { success: false, error: 'Network error connecting to PikSuraksha server.' };
+    console.warn('Login network request failed:', err?.message || err);
+    return { success: false, error: 'Network error connecting to CropGuard server. Please try Demo Login.' };
   }
 }
 
@@ -306,8 +324,11 @@ export async function demoLogin(role: string): Promise<AuthResult> {
     });
 
     if (res.ok) {
-      const json = await res.json();
-      if (json.success && json.user) {
+      let json: any = null;
+      try {
+        json = await res.json();
+      } catch {}
+      if (json?.success && json?.user) {
         setAuthToken(json.token);
         localStorage.setItem(SESSION_KEY, JSON.stringify(json.user));
         return { success: true, user: json.user, token: json.token };
@@ -355,8 +376,11 @@ export async function fetchCurrentProfile(): Promise<UserPublic | null> {
       }
       return null;
     }
-    const json = await res.json();
-    if (json.success && json.user) {
+    let json: any = null;
+    try {
+      json = await res.json();
+    } catch {}
+    if (json?.success && json?.user) {
       localStorage.setItem(SESSION_KEY, JSON.stringify(json.user));
       return json.user;
     }

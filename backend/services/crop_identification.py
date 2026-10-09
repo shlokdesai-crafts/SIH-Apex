@@ -210,10 +210,12 @@ CROP_PROMPT_ENSEMBLES: Dict[str, List[str]] = {
     ],
     "Turmeric": [
         "a photo of a turmeric plant",
+        "a photo of a turmeric crop in an agricultural farm field",
         "large broad oblong green turmeric leaves",
         "halad turmeric crop foliage in field",
+        "close up of a turmeric leaf blade with prominent veins",
         "freshly dug turmeric rhizomes with yellow flesh",
-        "close up of harvested haldi rhizomes",
+        "close up of harvested haldi rhizomes and roots",
     ],
 }
 
@@ -298,6 +300,7 @@ def _get_crop_id_model():
             "Chickpea": ["crop_chickpea.jpg"],
             "Onion": ["onion_crop.jpg"],
             "Potato": ["potato_crop.jpg"],
+            "Turmeric": ["crop_turmeric.jpg", "crops/turmeric.png"],
         }
 
         vis_embeds_list = []

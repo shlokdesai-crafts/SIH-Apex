@@ -489,6 +489,90 @@ class TestCropRouting(unittest.TestCase):
         self.assertIn("confidence", res)
         self.assertIn("explanation", res)
 
+    def test_scan_api_turmeric_real_image_routing(self):
+        """Test POST /api/scan with real Turmeric image correctly routes to Turmeric model."""
+        turmeric_file = self.images_dir / "crop_turmeric.jpg"
+        self.assertTrue(turmeric_file.exists(), "crop_turmeric.jpg should exist")
+
+        with open(turmeric_file, "rb") as f:
+            img_bytes = f.read()
+
+        response = self.client.post(
+            "/api/scan",
+            files={"file": ("crop_turmeric.jpg", img_bytes, "image/jpeg")},
+            data={"crop": "Turmeric"}
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn(data["status"], ["valid", "uncertain"])
+        self.assertEqual(data["crop"]["name"], "Turmeric (Halad)")
+        self.assertIsNotNone(data.get("disease_detection"))
+        self.assertEqual(data["disease_detection"]["crop"], "Turmeric (Halad)")
+        self.assertIn("disease", data["disease_detection"])
+        self.assertIn("condition", data["diagnosis"])
+        self.assertIn("confidence", data["diagnosis"])
+        self.assertIsInstance(data["diagnosis"]["confidence"], float)
+
+    def test_scan_api_turmeric_leaf_blotch_regression(self):
+        """Regression Test: Labelled Leaf Blotch image returns expected disease class and Diseased status."""
+        blotch_file = self.images_dir / "turmeric_leaf_blotch.jpg"
+        self.assertTrue(blotch_file.exists(), "turmeric_leaf_blotch.jpg should exist")
+
+        with open(blotch_file, "rb") as f:
+            img_bytes = f.read()
+
+        response = self.client.post(
+            "/api/scan",
+            files={"file": ("turmeric_leaf_blotch.jpg", img_bytes, "image/jpeg")},
+            data={"crop": "Turmeric"}
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["status"], "valid")
+        self.assertEqual(data["crop"]["name"], "Turmeric (Halad)")
+
+        # Disease detection assertions
+        disease_det = data.get("disease_detection")
+        self.assertIsNotNone(disease_det)
+        self.assertEqual(disease_det["crop"], "Turmeric (Halad)")
+        self.assertEqual(disease_det["disease"], "Leaf Blotch")
+        self.assertEqual(disease_det["status"], "Diseased")
+        self.assertFalse(disease_det["expert_verification_required"])
+        self.assertGreaterEqual(disease_det["confidence"], 0.60)
+
+        # Diagnosis block assertions
+        diagnosis = data.get("diagnosis")
+        self.assertIsNotNone(diagnosis)
+        self.assertEqual(diagnosis["condition"], "Leaf Blotch")
+        self.assertEqual(diagnosis["healthStatus"], "Diseased")
+        self.assertEqual(diagnosis["type"], "disease")
+
+    def test_turmeric_identification_not_misclassified_as_sugarcane(self):
+        """Verify identify_crop does not misclassify Turmeric images as Sugarcane."""
+        from services.crop_identification import identify_crop
+        for filename in ["crop_turmeric.jpg", "crops/turmeric.png"]:
+            img_p = self.images_dir / filename
+            if img_p.exists():
+                with open(img_p, "rb") as f:
+                    img_bytes = f.read()
+                crop_id = identify_crop(img_bytes)
+                self.assertTrue(crop_id.is_identified, f"{filename} should be identified")
+                self.assertEqual(
+                    crop_id.crop_name, "Turmeric",
+                    f"{filename} was misclassified as {crop_id.crop_name} instead of Turmeric"
+                )
+
+    def test_turmeric_advisory_contents(self):
+        """Verify get_disease_advisory returns expert-curated advisory for Turmeric classes."""
+        from ml.advisory import get_disease_advisory
+        for cls_name in ["Dry Leaf", "Healthy Leaf", "Leaf Blotch", "Rhizome Disease Root", "Rhizome Healthy Root"]:
+            adv = get_disease_advisory("Turmeric", cls_name)
+            self.assertIsNotNone(adv)
+            self.assertIn("explanation", adv)
+            self.assertTrue(len(adv.get("symptoms", [])) > 0, f"Symptoms missing for {cls_name}")
+            self.assertTrue(len(adv.get("recommended_actions", [])) > 0, f"Actions missing for {cls_name}")
+            self.assertTrue(len(adv.get("prevention", [])) > 0, f"Prevention missing for {cls_name}")
+
 
 if __name__ == "__main__":
     unittest.main()

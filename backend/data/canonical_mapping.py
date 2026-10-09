@@ -558,7 +558,7 @@ def get_crop_verification_metadata(
     return {
         "isVerified": not is_uncertain,
         "accuracyPercentage": accuracy_score,
-        "confidencePercentage": round((disease_conf if disease_conf > 0 else crop_conf) * 100, 1),
+        "confidencePercentage": round(disease_conf * 100, 1) if (disease_conf is not None and disease_conf > 0) else (round(crop_conf * 100, 1) if (crop_conf is not None and crop_conf > 0) else 0.0),
         "reliabilityLevel": reliability,
         "referenceSource": specific_source,
         "referenceProtocol": f"ICAR Standard Crop Diagnostic Protocol #{protocol_code}",

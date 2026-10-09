@@ -19,9 +19,129 @@ export const ALL_CROPS_LIST: string[] = [
   'Chili',
   'Grape',
   'Pomegranate',
+  'Turmeric',
 ];
 
 export const ALL_CROPS_CONFIG = ALL_CROPS_LIST.map((name) => ({
   id: name.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, ''),
   name,
 }));
+
+export const CROP_IMAGE_MAP: Record<string, string> = {
+  cotton: '/images/crops/cotton.png',
+  soybean: '/images/crops/soybean.png',
+  sugarcane: '/images/crops/sugarcane.png',
+  rice: '/images/crops/rice.png',
+  wheat: '/images/crops/wheat.jpg',
+  tomato: '/images/crops/tomato.png',
+  chickpea: '/images/crops/chickpea.png',
+  'chickpea (chana)': '/images/crops/chickpea.png',
+  chana: '/images/crops/chickpea.png',
+  onion: '/images/crops/onion.png',
+  potato: '/images/crops/potato.png',
+  maize: '/images/crops/maize.png',
+  corn: '/images/crops/maize.png',
+  banana: '/images/crops/banana.png',
+  mango: '/images/crops/mango.png',
+  'tur (pigeon pea)': '/images/crops/pigeon_pea.png',
+  pigeon_pea: '/images/crops/pigeon_pea.png',
+  'pigeon pea': '/images/crops/pigeon_pea.png',
+  tur: '/images/crops/pigeon_pea.png',
+  'jowar (sorghum)': '/images/crops/jowar.jpg',
+  sorghum: '/images/crops/jowar.jpg',
+  jowar: '/images/crops/jowar.jpg',
+  'bajra (pearl millet)': '/images/crops/bajra.jpg',
+  'pearl millet': '/images/crops/bajra.jpg',
+  pearl_millet: '/images/crops/bajra.jpg',
+  bajra: '/images/crops/bajra.jpg',
+  groundnut: '/images/crops/groundnut.png',
+  peanut: '/images/crops/groundnut.png',
+  brinjal: '/images/crops/brinjal.png',
+  eggplant: '/images/crops/brinjal.png',
+  chili: '/images/crops/chili.png',
+  chilli: '/images/crops/chili.png',
+  grape: '/images/crops/grape.jpg',
+  grapes: '/images/crops/grape.jpg',
+  pomegranate: '/images/crops/pomegranate.jpg',
+  turmeric: '/images/crops/turmeric.png',
+  halad: '/images/crops/turmeric.png',
+  haldi: '/images/crops/turmeric.png',
+  garlic: '/images/crops/garlic.jpg',
+  ginger: '/images/crops/ginger.jpg',
+  cabbage: '/images/crops/cabbage.png',
+  cauliflower: '/images/crops/cauliflower.png',
+  okra: '/images/crops/okra.png',
+  mustard: '/images/crops/mustard.png',
+  sunflower: '/images/crops/sunflower.png',
+  orange: '/images/crops/orange.jpg',
+  papaya: '/images/crops/papaya.jpg',
+  apple: '/images/crops/apple.jpg',
+};
+
+export const CROP_EMOJI_MAP: Record<string, string> = {
+  cotton: '☁️',
+  soybean: '🌱',
+  sugarcane: '🎋',
+  rice: '🌾',
+  wheat: '🌾',
+  tomato: '🍅',
+  chickpea: '🌿',
+  'chickpea (chana)': '🌿',
+  chana: '🌿',
+  onion: '🧅',
+  potato: '🥔',
+  maize: '🌽',
+  corn: '🌽',
+  banana: '🍌',
+  mango: '🥭',
+  'tur (pigeon pea)': '🫛',
+  pigeon_pea: '🫛',
+  'pigeon pea': '🫛',
+  tur: '🫛',
+  'jowar (sorghum)': '🌾',
+  sorghum: '🌾',
+  jowar: '🌾',
+  'bajra (pearl millet)': '🌾',
+  'pearl millet': '🌾',
+  pearl_millet: '🌾',
+  bajra: '🌾',
+  groundnut: '🥜',
+  peanut: '🥜',
+  brinjal: '🍆',
+  eggplant: '🍆',
+  chili: '🌶️',
+  chilli: '🌶️',
+  grape: '🍇',
+  grapes: '🍇',
+  pomegranate: '🍎',
+  turmeric: '🫚',
+  halad: '🫚',
+  haldi: '🫚',
+  garlic: '🧄',
+  ginger: '🫚',
+  cabbage: '🥬',
+  cauliflower: '🥦',
+  okra: '🥬',
+  mustard: '🌼',
+  sunflower: '🌻',
+  orange: '🍊',
+  papaya: '🍈',
+  apple: '🍎',
+};
+
+export function getCropImageUrl(name: string): string {
+  if (!name) return '/images/crops/turmeric.png';
+  const key = name.trim().toLowerCase();
+  return CROP_IMAGE_MAP[key] || CROP_IMAGE_MAP[key.replace(/[^a-z0-9]/g, '_')] || '/images/crops/turmeric.png';
+}
+
+export function getCropFallbackEmoji(name: string): string {
+  if (!name) return '🌱';
+  const key = name.trim().toLowerCase();
+  if (CROP_EMOJI_MAP[key]) return CROP_EMOJI_MAP[key];
+  for (const [k, emoji] of Object.entries(CROP_EMOJI_MAP)) {
+    if (key.includes(k) || k.includes(key)) return emoji;
+  }
+  return '🌱';
+}
+

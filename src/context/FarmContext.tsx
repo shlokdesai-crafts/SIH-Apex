@@ -18,6 +18,7 @@ import {
 } from '../services/farmService';
 import { getScanHistory } from '../services/cropScanApi';
 import { normalizeCropKey } from '../data/advisoryCropData';
+import { getCropImageUrl } from '../constants/crops';
 
 export interface ScanTarget {
   fieldId?: string;
@@ -147,26 +148,11 @@ function extractGenuineCrops(farmState: FarmState | null): UserEligibleCrop[] {
   const result: UserEligibleCrop[] = [];
   const addedKeys = new Set<string>();
 
-  const CROP_FALLBACK_IMAGES: Record<string, string> = {
-    cotton: '/images/crop_cotton.jpg',
-    soybean: '/images/crop_soybean.jpg',
-    sugarcane: '/images/crop_sugarcane.jpg',
-    rice: '/images/crop_rice.jpg',
-    wheat: '/images/crop_wheat.jpg',
-    tomato: '/images/crop_tomato.jpg',
-    chickpea: '/images/crop_chickpea.jpg',
-    onion: '/images/onion_crop.jpg',
-    potato: '/images/potato_crop.jpg',
-    maize: '/images/crop_maize.jpg',
-    banana: '/images/crops/banana.png',
-    mango: '/images/crops/mango.png',
-  };
-
   const getCropImage = (canonKey: string, existingImg?: string): string => {
     if (existingImg && !existingImg.includes('crop_leaf') && !existingImg.includes('crop_healthy_leaf')) {
       return existingImg;
     }
-    return CROP_FALLBACK_IMAGES[canonKey] || '/images/crop_tomato.jpg';
+    return getCropImageUrl(canonKey);
   };
 
   // 1. Process fields (explicit plots registered in My Farm)

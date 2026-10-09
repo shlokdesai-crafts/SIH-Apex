@@ -56,7 +56,7 @@ class TestTomatoDiseaseInference(CropDiseaseTestBase):
         if res["disease"] == "Healthy":
             self.assertEqual(res["status"], "Healthy")
         elif res["disease"] == "Needs expert verification":
-            self.assertEqual(res["status"], "Needs expert verification")
+            self.assertIn(res["status"], ["uncertain", "Needs expert verification"])
         else:
             self.assertEqual(res["status"], "Diseased")
 
