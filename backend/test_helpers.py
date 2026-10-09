@@ -74,7 +74,7 @@ class CropDiseaseTestBase(unittest.TestCase):
         from ml.config import CROP_CONFIGS
         cls.crop_cfg = CROP_CONFIGS[cls.crop_name]
         cls.classes = cls.crop_cfg["classes"]
-        cls.valid_diseases = cls.classes + ["Needs expert verification"]
+        cls.valid_diseases = cls.classes + ["Needs expert verification", "Model unavailable"]
 
     # ── Helpers ───────────────────────────────────────────────────────────────
 

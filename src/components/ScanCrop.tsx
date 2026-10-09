@@ -6,6 +6,7 @@ import { scanCropImage, getScanHistory, deleteScan, type ScanHistoryItem } from 
 import { getBrowserPosition, reverseGeocode } from '../services/locationService';
 import TranslatedText from './TranslatedText';
 import { useTranslation } from '../i18n/useTranslation';
+import { generateCropHealthPdf, type ReportLanguage, type CropReportData } from '../services/reportPdfService';
 import './ScanCrop.css';
 
 // ── Crop data interfaces & lists ─────────────────────────────────────────────
@@ -141,7 +142,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
 
   const { farmState, recordScan, scanTarget, clearScanTarget, startAdvisoryForCrop } = useFarm();
   const { user } = useContext(AuthContext);
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
   // Workflow Step: idle -> preview -> scanning -> result
   const [step, setStep] = useState<Step>('idle');
@@ -155,6 +156,11 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
   const [showCamera, setShowCamera] = useState(false);
   const [scanHistory, setScanHistory] = useState<ScanHistoryItem[] | any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  // ── Multilingual PDF Report Modal State ─────────────────────────────────────
+  const [showPdfModal, setShowPdfModal] = useState<boolean>(false);
+  const [pdfLang, setPdfLang] = useState<ReportLanguage>('en');
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState<boolean>(false);
 
   // ── STEP 1: Crop Selection State ──────────────────────────────────────────
   const [selectedCrop, setSelectedCrop] = useState<string | null>(null);
@@ -170,6 +176,37 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
 
   // ── Optional Growing Stage State ──────────────────────────────────────────
   const [growthStage, setGrowthStage] = useState<string>('');
+
+  // ── PDF Report Handlers ───────────────────────────────────────────────────
+  const handleOpenPdfModal = () => {
+    const activeLang = (language === 'mr' || language === 'hi') ? (language as ReportLanguage) : 'en';
+    setPdfLang(activeLang);
+    setShowPdfModal(true);
+  };
+
+  const handleGeneratePdf = async () => {
+    setIsGeneratingPdf(true);
+    try {
+      const reportData: CropReportData = {
+        cropName: (diagnosis as any).cropName || selectedCrop || 'Cotton',
+        selectedCrop: selectedCrop || (diagnosis as any).cropName || 'Cotton',
+        cultivatedArea: cultivatedArea,
+        areaUnit: areaUnit,
+        farmLocation: farmLocation,
+        growthStage: growthStage,
+        imageUrl: previewUrl,
+        diagnosis: diagnosis,
+        scanDate: new Date().toLocaleString(),
+      };
+
+      await generateCropHealthPdf(reportData, pdfLang);
+      setShowPdfModal(false);
+    } catch (err) {
+      console.error('Failed to generate PDF report:', err);
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
 
   // DOM Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -360,6 +397,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
   const processFile = (file: File) => {
     setUploadedFile(file);
     setBackendError(null);
+    setDiagnosis(EMPTY_DIAGNOSIS);
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreviewUrl(e.target?.result as string);
@@ -423,6 +461,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
     stopCamera();
     setPreviewUrl(dataUrl);
     setBackendError(null);
+    setDiagnosis(EMPTY_DIAGNOSIS);
     setStep('preview');
   };
 
@@ -476,6 +515,10 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
   const handleSelectCropByName = (cropName: string) => {
     setSelectedCrop(cropName);
     setBackendError(null);
+    setDiagnosis(EMPTY_DIAGNOSIS);
+    if (step === 'result') {
+      setStep(uploadedFile || previewUrl ? 'preview' : 'idle');
+    }
     if (selectedFieldId) {
       const currentField = farmState?.fields?.find(f => f.id === selectedFieldId);
       if (currentField && currentField.crop.toLowerCase() !== cropName.toLowerCase()) {
@@ -489,6 +532,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
   const handleExampleClick = (ex: { img: string; label: string; color: string }) => {
     setPreviewUrl(ex.img);
     setBackendError(null);
+    setDiagnosis(EMPTY_DIAGNOSIS);
     setStep('preview');
     const filename = ex.img.split('/').pop() || 'example.jpg';
     loadFileFromUrl(ex.img, filename);
@@ -508,6 +552,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
   const changePhoto = () => {
     setPreviewUrl(null);
     setUploadedFile(null);
+    setDiagnosis(EMPTY_DIAGNOSIS);
     setStep('idle');
     setBackendError(null);
   };
@@ -520,6 +565,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
     setSelectedFieldId('');
     setUploadedFile(null);
     setBackendError(null);
+    setDiagnosis(EMPTY_DIAGNOSIS);
     setGrowthStage('');
     setCultivatedArea('1.0');
     setAreaUnit('Acres');
@@ -642,13 +688,41 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
       }
 
       // Extract diagnosis information
-      const rawCropName = json.crop?.name || json.crop_analysis?.crop_identification?.crop_name || selectedCrop;
+      const rawCropName = json.crop?.name || selectedCrop;
       const cropName = rawCropName.toLowerCase() === 'maize' ? 'Maize (Corn)' : rawCropName;
       const cropConfidence = json.crop?.confidence != null
         ? Number((json.crop.confidence * 100).toFixed(1))
         : (json.crop_analysis?.crop_identification?.confidence != null
             ? Number((json.crop_analysis.crop_identification.confidence * 100).toFixed(1))
             : 100);
+
+      const rawCondition: string = json.diagnosis?.condition || json.disease_detection?.disease || '';
+
+      if (rawCondition === 'Model unavailable' || json.status === 'model_unavailable') {
+        const unavailDiagnosis = {
+          cropName,
+          cropConfidence,
+          disease: 'Model unavailable',
+          diseaseConfidence: null,
+          status: 'Model unavailable',
+          severity: 'None',
+          severityColor: '#6b7280',
+          description: `Disease detection model is currently unavailable for ${cropName}. No automated diagnosis was performed.`,
+          symptoms: [],
+          recommended_actions: [],
+          prevention: [],
+          expertVerificationRequired: true,
+          icon: '❓',
+          verification: null,
+          topPredictions: [],
+          scanId: json.scanId || Date.now().toString(),
+        };
+        setDiagnosis(unavailDiagnosis);
+        setScanProgress(100);
+        setStep('result');
+        setIsSubmitting(false);
+        return;
+      }
 
       if (!json.diagnosis?.condition && !json.disease_detection?.disease) {
         setBackendError("Automated disease diagnosis unavailable from inference service for this crop or image. Please verify crop selection and ensure a trained model is deployed.");
@@ -657,10 +731,15 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
         setIsSubmitting(false);
         return;
       }
+<<<<<<< HEAD
 
       const rawCondition: string = json.diagnosis?.condition || json.disease_detection?.disease || '';
       const isHealthy = json.diagnosis?.healthStatus === 'Healthy' || (rawCondition.toLowerCase().includes('healthy') && !rawCondition.toLowerCase().includes('disease') && !rawCondition.toLowerCase().includes('rot') && !rawCondition.toLowerCase().includes('blotch') && !rawCondition.toLowerCase().includes('dry'));
       const diseaseName: string = rawCondition || (isHealthy ? 'Healthy Plant' : 'Unknown Condition');
+=======
+      const isHealthy = rawCondition.toLowerCase().includes('healthy') || json.diagnosis?.healthStatus === 'Healthy';
+      const diseaseName: string = isHealthy ? 'Healthy Plant' : rawCondition;
+>>>>>>> 76bd7561e8a001396e261323353530c512df5cde
       const diseaseConfidence = json.diagnosis?.confidence != null
         ? Number((json.diagnosis.confidence * 100).toFixed(1))
         : (json.disease_detection?.confidence != null
@@ -871,20 +950,16 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
       )}
 
       <div className="sc-inner">
-        <div className="sc-layout">
-          {/* ════════════════ LEFT COLUMN ════════════════ */}
-          <div className="sc-left">
+        {/* ── Page Header ── */}
+        <div className="sc-header">
+          <h1 className="sc-title">{t("Scan Your Crop")} <span>🌿</span></h1>
+          <p className="sc-subtitle">
+            {t("Farmer-friendly AI crop diagnosis: select your crop, enter farm details, and scan for instant ICAR-verified pathological insights.")}
+          </p>
+        </div>
 
-            {/* ── Page Header ── */}
-            <div className="sc-header">
-              <h1 className="sc-title">{t("Scan Your Crop")} <span>🌿</span></h1>
-              <p className="sc-subtitle">
-                {t("Farmer-friendly AI crop diagnosis: select your crop, enter farm details, and scan for instant ICAR-verified pathological insights.")}
-              </p>
-            </div>
-
-            {/* ════════════ DIAGNOSIS RESULT STATE ════════════ */}
-            {step === 'result' ? (
+        {/* ════════════ DIAGNOSIS RESULT STATE ════════════ */}
+        {step === 'result' ? (
               <div className="sc-main-card sc-result-card">
                 <div className="sc-result-zone">
                   <div className="sc-result-header">
@@ -1043,8 +1118,9 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                     <button
                       type="button"
                       className="sc-action-btn sc-action-secondary"
-                      onClick={() => window.open('/CropGuard_Maharashtra_20_Crops_Dataset_Directory.pdf', '_blank')}
-                      title="Download Official 20-Crops Dataset Directory PDF"
+                      onClick={handleOpenPdfModal}
+                      title="Download Crop Diagnostic PDF Report in English, Marathi, or Hindi"
+                      id="btn-download-pdf-report"
                     >
                       📥 {t("Download Report / PDF")}
                     </button>
@@ -1067,43 +1143,146 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
               /* ════════════ 4-STEP SCAN WORKFLOW (idle | preview | scanning) ════════════ */
               <div className="sc-workflow-container">
 
-                {/* ─────────────────────────────────────────────────────────────
-                    STEP 1 — SELECT YOUR CROP
-                    ───────────────────────────────────────────────────────────── */}
-                <div className="sc-step-card sc-step-1">
-                  <div className="sc-step-header">
-                    <div className="sc-step-badge">{t("STEP 1")}</div>
-                    <div className="sc-step-header-text">
-                      <h2 className="sc-step-title">
-                        {t("Select Your Crop")} <span className="sc-required-star">*</span>
-                      </h2>
-                      <p className="sc-step-subtitle">
-                        {t("Select the crop you want to scan or add to your farm")}
-                      </p>
+                {/* ── TOP SECTION: STEP 1 (LEFT) + SIDEBAR TIPS & EXAMPLES (RIGHT) ── */}
+                <div className="sc-top-layout">
+                  <div className="sc-step-1-col">
+                    {/* ─────────────────────────────────────────────────────────────
+                        STEP 1 — SELECT YOUR CROP
+                        ───────────────────────────────────────────────────────────── */}
+                    <div className="sc-step-card sc-step-1">
+                      <div className="sc-step-header">
+                        <div className="sc-step-badge">{t("STEP 1")}</div>
+                        <div className="sc-step-header-text">
+                          <h2 className="sc-step-title">
+                            {t("Select Your Crop")} <span className="sc-required-star">*</span>
+                          </h2>
+                          <p className="sc-step-subtitle">
+                            {t("Select the crop you want to scan or add to your farm")}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Currently Selected Crop Banner */}
+                      {selectedCrop ? (
+                        <>
+                          <div className="sc-selected-crop-banner">
+                            <div className="sc-selected-crop-left">
+                              <span className="sc-selected-crop-check">✓</span>
+                              <div className="sc-selected-crop-info">
+                                <span className="sc-selected-crop-label">{t("Currently Selected Crop:")}</span>
+                                <strong className="sc-selected-crop-name">🌾 <TranslatedText text={selectedCrop} /></strong>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              className="sc-change-crop-btn"
+                              onClick={() => setSelectedCrop(null)}
+                              title="Change crop selection"
+                            >
+                              {t("Change Crop")}
+                            </button>
+                          </div>
+
+                          {!isSelectedCropModelSupported && (
+                            <div className="sc-model-notice-banner" style={{
+                              marginTop: '8px',
+                              padding: '10px 14px',
+                              borderRadius: '8px',
+                              backgroundColor: '#fffbeb',
+                              border: '1px solid #fde68a',
+                              color: '#92400e',
+                              fontSize: '0.85rem',
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              gap: '8px',
+                              lineHeight: 1.45,
+                            }}>
+                              <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>⚠️</span>
+                              <div>
+                                <strong>{t("Disease detection model unavailable for")} <TranslatedText text={selectedCrop} />.</strong>
+                                <div style={{ marginTop: '2px', color: '#b45309' }}>
+                                  {t("Automated visual disease detection is currently trained for: Cotton, Soybean, Sugarcane, Rice, Wheat, Tomato, Chickpea, and Maize.")}
+                                  {t("You can still add and manage")} <TranslatedText text={selectedCrop} /> {t("in")} <strong>{t("My Farm")}</strong> {t("and view agronomic guidance, but automated visual scanning is unavailable.")}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="sc-select-crop-prompt">
+                          <span>💡 {t("Please select a crop from the cards below.")}</span>
+                        </div>
+                      )}
+
+                      {/* Popular Crops Grid */}
+                      <div className="sc-popular-crops-section">
+                        <div className="sc-popular-crops-title-row">
+                          <span className="sc-popular-crops-title">{t("Popular Crops")}</span>
+                          <span className="sc-popular-hint">{t("Click a card to select")}</span>
+                        </div>
+
+                        <div className="sc-popular-crops-grid">
+                          {POPULAR_CROPS.map((crop) => {
+                            const isSelected = selectedCrop?.toLowerCase() === crop.name.toLowerCase();
+                            return (
+                              <button
+                                key={crop.name}
+                                type="button"
+                                className={`sc-crop-card-btn ${isSelected ? 'sc-crop-card-btn--active' : ''}`}
+                                onClick={() => handleSelectCropByName(crop.name)}
+                                title={`Select ${crop.name} for disease scanning`}
+                                aria-pressed={isSelected}
+                              >
+                                <div className="sc-crop-card-img-wrap">
+                                  {crop.img ? (
+                                    <img
+                                      src={crop.img}
+                                      alt={`${crop.name} crop photograph`}
+                                      className="sc-crop-card-thumb"
+                                      loading="lazy"
+                                      onError={(e) => {
+                                        (e.target as HTMLElement).style.display = 'none';
+                                        const fallback = (e.target as HTMLElement).parentElement?.querySelector('.sc-crop-card-placeholder') as HTMLElement;
+                                        if (fallback) fallback.style.display = 'flex';
+                                      }}
+                                    />
+                                  ) : null}
+                                  <div
+                                    className="sc-crop-card-placeholder"
+                                    style={{ display: crop.img ? 'none' : 'flex' }}
+                                  >
+                                    {crop.name.includes('Jowar') || crop.name.includes('Bajra')
+                                      ? '🌾'
+                                      : crop.name === 'Pomegranate'
+                                      ? '🪴'
+                                      : crop.name.includes('Tur')
+                                      ? '🌿'
+                                      : '🌱'}
+                                  </div>
+                                  {isSelected && <span className="sc-crop-card-badge">✓ {t("Selected")}</span>}
+                                </div>
+                                <span className="sc-crop-card-title"><TranslatedText text={crop.name} /></span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Currently Selected Crop Banner */}
-                  {selectedCrop ? (
-                    <>
-                      <div className="sc-selected-crop-banner">
-                        <div className="sc-selected-crop-left">
-                          <span className="sc-selected-crop-check">✓</span>
-                          <div className="sc-selected-crop-info">
-                            <span className="sc-selected-crop-label">{t("Currently Selected Crop:")}</span>
-                            <strong className="sc-selected-crop-name">🌾 <TranslatedText text={selectedCrop} /></strong>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          className="sc-change-crop-btn"
-                          onClick={() => setSelectedCrop(null)}
-                          title="Change crop selection"
-                        >
-                          {t("Change Crop")}
-                        </button>
+                  {/* ════════════════ RIGHT COLUMN SIDEBAR ════════════════ */}
+                  <div className="sc-right">
+                    {/* Banner */}
+                    <div className="sc-banner">
+                      <div className="sc-banner-icon">🌱</div>
+                      <div>
+                        <div className="sc-banner-title">{t("Healthy Plants   Stronger Farmers")}</div>
+                        <div className="sc-banner-sub">{t('"AI for a Better Tomorrow"')}</div>
                       </div>
+                      <div className="sc-banner-sun">☀️</div>
+                    </div>
 
+<<<<<<< HEAD
                       {!isSelectedCropModelSupported && (
                         <div className="sc-model-notice-banner" style={{
                           marginTop: '8px',
@@ -1126,34 +1305,44 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                               {t("You can still add and manage")} <TranslatedText text={selectedCrop} /> {t("in")} <strong>{t("My Farm")}</strong> {t("and view agronomic guidance, but automated visual scanning is unavailable.")}
                             </div>
                           </div>
+=======
+                    {/* Tips */}
+                    <div className="sc-tips-card">
+                      <div className="sc-tips-head">
+                        <span className="sc-tips-bulb">💡</span>
+                        <span className="sc-tips-title">{t("Tips for a Better Result")}</span>
+                      </div>
+                      {[
+                        { icon: '🌿', text: t('Take a clear and well-lit photo') },
+                        { icon: '🔍', text: t('Focus on the affected part (leaf, stem, fruit)') },
+                        { icon: '☀️', text: t('Avoid blurry or dark images') },
+                        { icon: '🪴', text: t('You can also upload a full plant or field image') },
+                      ].map((tip, i) => (
+                        <div key={i} className="sc-tip-row">
+                          <span className="sc-tip-icon">{tip.icon}</span>
+                          <span className="sc-tip-text">{tip.text}</span>
+>>>>>>> 76bd7561e8a001396e261323353530c512df5cde
                         </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="sc-select-crop-prompt">
-                      <span>💡 {t("Please select a crop from the cards below.")}</span>
-                    </div>
-                  )}
-
-                  {/* Popular Crops Grid */}
-                  <div className="sc-popular-crops-section">
-                    <div className="sc-popular-crops-title-row">
-                      <span className="sc-popular-crops-title">{t("Popular Crops")}</span>
-                      <span className="sc-popular-hint">{t("Click a card to select")}</span>
+                      ))}
                     </div>
 
-                    <div className="sc-popular-crops-grid">
-                      {POPULAR_CROPS.map((crop) => {
-                        const isSelected = selectedCrop?.toLowerCase() === crop.name.toLowerCase();
-                        return (
+                    {/* Example Images */}
+                    <div className="sc-examples-card">
+                      <div className="sc-examples-title">{t("Example Images")}</div>
+                      <div className="sc-examples-grid">
+                        {[
+                          { img: '/images/crop_healthy_leaf.jpg',  label: t('Healthy Leaf'),    color: '#2e7d32' },
+                          { img: '/images/crop_leaf_spots.jpg',    label: t('Leaf with Spots'), color: '#f57c00' },
+                          { img: '/images/crop_infected_leaf.jpg', label: t('Infected Leaf'),   color: '#c62828' },
+                          { img: '/images/crop_pest_leaf.jpg',     label: t('Pest on Leaf'),    color: '#1565c0' },
+                        ].map((ex, i) => (
                           <button
-                            key={crop.name}
-                            type="button"
-                            className={`sc-crop-card-btn ${isSelected ? 'sc-crop-card-btn--active' : ''}`}
-                            onClick={() => handleSelectCropByName(crop.name)}
-                            title={`Select ${crop.name} for disease scanning`}
-                            aria-pressed={isSelected}
+                            key={i}
+                            className="sc-example-item"
+                            onClick={() => handleExampleClick(ex)}
+                            title={`Use as ${ex.label} example photo`}
                           >
+<<<<<<< HEAD
                             <div className="sc-crop-card-img-wrap">
                               {crop.img || getCropImageUrl(crop.name) ? (
                                 <img
@@ -1177,17 +1366,23 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                               {isSelected && <span className="sc-crop-card-badge">✓ {t("Selected")}</span>}
                             </div>
                             <span className="sc-crop-card-title"><TranslatedText text={crop.name} /></span>
+=======
+                            <img src={ex.img} alt={ex.label} className="sc-example-img" />
+                            <span className="sc-example-label" style={{ color: ex.color }}>{ex.label}</span>
+>>>>>>> 76bd7561e8a001396e261323353530c512df5cde
                           </button>
-                        );
-                      })}
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* ─────────────────────────────────────────────────────────────
-                    STEP 2 — BASIC FARM DETAILS
-                    ───────────────────────────────────────────────────────────── */}
-                <div className="sc-step-card sc-step-2">
+                {/* ── BOTTOM FULL-WIDTH SECTION: STEP 2 + STEP 3 + PAST SCANS ── */}
+                <div className="sc-bottom-layout">
+                  {/* ─────────────────────────────────────────────────────────────
+                      STEP 2 — BASIC FARM DETAILS
+                      ───────────────────────────────────────────────────────────── */}
+                  <div className="sc-step-card sc-step-2">
                   <div className="sc-step-header">
                     <div className="sc-step-badge">{t("STEP 2")}</div>
                     <div className="sc-step-header-text">
@@ -1508,11 +1703,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                     </div>
                   )}
                 </div>
-
-              </div>
-            )}
-
-            {/* ── Past Scans History Card ── */}
+                {/* ── Past Scans History Card ── */}
             {scanHistory.length > 0 && (
               <div className="sc-history-card">
                 <div className="sc-crops-header" style={{ marginTop: '24px' }}>
@@ -1606,86 +1797,105 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
               </div>
             )}
           </div>
+        </div>
+      )}
 
-          {/* ════════════════ RIGHT COLUMN ════════════════ */}
-          <div className="sc-right">
-
-            {/* Banner */}
-            <div className="sc-banner">
-              <div className="sc-banner-icon">🌱</div>
-              <div>
-                <div className="sc-banner-title">{t("Healthy Plants   Stronger Farmers")}</div>
-                <div className="sc-banner-sub">{t('"AI for a Better Tomorrow"')}</div>
-              </div>
-              <div className="sc-banner-sun">☀️</div>
-            </div>
-
-            {/* Tips */}
-            <div className="sc-tips-card">
-              <div className="sc-tips-head">
-                <span className="sc-tips-bulb">💡</span>
-                <span className="sc-tips-title">{t("Tips for a Better Result")}</span>
-              </div>
-              {[
-                { icon: '🌿', text: t('Take a clear and well-lit photo') },
-                { icon: '🔍', text: t('Focus on the affected part (leaf, stem, fruit)') },
-                { icon: '☀️', text: t('Avoid blurry or dark images') },
-                { icon: '🪴', text: t('You can also upload a full plant or field image') },
-              ].map((tip, i) => (
-                <div key={i} className="sc-tip-row">
-                  <span className="sc-tip-icon">{tip.icon}</span>
-                  <span className="sc-tip-text">{tip.text}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Example Images */}
-            <div className="sc-examples-card">
-              <div className="sc-examples-title">{t("Example Images")}</div>
-              <div className="sc-examples-grid">
-                {[
-                  { img: '/images/crop_healthy_leaf.jpg',  label: t('Healthy Leaf'),    color: '#2e7d32' },
-                  { img: '/images/crop_leaf_spots.jpg',    label: t('Leaf with Spots'), color: '#f57c00' },
-                  { img: '/images/crop_infected_leaf.jpg', label: t('Infected Leaf'),   color: '#c62828' },
-                  { img: '/images/crop_pest_leaf.jpg',     label: t('Pest on Leaf'),    color: '#1565c0' },
-                ].map((ex, i) => (
-                  <button
-                    key={i}
-                    className="sc-example-item"
-                    onClick={() => handleExampleClick(ex)}
-                    title={`Use as ${ex.label} example photo`}
-                  >
-                    <img src={ex.img} alt={ex.label} className="sc-example-img" />
-                    <span className="sc-example-label" style={{ color: ex.color }}>{ex.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Help */}
-            <div className="sc-help-card">
-              <div className="sc-help-head">
-                <span className="sc-help-icon">🎧</span>
-                <div>
-                  <div className="sc-help-title">{t("Need Help?")}</div>
-                  <div className="sc-help-desc">{t("Watch this short video to learn how to scan your crop.")}</div>
-                </div>
-              </div>
-              <button className="sc-video-btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                {t("Watch Video (1 min)")}
+      {/* ════════════ MULTILINGUAL PDF REPORT MODAL ════════════ */}
+      {showPdfModal && (
+        <div className="sc-pdf-modal-overlay" onClick={() => !isGeneratingPdf && setShowPdfModal(false)}>
+          <div className="sc-pdf-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="sc-pdf-modal-header">
+              <h3>📥 {t("Download Crop Diagnostic Report")}</h3>
+              <button
+                type="button"
+                className="sc-pdf-modal-close"
+                onClick={() => !isGeneratingPdf && setShowPdfModal(false)}
+                title="Close Modal"
+              >
+                ✕
               </button>
-              <div className="sc-assistant-row">
-                <span className="sc-assistant-icon">💬</span>
-                <div>
-                  <div className="sc-assistant-title">{t("Talk to AI Assistant")}</div>
-                  <div className="sc-assistant-desc">{t("Ask anything about your crop in your language")}</div>
-                </div>
+            </div>
+
+            <div className="sc-pdf-modal-body">
+              <p className="sc-pdf-modal-desc">
+                {t("Your official report will include details for your selected crop")} <strong>({selectedCrop || (diagnosis as any).cropName || 'Cotton'})</strong>, {t("cultivated area, farm location, uploaded crop photo sample, AI diagnosis, and ICAR advisory actions.")}
+              </p>
+
+              <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#1e293b', marginBottom: '10px' }}>
+                {t("Select Report Language")}:
               </div>
+
+              <div className="sc-pdf-lang-options">
+                <label className={`sc-pdf-lang-card ${pdfLang === 'en' ? 'active' : ''}`}>
+                  <input
+                    type="radio"
+                    name="pdfLanguage"
+                    value="en"
+                    checked={pdfLang === 'en'}
+                    onChange={() => setPdfLang('en')}
+                  />
+                  <div className="sc-pdf-lang-info">
+                    <div className="sc-pdf-lang-title">🇬🇧 English</div>
+                    <div className="sc-pdf-lang-sub">Standard Official Agricultural Dossier</div>
+                  </div>
+                </label>
+
+                <label className={`sc-pdf-lang-card ${pdfLang === 'mr' ? 'active' : ''}`}>
+                  <input
+                    type="radio"
+                    name="pdfLanguage"
+                    value="mr"
+                    checked={pdfLang === 'mr'}
+                    onChange={() => setPdfLang('mr')}
+                  />
+                  <div className="sc-pdf-lang-info">
+                    <div className="sc-pdf-lang-title">🇮🇳 मराठी (Marathi)</div>
+                    <div className="sc-pdf-lang-sub">महाराष्ट्र राज्य कृषी विभाग अधिकृत अहवाल</div>
+                  </div>
+                </label>
+
+                <label className={`sc-pdf-lang-card ${pdfLang === 'hi' ? 'active' : ''}`}>
+                  <input
+                    type="radio"
+                    name="pdfLanguage"
+                    value="hi"
+                    checked={pdfLang === 'hi'}
+                    onChange={() => setPdfLang('hi')}
+                  />
+                  <div className="sc-pdf-lang-info">
+                    <div className="sc-pdf-lang-title">🇮🇳 हिंदी (Hindi)</div>
+                    <div className="sc-pdf-lang-sub">राष्ट्रीय स्तर फसल स्वास्थ्य रिपोर्ट</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div className="sc-pdf-modal-actions">
+              <button
+                type="button"
+                className="sc-pdf-btn-cancel"
+                onClick={() => setShowPdfModal(false)}
+                disabled={isGeneratingPdf}
+              >
+                {t("Cancel")}
+              </button>
+              <button
+                type="button"
+                className="sc-pdf-btn-generate"
+                onClick={handleGeneratePdf}
+                disabled={isGeneratingPdf}
+              >
+                {isGeneratingPdf ? (
+                  <span>⏳ {t("Preparing Report...")}</span>
+                ) : (
+                  <span>📄 {t("Download Report / PDF")} →</span>
+                )}
+              </button>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
-  );
+  </div>
+);
 }

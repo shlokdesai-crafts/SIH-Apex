@@ -1,0 +1,124 @@
+{
+  "crop": "Wheat",
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 1.4291,
+      "train_acc": 0.4204,
+      "val_loss": 1.50808,
+      "val_acc": 0.2973
+    },
+    {
+      "epoch": 2,
+      "train_loss": 1.117,
+      "train_acc": 0.5716,
+      "val_loss": 1.23513,
+      "val_acc": 0.4662
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.86036,
+      "train_acc": 0.6777,
+      "val_loss": 1.0816,
+      "val_acc": 0.5743
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.72997,
+      "train_acc": 0.7029,
+      "val_loss": 0.79587,
+      "val_acc": 0.7095
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.63303,
+      "train_acc": 0.7666,
+      "val_loss": 0.78896,
+      "val_acc": 0.6892
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.59736,
+      "train_acc": 0.7759,
+      "val_loss": 0.72552,
+      "val_acc": 0.7027
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.53636,
+      "train_acc": 0.7958,
+      "val_loss": 0.9603,
+      "val_acc": 0.7027
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.50034,
+      "train_acc": 0.8117,
+      "val_loss": 0.59678,
+      "val_acc": 0.7635
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.46927,
+      "train_acc": 0.817,
+      "val_loss": 0.62008,
+      "val_acc": 0.7432
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.47582,
+      "train_acc": 0.817,
+      "val_loss": 0.54413,
+      "val_acc": 0.8311
+    },
+    {
+      "epoch": 11,
+      "train_loss": 0.40809,
+      "train_acc": 0.8422,
+      "val_loss": 0.60426,
+      "val_acc": 0.7703
+    },
+    {
+      "epoch": 12,
+      "train_loss": 0.41846,
+      "train_acc": 0.8329,
+      "val_loss": 0.55246,
+      "val_acc": 0.7973
+    },
+    {
+      "epoch": 13,
+      "train_loss": 0.37471,
+      "train_acc": 0.8621,
+      "val_loss": 0.58334,
+      "val_acc": 0.8041
+    },
+    {
+      "epoch": 14,
+      "train_loss": 0.36715,
+      "train_acc": 0.878,
+      "val_loss": 0.53885,
+      "val_acc": 0.8041
+    },
+    {
+      "epoch": 15,
+      "train_loss": 0.35421,
+      "train_acc": 0.8568,
+      "val_loss": 0.5342,
+      "val_acc": 0.8108
+    },
+    {
+      "epoch": 16,
+      "train_loss": 0.31498,
+      "train_acc": 0.8873,
+      "val_loss": 0.56246,
+      "val_acc": 0.7905
+    },
+    {
+      "epoch": 17,
+      "train_loss": 0.36821,
+      "train_acc": 0.8753,
+      "val_loss": 0.55474,
+      "val_acc": 0.8108
+    }
+  ]
+}

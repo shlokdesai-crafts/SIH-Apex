@@ -121,6 +121,19 @@ def load_crop_checkpoint(
 
     model = create_crop_model(num_classes=num_classes, pretrained=False, architecture=detected_arch)
     state_dict = torch.load(filepath, map_location=device)
+
+    # Strict class count validation
+    ckpt_classes = None
+    if "classifier.3.weight" in state_dict:
+        ckpt_classes = state_dict["classifier.3.weight"].shape[0]
+    elif "classifier.1.weight" in state_dict:
+        ckpt_classes = state_dict["classifier.1.weight"].shape[0]
+
+    if ckpt_classes is not None and ckpt_classes != num_classes:
+        raise ValueError(
+            f"Checkpoint class count ({ckpt_classes}) does not match configured num_classes ({num_classes}) for {filepath}"
+        )
+
     model.load_state_dict(state_dict)
     model.to(device)
     model.eval()

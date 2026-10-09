@@ -81,10 +81,15 @@ def _get_crop_inference_model(crop_name: str) -> Tuple[torch.nn.Module, torch.de
         if not crop_cfg or not crop_cfg.get("classes"):
             raise ValueError(f"Crop '{crop_name}' is not configured for disease detection.")
 
-        classes = crop_cfg["classes"]
-        model_path: Path = crop_cfg["model_path"]
+        if not crop_cfg.get("is_active_local_model", False):
+            raise FileNotFoundError(
+                f"Local model checkpoint for '{crop_name}' is not active in configuration."
+            )
 
-        if model_path.exists():
+        classes = crop_cfg["classes"]
+        model_path: Optional[Path] = crop_cfg.get("model_path")
+
+        if model_path and model_path.exists():
             logger.info(f"Loading {crop_name} disease model from {model_path}…")
             model = load_crop_checkpoint(
                 model_path,
@@ -95,12 +100,10 @@ def _get_crop_inference_model(crop_name: str) -> Tuple[torch.nn.Module, torch.de
             _models_cache[crop_name] = model
         else:
             logger.warning(
-                f"No checkpoint found for {crop_name} at {model_path}. "
-                f"On-the-fly training during inference is disabled."
+                f"No active checkpoint found for {crop_name} at {model_path}."
             )
             raise FileNotFoundError(
-                f"Model checkpoint for '{crop_name}' not found at {model_path}. "
-                f"Please train and save the model checkpoint before running inference."
+                f"Model checkpoint for '{crop_name}' not found or inactive at {model_path}."
             )
 
     return _models_cache[crop_name], _device  # type: ignore[return-value]
@@ -607,6 +610,9 @@ def predict_crop_disease(
                 "status": "model_unavailable",
                 "expert_verification_required": True,
                 "message": f"Disease detection model unavailable for crop '{crop_name}'.",
+                "symptoms": [],
+                "recommended_actions": [],
+                "prevention": [],
                 "model_source": "none",
                 "model_id": "none"
             }

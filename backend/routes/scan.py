@@ -254,8 +254,18 @@ async def scan_crop(
                 image_quality=image_quality,
                 crop_analysis=crop_analysis,
             )
-    
+
+        # ── Check model adapter availability for selected crop ─────────────────────
+        from ml.registry import get_model_adapter
+        adapter = get_model_adapter(canonical_crop)
+        if adapter is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Disease detection model unavailable for crop '{display_crop}'. Please select a crop with an available trained model.",
+            )
+
         # ── Step 4: Phase 3A Real Crop Species Identification ──────────────────────
+<<<<<<< HEAD
         if canonical_crop:
             crop_id = CropIdentification(
                 crop_name=display_crop,
@@ -288,7 +298,13 @@ async def scan_crop(
             canonical_crop = normalize_crop_name(crop_id.crop_name) or crop_id.crop_name
             display_crop = get_display_crop_name(canonical_crop)
 
+=======
+        crop_id: CropIdentification = identify_crop(contents)
+>>>>>>> 76bd7561e8a001396e261323353530c512df5cde
         crop_id.crop_name = display_crop
+        crop_id.is_identified = True
+        crop_analysis.crop_identification = crop_id
+
         crop_conf_pct = round(crop_id.confidence * 100, 1)
     
         # ── Step 5: Phase 3B Real Crop Disease Detection ──────────────────────────
@@ -393,7 +409,7 @@ async def scan_crop(
         scan_id_mongo = save_crop_scan_record(
             user_id=resolved_uid,
             farmer_name=resolved_farmer_name,
-            crop=crop_id.crop_name,
+            crop=display_crop,
             disease=disease_detection.disease if disease_detection else "Unknown",
             confidence=disease_conf,
             severity=severity or "None",

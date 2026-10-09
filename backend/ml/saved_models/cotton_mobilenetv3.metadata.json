@@ -1,0 +1,143 @@
+{
+  "model": "MobileNetV3-Large",
+  "crop": "Cotton",
+  "verified_real_dataset": true,
+  "dataset_source": "Unverified / Awaiting Real Multi-Class Dataset",
+  "dataset_path": "/content/SIH-Apex/backend/ml/data/cotton",
+  "classes": [
+    "Healthy",
+    "Bacterial Blight",
+    "Curl Virus",
+    "Fusarium Wilt",
+    "Target Spot"
+  ],
+  "image_count": 1953,
+  "train_count": 1470,
+  "validation_count": 290,
+  "test_count": 193,
+  "training_date": "2026-10-02T15:57:39.781849",
+  "preprocessing": {
+    "image_size": [
+      224,
+      224
+    ],
+    "normalization": {
+      "mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "std": [
+        0.229,
+        0.224,
+        0.225
+      ]
+    }
+  },
+  "augmentation": [
+    "RandomResizedCrop(224, scale=(0.6, 1.0))",
+    "RandomHorizontalFlip(p=0.5)",
+    "RandomVerticalFlip(p=0.2)",
+    "RandomRotation(20)",
+    "ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.05)",
+    "GaussianBlur(kernel_size=3)",
+    "RandomErasing(p=0.1)"
+  ],
+  "random_seed": 42,
+  "best_val_accuracy": 0.9931,
+  "evaluation_metrics": {
+    "crop": "Cotton",
+    "accuracy": 0.9948,
+    "macro_precision": 0.9955,
+    "macro_recall": 0.9944,
+    "macro_f1": 0.9949,
+    "weighted_f1": 0.9948,
+    "total_samples": 193,
+    "class_metrics": {
+      "Healthy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "samples": 38,
+        "predicted": 38
+      },
+      "Bacterial Blight": {
+        "precision": 0.9773,
+        "recall": 1.0,
+        "f1_score": 0.9885,
+        "accuracy": 1.0,
+        "samples": 43,
+        "predicted": 44
+      },
+      "Curl Virus": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "samples": 37,
+        "predicted": 37
+      },
+      "Fusarium Wilt": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "accuracy": 1.0,
+        "samples": 39,
+        "predicted": 39
+      },
+      "Target Spot": {
+        "precision": 1.0,
+        "recall": 0.9722,
+        "f1_score": 0.9859,
+        "accuracy": 0.9722,
+        "samples": 36,
+        "predicted": 35
+      }
+    },
+    "confusion_matrix": [
+      [
+        38,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        43,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        37,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        39,
+        0
+      ],
+      [
+        0,
+        1,
+        0,
+        0,
+        35
+      ]
+    ],
+    "class_names": [
+      "Healthy",
+      "Bacterial Blight",
+      "Curl Virus",
+      "Fusarium Wilt",
+      "Target Spot"
+    ]
+  }
+}

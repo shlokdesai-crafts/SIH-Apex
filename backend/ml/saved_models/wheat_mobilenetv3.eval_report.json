@@ -1,88 +1,88 @@
 {
   "crop": "Wheat",
-  "accuracy": 1.0,
-  "macro_precision": 1.0,
-  "macro_recall": 1.0,
-  "macro_f1": 1.0,
-  "weighted_f1": 1.0,
-  "total_samples": 25,
+  "accuracy": 0.8557,
+  "macro_precision": 0.8592,
+  "macro_recall": 0.8452,
+  "macro_f1": 0.8495,
+  "weighted_f1": 0.8542,
+  "total_samples": 97,
   "class_metrics": {
     "Healthy": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
-      "accuracy": 1.0,
-      "samples": 5,
-      "predicted": 5
+      "precision": 0.8182,
+      "recall": 0.75,
+      "f1_score": 0.7826,
+      "accuracy": 0.75,
+      "samples": 12,
+      "predicted": 11
     },
     "Brown Rust": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
-      "accuracy": 1.0,
-      "samples": 5,
-      "predicted": 5
+      "precision": 0.8462,
+      "recall": 0.9167,
+      "f1_score": 0.88,
+      "accuracy": 0.9167,
+      "samples": 12,
+      "predicted": 13
     },
     "Yellow Rust": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
-      "accuracy": 1.0,
-      "samples": 5,
-      "predicted": 5
+      "precision": 0.88,
+      "recall": 0.9565,
+      "f1_score": 0.9167,
+      "accuracy": 0.9565,
+      "samples": 23,
+      "predicted": 25
     },
     "Powdery Mildew": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
-      "accuracy": 1.0,
-      "samples": 5,
-      "predicted": 5
+      "precision": 0.9231,
+      "recall": 0.75,
+      "f1_score": 0.8276,
+      "accuracy": 0.75,
+      "samples": 16,
+      "predicted": 13
     },
     "Septoria": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1_score": 1.0,
-      "accuracy": 1.0,
-      "samples": 5,
-      "predicted": 5
+      "precision": 0.8286,
+      "recall": 0.8529,
+      "f1_score": 0.8406,
+      "accuracy": 0.8529,
+      "samples": 34,
+      "predicted": 35
     }
   },
   "confusion_matrix": [
     [
-      5,
+      9,
+      1,
       0,
       0,
-      0,
-      0
+      2
     ],
     [
       0,
-      5,
+      11,
       0,
       0,
-      0
-    ],
-    [
-      0,
-      0,
-      5,
-      0,
-      0
+      1
     ],
     [
       0,
       0,
+      22,
       0,
-      5,
-      0
+      1
     ],
     [
+      1,
+      1,
       0,
+      12,
+      2
+    ],
+    [
+      1,
       0,
-      0,
-      0,
-      5
+      3,
+      1,
+      29
     ]
   ],
   "class_names": [

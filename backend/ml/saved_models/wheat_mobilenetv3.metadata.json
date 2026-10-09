@@ -1,0 +1,143 @@
+{
+  "model": "MobileNetV3-Large",
+  "crop": "Wheat",
+  "verified_real_dataset": true,
+  "dataset_source": "Kaggle - vasserhessein/wheat-disease-dataset-small",
+  "dataset_path": "/content/SIH-Apex/backend/ml/data/wheat",
+  "classes": [
+    "Healthy",
+    "Brown Rust",
+    "Yellow Rust",
+    "Powdery Mildew",
+    "Septoria"
+  ],
+  "image_count": 999,
+  "train_count": 754,
+  "validation_count": 148,
+  "test_count": 97,
+  "training_date": "2026-10-08T15:48:14.982521",
+  "preprocessing": {
+    "image_size": [
+      224,
+      224
+    ],
+    "normalization": {
+      "mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "std": [
+        0.229,
+        0.224,
+        0.225
+      ]
+    }
+  },
+  "augmentation": [
+    "RandomResizedCrop(224, scale=(0.6, 1.0))",
+    "RandomHorizontalFlip(p=0.5)",
+    "RandomVerticalFlip(p=0.2)",
+    "RandomRotation(20)",
+    "ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.05)",
+    "GaussianBlur(kernel_size=3)",
+    "RandomErasing(p=0.1)"
+  ],
+  "random_seed": 42,
+  "best_val_accuracy": 0.8311,
+  "evaluation_metrics": {
+    "crop": "Wheat",
+    "accuracy": 0.8557,
+    "macro_precision": 0.8592,
+    "macro_recall": 0.8452,
+    "macro_f1": 0.8495,
+    "weighted_f1": 0.8542,
+    "total_samples": 97,
+    "class_metrics": {
+      "Healthy": {
+        "precision": 0.8182,
+        "recall": 0.75,
+        "f1_score": 0.7826,
+        "accuracy": 0.75,
+        "samples": 12,
+        "predicted": 11
+      },
+      "Brown Rust": {
+        "precision": 0.8462,
+        "recall": 0.9167,
+        "f1_score": 0.88,
+        "accuracy": 0.9167,
+        "samples": 12,
+        "predicted": 13
+      },
+      "Yellow Rust": {
+        "precision": 0.88,
+        "recall": 0.9565,
+        "f1_score": 0.9167,
+        "accuracy": 0.9565,
+        "samples": 23,
+        "predicted": 25
+      },
+      "Powdery Mildew": {
+        "precision": 0.9231,
+        "recall": 0.75,
+        "f1_score": 0.8276,
+        "accuracy": 0.75,
+        "samples": 16,
+        "predicted": 13
+      },
+      "Septoria": {
+        "precision": 0.8286,
+        "recall": 0.8529,
+        "f1_score": 0.8406,
+        "accuracy": 0.8529,
+        "samples": 34,
+        "predicted": 35
+      }
+    },
+    "confusion_matrix": [
+      [
+        9,
+        1,
+        0,
+        0,
+        2
+      ],
+      [
+        0,
+        11,
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        22,
+        0,
+        1
+      ],
+      [
+        1,
+        1,
+        0,
+        12,
+        2
+      ],
+      [
+        1,
+        0,
+        3,
+        1,
+        29
+      ]
+    ],
+    "class_names": [
+      "Healthy",
+      "Brown Rust",
+      "Yellow Rust",
+      "Powdery Mildew",
+      "Septoria"
+    ]
+  }
+}
