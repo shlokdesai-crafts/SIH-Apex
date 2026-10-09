@@ -1163,7 +1163,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                               <span className="sc-selected-crop-check">✓</span>
                               <div className="sc-selected-crop-info">
                                 <span className="sc-selected-crop-label">{t("Currently Selected Crop:")}</span>
-                                <strong className="sc-selected-crop-name">🌾 <TranslatedText text={selectedCrop} /></strong>
+                                <strong className="sc-selected-crop-name">🌾 <TranslatedText text={selectedCrop ?? ''} /></strong>
                               </div>
                             </div>
                             <button
@@ -1192,10 +1192,10 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                             }}>
                               <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>⚠️</span>
                               <div>
-                                <strong>{t("Disease detection model unavailable for")} <TranslatedText text={selectedCrop} />.</strong>
+                                <strong>{t("Disease detection model unavailable for")} <TranslatedText text={selectedCrop ?? ''} />.</strong>
                                 <div style={{ marginTop: '2px', color: '#b45309' }}>
                                   {t("Automated visual disease detection is currently trained for: Cotton, Soybean, Sugarcane, Rice, Wheat, Tomato, Chickpea, and Maize.")}
-                                  {t("You can still add and manage")} <TranslatedText text={selectedCrop} /> {t("in")} <strong>{t("My Farm")}</strong> {t("and view agronomic guidance, but automated visual scanning is unavailable.")}
+                                  {t("You can still add and manage")} <TranslatedText text={selectedCrop ?? ''} /> {t("in")} <strong>{t("My Farm")}</strong> {t("and view agronomic guidance, but automated visual scanning is unavailable.")}
                                 </div>
                               </div>
                             </div>
@@ -1620,10 +1620,10 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                         }}>
                           <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>⚠️</span>
                           <div>
-                            <strong>{t("Disease detection model unavailable for")} <TranslatedText text={selectedCrop} /></strong>
+                            <strong>{t("Disease detection model unavailable for")} <TranslatedText text={selectedCrop ?? ''} /></strong>
                             <div style={{ marginTop: '2px', color: '#b45309' }}>
                               {t("Automated visual disease detection is currently trained for: Cotton, Soybean, Sugarcane, Rice, Wheat, Tomato, Chickpea, Maize, Potato, Grape, Onion, and Turmeric.")}
-                              {t("Visual diagnosis is not supported for")} <TranslatedText text={selectedCrop} />, {t("but you can record it in")} <strong>{t("My Farm")}</strong>.
+                              {t("Visual diagnosis is not supported for")} <TranslatedText text={selectedCrop ?? ''} />, {t("but you can record it in")} <strong>{t("My Farm")}</strong>.
                             </div>
                           </div>
                         </div>
@@ -1860,3 +1860,4 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
   </div>
 );
 }
+
