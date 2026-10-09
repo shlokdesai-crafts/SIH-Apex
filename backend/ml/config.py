@@ -18,7 +18,20 @@ SAVED_MODELS_DIR.mkdir(parents=True, exist_ok=True)
 IMAGE_SIZE = (224, 224)
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
-ACTIVE_LOCAL_CROPS = ["Cotton", "Sugarcane", "Wheat", "Turmeric"]
+ACTIVE_LOCAL_CROPS = [
+    "Chickpea",
+    "Cotton",
+    "Grapes",
+    "Maize",
+    "Onion",
+    "Potato",
+    "Rice",
+    "Soybean",
+    "Sugarcane",
+    "Tomato",
+    "Turmeric",
+    "Wheat",
+]
 
 # ── Multi-Crop Registry ───────────────────────────────────────────────────────
 CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
@@ -57,6 +70,7 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
             "Rust",
             "Yellow Mosaic"
         ],
+        "is_active_local_model": True,
         "model_path": SAVED_MODELS_DIR / "soybean_mobilenetv3.pth",
         "data_dir": BASE_DIR / "data" / "soybean",
         "confidence_threshold": 0.60,
@@ -83,6 +97,7 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
             "Brown Spot",
             "Tungro",
         ],
+        "is_active_local_model": True,
         "model_path": SAVED_MODELS_DIR / "rice_mobilenetv3.pth",
         "data_dir": BASE_DIR / "data" / "rice",
         "dataset_source": "ICAR / IndiaAI Rice and Maize in-field dataset",
@@ -150,6 +165,7 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
             "Northern Leaf Blight",
             "Maize Streak Virus"
         ],
+        "is_active_local_model": True,
         "model_path": SAVED_MODELS_DIR / "maize_mobilenetv3.pth",
         "data_dir": BASE_DIR / "data" / "maize",
         "dataset_source": "PlantVillage Open Dataset + ICAR IndiaAI",
@@ -216,6 +232,7 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
             "Late Blight",
             "Yellow Leaf Curl Virus"
         ],
+        "is_active_local_model": True,
         "model_path": SAVED_MODELS_DIR / "tomato_mobilenetv3.pth",
         "data_dir": BASE_DIR / "data" / "tomato",
         "dataset_source": "PlantVillage Open-Access Agricultural Pathology Dataset",
@@ -252,6 +269,7 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
             "Dry Root Rot",
             "Stunt Virus"
         ],
+        "is_active_local_model": True,
         "model_path": SAVED_MODELS_DIR / "chickpea_mobilenetv3.pth",
         "data_dir": BASE_DIR / "data" / "chickpea",
         "confidence_threshold": 0.60,
@@ -277,6 +295,7 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
             "Healthy",
             "Purple Blotch"
         ],
+        "is_active_local_model": True,
         "model_path": SAVED_MODELS_DIR / "onion_mobilenetv3.pth",
         "data_dir": BASE_DIR / "experiments" / "cropguard_26_crop" / "datasets" / "onion_leaf",
         "dataset_source": "Onion Leaf Disease Dataset (appdevop666 / NCSA Open Source)",
@@ -301,6 +320,7 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
             "Late Blight",
             "Healthy"
         ],
+        "is_active_local_model": True,
         "model_path": SAVED_MODELS_DIR / "potato_mobilenetv3.pth",
         "data_dir": BASE_DIR / "data_external" / "plantvillage",
         "dataset_source": "PlantVillage Open-Access Agricultural Pathology Dataset (Penn State & EPFL, Hughes & Salathe 2015)",
@@ -384,6 +404,7 @@ CROP_CONFIGS: Dict[str, Dict[str, Any]] = {
             "Leaf Blight (Isariopsis)",
             "Healthy"
         ],
+        "is_active_local_model": True,
         "model_path": SAVED_MODELS_DIR / "grapes_mobilenetv3.pth",
         "data_dir": BASE_DIR / "data_external" / "plantvillage",
         "dataset_source": "PlantVillage Open-Access Agricultural Pathology Dataset (Penn State & EPFL, Hughes & Salathe 2015)",

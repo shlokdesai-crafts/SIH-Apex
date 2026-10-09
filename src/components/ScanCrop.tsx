@@ -698,7 +698,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
 
       const rawCondition: string = json.diagnosis?.condition || json.disease_detection?.disease || '';
 
-      if (rawCondition === 'Model unavailable' || json.status === 'model_unavailable') {
+      if (rawCondition === 'Model unavailable' || (json.status as string) === 'model_unavailable') {
         const unavailDiagnosis = {
           cropName,
           cropConfidence,
@@ -731,15 +731,8 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
         setIsSubmitting(false);
         return;
       }
-<<<<<<< HEAD
-
-      const rawCondition: string = json.diagnosis?.condition || json.disease_detection?.disease || '';
       const isHealthy = json.diagnosis?.healthStatus === 'Healthy' || (rawCondition.toLowerCase().includes('healthy') && !rawCondition.toLowerCase().includes('disease') && !rawCondition.toLowerCase().includes('rot') && !rawCondition.toLowerCase().includes('blotch') && !rawCondition.toLowerCase().includes('dry'));
       const diseaseName: string = rawCondition || (isHealthy ? 'Healthy Plant' : 'Unknown Condition');
-=======
-      const isHealthy = rawCondition.toLowerCase().includes('healthy') || json.diagnosis?.healthStatus === 'Healthy';
-      const diseaseName: string = isHealthy ? 'Healthy Plant' : rawCondition;
->>>>>>> 76bd7561e8a001396e261323353530c512df5cde
       const diseaseConfidence = json.diagnosis?.confidence != null
         ? Number((json.diagnosis.confidence * 100).toFixed(1))
         : (json.disease_detection?.confidence != null
@@ -1234,9 +1227,9 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                                 aria-pressed={isSelected}
                               >
                                 <div className="sc-crop-card-img-wrap">
-                                  {crop.img ? (
+                                  {crop.img || getCropImageUrl(crop.name) ? (
                                     <img
-                                      src={crop.img}
+                                      src={crop.img || getCropImageUrl(crop.name)}
                                       alt={`${crop.name} crop photograph`}
                                       className="sc-crop-card-thumb"
                                       loading="lazy"
@@ -1249,15 +1242,9 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                                   ) : null}
                                   <div
                                     className="sc-crop-card-placeholder"
-                                    style={{ display: crop.img ? 'none' : 'flex' }}
+                                    style={{ display: (crop.img || getCropImageUrl(crop.name)) ? 'none' : 'flex' }}
                                   >
-                                    {crop.name.includes('Jowar') || crop.name.includes('Bajra')
-                                      ? '🌾'
-                                      : crop.name === 'Pomegranate'
-                                      ? '🪴'
-                                      : crop.name.includes('Tur')
-                                      ? '🌿'
-                                      : '🌱'}
+                                    {getCropFallbackEmoji(crop.name)}
                                   </div>
                                   {isSelected && <span className="sc-crop-card-badge">✓ {t("Selected")}</span>}
                                 </div>
@@ -1282,30 +1269,6 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                       <div className="sc-banner-sun">☀️</div>
                     </div>
 
-<<<<<<< HEAD
-                      {!isSelectedCropModelSupported && (
-                        <div className="sc-model-notice-banner" style={{
-                          marginTop: '8px',
-                          padding: '10px 14px',
-                          borderRadius: '8px',
-                          backgroundColor: '#fffbeb',
-                          border: '1px solid #fde68a',
-                          color: '#92400e',
-                          fontSize: '0.85rem',
-                          display: 'flex',
-                          alignItems: 'flex-start',
-                          gap: '8px',
-                          lineHeight: 1.45,
-                        }}>
-                          <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>⚠️</span>
-                          <div>
-                            <strong>{t("Disease detection model unavailable for")} <TranslatedText text={selectedCrop} />.</strong>
-                            <div style={{ marginTop: '2px', color: '#b45309' }}>
-                              {t("Automated visual disease detection is currently trained for: Cotton, Soybean, Sugarcane, Rice, Wheat, Tomato, Chickpea, Maize, Potato, Grape, Onion, and Turmeric.")}
-                              {t("You can still add and manage")} <TranslatedText text={selectedCrop} /> {t("in")} <strong>{t("My Farm")}</strong> {t("and view agronomic guidance, but automated visual scanning is unavailable.")}
-                            </div>
-                          </div>
-=======
                     {/* Tips */}
                     <div className="sc-tips-card">
                       <div className="sc-tips-head">
@@ -1321,7 +1284,6 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                         <div key={i} className="sc-tip-row">
                           <span className="sc-tip-icon">{tip.icon}</span>
                           <span className="sc-tip-text">{tip.text}</span>
->>>>>>> 76bd7561e8a001396e261323353530c512df5cde
                         </div>
                       ))}
                     </div>
@@ -1342,34 +1304,8 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                             onClick={() => handleExampleClick(ex)}
                             title={`Use as ${ex.label} example photo`}
                           >
-<<<<<<< HEAD
-                            <div className="sc-crop-card-img-wrap">
-                              {crop.img || getCropImageUrl(crop.name) ? (
-                                <img
-                                  src={crop.img || getCropImageUrl(crop.name)}
-                                  alt={`${crop.name} crop photograph`}
-                                  className="sc-crop-card-thumb"
-                                  loading="lazy"
-                                  onError={(e) => {
-                                    (e.target as HTMLElement).style.display = 'none';
-                                    const fallback = (e.target as HTMLElement).parentElement?.querySelector('.sc-crop-card-placeholder') as HTMLElement;
-                                    if (fallback) fallback.style.display = 'flex';
-                                  }}
-                                />
-                              ) : null}
-                              <div
-                                className="sc-crop-card-placeholder"
-                                style={{ display: (crop.img || getCropImageUrl(crop.name)) ? 'none' : 'flex' }}
-                              >
-                                {getCropFallbackEmoji(crop.name)}
-                              </div>
-                              {isSelected && <span className="sc-crop-card-badge">✓ {t("Selected")}</span>}
-                            </div>
-                            <span className="sc-crop-card-title"><TranslatedText text={crop.name} /></span>
-=======
                             <img src={ex.img} alt={ex.label} className="sc-example-img" />
                             <span className="sc-example-label" style={{ color: ex.color }}>{ex.label}</span>
->>>>>>> 76bd7561e8a001396e261323353530c512df5cde
                           </button>
                         ))}
                       </div>

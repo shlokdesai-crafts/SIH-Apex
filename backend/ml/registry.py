@@ -101,15 +101,10 @@ def get_model_adapter(crop_name: str) -> Optional[DiseaseModelAdapter]:
     return None
 
 def get_model_status() -> Dict[str, Any]:
-    """Returns the availability status of models for all requested crops."""
-    requested_crops = [
-        "Cotton", "Soybean", "Chickpea", "Sorghum", "Pearl Millet", 
-        "Rice", "Wheat", "Maize", "Tomato", "Potato", "Sugarcane", "Turmeric",
-        "Groundnut", "Chilli", "Onion", "Banana", "Mango", "Grapes", 
-        "Pigeon Pea", "Mustard", "Brinjal", "Okra", "Cabbage", "Cauliflower"
-    ]
+    """Returns the availability status of models for all canonical crops."""
+    from data.canonical_mapping import CANONICAL_CROPS
     status = {}
-    for crop in requested_crops:
+    for crop in CANONICAL_CROPS:
         norm = get_normalized_crop_name(crop)
         is_active = False
         for key, cfg in CROP_CONFIGS.items():

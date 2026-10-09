@@ -265,7 +265,6 @@ async def scan_crop(
             )
 
         # ── Step 4: Phase 3A Real Crop Species Identification ──────────────────────
-<<<<<<< HEAD
         if canonical_crop:
             crop_id = CropIdentification(
                 crop_name=display_crop,
@@ -297,10 +296,6 @@ async def scan_crop(
 
             canonical_crop = normalize_crop_name(crop_id.crop_name) or crop_id.crop_name
             display_crop = get_display_crop_name(canonical_crop)
-
-=======
-        crop_id: CropIdentification = identify_crop(contents)
->>>>>>> 76bd7561e8a001396e261323353530c512df5cde
         crop_id.crop_name = display_crop
         crop_id.is_identified = True
         crop_analysis.crop_identification = crop_id
