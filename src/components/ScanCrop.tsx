@@ -698,7 +698,7 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
 
       const rawCondition: string = json.diagnosis?.condition || json.disease_detection?.disease || '';
 
-      if (rawCondition === 'Model unavailable' || (json.status as string) === 'model_unavailable') {
+      if (rawCondition === 'Model unavailable' || (json as any).status === 'model_unavailable') {
         const unavailDiagnosis = {
           cropName,
           cropConfidence,
@@ -1268,6 +1268,31 @@ export default function ScanCrop({ onScanComplete, onNavigateTab }: ScanCropProp
                       </div>
                       <div className="sc-banner-sun">☀️</div>
                     </div>
+
+                      {!isSelectedCropModelSupported && (
+                        <div className="sc-model-notice-banner" style={{
+                          marginTop: '8px',
+                          padding: '10px 14px',
+                          borderRadius: '8px',
+                          backgroundColor: '#fffbeb',
+                          border: '1px solid #fde68a',
+                          color: '#92400e',
+                          fontSize: '0.85rem',
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: '8px',
+                          lineHeight: 1.45,
+                        }}>
+                          <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>⚠️</span>
+                          <div>
+                            <strong>{t("Disease detection model unavailable for")} <TranslatedText text={selectedCrop ?? ''} />.</strong>
+                            <div style={{ marginTop: '2px', color: '#b45309' }}>
+                              {t("Automated visual disease detection is currently trained for: Cotton, Soybean, Sugarcane, Rice, Wheat, Tomato, Chickpea, Maize, Potato, Grape, Onion, and Turmeric.")}
+                              {t("You can still add and manage")} <TranslatedText text={selectedCrop ?? ''} /> {t("in")} <strong>{t("My Farm")}</strong> {t("and view agronomic guidance, but automated visual scanning is unavailable.")}
+                            </div>
+                          </div>
+                        </div>
+                      )}
 
                     {/* Tips */}
                     <div className="sc-tips-card">
